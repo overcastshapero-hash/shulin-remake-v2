@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>918 SPYDER — Hybrid Hypercar</title>
+<style>
+:root{
+  --bg:#111112;
+  --acid:#D2FF00;
+  --white:#f4f4f0;
+  --grey:#8a8a86;
+  --dark:#0a0a0a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:auto}
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;
+  overflow-x:hidden;
+  cursor:none;
+}
+/* ---------- 自定义荧光绿光标 ---------- */
+#cursor{
+  position:fixed;width:10px;height:10px;border-radius:50%;
+  background:var(--acid);pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s;
+  mix-blend-mode:difference;
+}
+#cursor.ring{width:46px;height:46px;background:transparent;border:1px solid var(--acid);}
+@media (hover:none){#cursor{display:none}body{cursor:auto}}
+
+/* ---------- Preloader ---------- */
+#preloader{
+  position:fixed;inset:0;background:var(--bg);z-index:1000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .8s ease,visibility .8s;
+}
+#preloader.hide{opacity:0;visibility:hidden}
+.pl-mark{
+  font-size:clamp(80px,18vw,240px);font-weight:800;letter-spacing:-.04em;
+  line-height:.9;color:var(--white);position:relative;
+}
+.pl-mark .fill{
+  position:absolute;inset:0;color:var(--acid);overflow:hidden;width:0%;
+  transition:width .1s linear;white-space:nowrap;
+}
+.pl-sub{margin-top:24px;font-size:12px;letter-spacing:.5em;color:var(--grey);text-transform:uppercase}
+.pl-pct{margin-top:10px;font-size:12px;letter-spacing:.2em;color:var(--acid)}
+#enterBtn{
+  margin-top:50px;padding:16px 60px;background:transparent;border:1px solid var(--acid);
+  color:var(--acid);font-size:14px;letter-spacing:.4em;text-transform:uppercase;
+  opacity:0;pointer-events:none;transition:opacity .6s .2s,background .3s,color .3s;
+}
+#enterBtn.show{opacity:1;pointer-events:auto}
+#enterBtn:hover{background:var(--acid);color:var(--bg)}
+
+/* ---------- 固定画布层 ---------- */
+#stage{position:fixed;inset:0;z-index:1;background:var(--bg)}
+#frameCanvas{width:100%;height:100%;object-fit:cover;display:block}
+#blackout{position:fixed;inset:0;background:#000;z-index:2;opacity:0;pointer-events:none;transition:opacity .15s linear}
+
+/* ---------- 滚动驱动占位 ---------- */
+#scrollTrack{position:relative;z-index:3}
+.seg{width:100%}
+
+/* ---------- 文字覆盖层 ---------- */
+#overlay{position:fixed;inset:0;z-index:5;pointer-events:none}
+.caption{
+  position:absolute;opacity:0;transform:translateY(20px);
+  transition:opacity .5s ease,transform .5s ease;
+}
+.caption.show{opacity:1;transform:translateY(0)}
+.cap-bl{left:7vw;bottom:12vh;max-width:42vw}
+.cap-eyebrow{font-size:12px;letter-spacing:.4em;color:var(--acid);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.cap-eyebrow::before{content:'';width:28px;height:1px;background:var(--acid)}
+.cap-big{font-size:clamp(34px,5.5vw,76px);font-weight:800;letter-spacing:-.03em;line-height:.98;text-transform:uppercase}
+.cap-sub{margin-top:18px;font-size:clamp(13px,1.1vw,16px);line-height:1.6;color:var(--acid);font-weight:300;max-width:34em;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+
+/* 黑场章节字 */
+.chapter{
+  position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;opacity:0;transition:opacity .6s ease;pointer-events:none;
+}
+.chapter .ch-big{font-size:clamp(40px,8vw,120px);font-weight:800;letter-spacing:-.03em;text-transform:uppercase;color:var(--white);text-shadow:0 4px 30px rgba(0,0,0,.9)}
+.chapter .ch-sub{margin-top:16px;font-size:13px;letter-spacing:.4em;color:var(--acid);text-transform:uppercase;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+.chapter .ch-desc{margin-top:22px;font-size:clamp(13px,1.05vw,15px);font-weight:300;color:var(--acid);max-width:30em;line-height:1.7;text-align:center;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+
+/* ---------- 数据屏 ---------- */
+#statsScreen{
+  position:fixed;inset:0;z-index:4;background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:8vh;
+  opacity:0;pointer-events:none;transition:opacity .4s ease;
+}
+#statsScreen::before{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:60%;
+  background:linear-gradient(to top,rgba(10,10,10,.92) 0%,rgba(10,10,10,.75) 45%,rgba(10,10,10,0) 100%);
+  z-index:-1;
+}
+.stats-eyebrow{font-size:12px;letter-spacing:.4em;color:var(--acid);text-transform:uppercase;margin-bottom:24px;text-shadow:0 2px 12px #000}
+.stats-grid{display:flex;gap:clamp(24px,5vw,72px);flex-wrap:nowrap;justify-content:center;align-items:flex-end}
+.stat{text-align:center}
+.stat .num{font-size:clamp(44px,8vw,120px);font-weight:800;letter-spacing:-.04em;line-height:.85;color:var(--white);text-shadow:0 4px 24px #000}
+.stat .num .u{font-size:.3em;color:var(--acid);font-weight:600;letter-spacing:0;margin-left:.1em}
+.stat .lab{margin-top:14px;font-size:11px;letter-spacing:.3em;color:var(--grey);text-transform:uppercase;text-shadow:0 2px 8px #000}
+.stats-foot{margin-top:32px;font-size:12px;letter-spacing:.2em;color:var(--grey);text-shadow:0 2px 8px #000}
+
+/* ---------- ROTATE 交互屏 ---------- */
+#rotateHint{
+  position:fixed;left:50%;bottom:14vh;transform:translateX(-50%);z-index:6;
+  font-size:12px;letter-spacing:.35em;color:var(--acid);text-transform:uppercase;
+  opacity:0;transition:opacity .5s;pointer-events:none;display:flex;align-items:center;gap:12px;
+}
+#rotateHint.show{opacity:1}
+#rotateHint .drag{display:inline-block;animation:sway 2s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
+
+/* ---------- Outro ---------- */
+#outro{
+  position:relative;z-index:5;height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;background:var(--bg);text-align:center;
+}
+#outro .o-big{font-size:clamp(30px,5vw,68px);font-weight:800;letter-spacing:-.03em;text-transform:uppercase;line-height:1;max-width:90vw}
+#outro .o-sub{margin-top:22px;font-size:14px;letter-spacing:.2em;color:var(--grey);max-width:30em;line-height:1.6}
+#toTop{
+  margin-top:48px;padding:14px 44px;background:transparent;border:1px solid var(--acid);
+  color:var(--acid);font-size:12px;letter-spacing:.35em;text-transform:uppercase;
+  transition:background .3s,color .3s;
+}
+#toTop:hover{background:var(--acid);color:var(--bg)}
+
+/* ---------- 右侧进度 / 章节角标 ---------- */
+#progress{
+  position:fixed;right:38px;top:50%;transform:translateY(-50%);z-index:7;
+  display:flex;flex-direction:column;gap:14px;align-items:flex-end;opacity:0;transition:opacity .5s;
+}
+#progress.show{opacity:1}
+.pdot{display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.2em;color:var(--grey);text-transform:uppercase;transition:color .3s}
+.pdot .bar{width:24px;height:1px;background:var(--grey);transition:width .3s,background .3s}
+.pdot.active{color:var(--acid)}
+.pdot.active .bar{width:46px;background:var(--acid)}
+
+/* ---------- 顶部 HUD ---------- */
+#hud{position:fixed;top:30px;left:0;right:0;z-index:7;display:flex;justify-content:space-between;
+  padding:0 38px;opacity:0;transition:opacity .5s}
+#hud.show{opacity:1}
+#hud .logo{font-size:15px;font-weight:800;letter-spacing:.1em}
+#hud .logo b{color:var(--acid)}
+#sound{background:transparent;border:1px solid var(--grey);color:var(--white);
+  width:42px;height:42px;border-radius:50%;font-size:14px;transition:border-color .3s,color .3s;display:flex;align-items:center;justify-content:center}
+#sound:hover,#sound.on{border-color:var(--acid);color:var(--acid)}
+
+/* keyboard hint */
+#keyHint{position:fixed;left:38px;bottom:30px;z-index:7;font-size:10px;letter-spacing:.2em;
+  color:var(--grey);text-transform:uppercase;opacity:0;transition:opacity .5s}
+#keyHint.show{opacity:.7}
+#keyHint b{color:var(--acid)}
+#keyHint kbd{border:1px solid var(--grey);padding:2px 7px;border-radius:3px;font-family:inherit;margin:0 2px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:760px){
+  .cap-bl{left:6vw;right:6vw;max-width:none;bottom:10vh}
+  #progress{display:none}
+  #hud{padding:0 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- 自定义光标 -->
+<div id="cursor"></div>
+
+<!-- 加载页 -->
+<div id="preloader">
+  <div class="pl-mark">918<span class="fill" id="plFill">918</span></div>
+  <div class="pl-sub">Porsche 918 Spyder</div>
+  <div class="pl-pct" id="plPct">0%</div>
+  <button id="enterBtn">Enter</button>
+</div>
+
+<!-- 固定画布 -->
+<div id="stage">
+  <canvas id="frameCanvas"></canvas>
+</div>
+<div id="blackout"></div>
+
+<!-- 数据屏 -->
+<div id="statsScreen">
+  <div class="stats-eyebrow">06 — Performance</div>
+  <div class="stats-grid">
+    <div class="stat"><div class="num" data-target="887">0<span class="u">PS</span></div><div class="lab">系统综合功率</div></div>
+    <div class="stat"><div class="num" data-target="2.6" data-dec="1">0<span class="u">S</span></div><div class="lab">0–100 km/h</div></div>
+    <div class="stat"><div class="num" data-target="345">0<span class="u">KM/H</span></div><div class="lab">最高时速</div></div>
+  </div>
+  <div class="stats-foot">944 N·m 扭矩 · 6.8 kWh 电池 · 纯电续航约 30 km · 纽北圈速 6:57</div>
+</div>
+
+<!-- 文字覆盖层 -->
+<div id="overlay">
+  <!-- coming -->
+  <div class="caption cap-bl" data-cap="arrival">
+    <div class="cap-eyebrow">01 — Arrival</div>
+    <div class="cap-big">918 Spyder</div>
+    <div class="cap-sub">保时捷插电式混动超级跑车 · 2013–2015 限量生产。一台用勒芒赛车技术重新定义性能的 Hypercar。</div>
+  </div>
+  <!-- oneshot 特写 -->
+  <div class="caption cap-bl" data-cap="light">
+    <div class="cap-eyebrow">02 — Light</div>
+    <div class="cap-big">Full-LED<br>Headlights</div>
+    <div class="cap-sub">标志性四点式 LED 日间行车灯。车头集成主动进气格栅与冷却风道，在低风阻与散热之间动态平衡。</div>
+  </div>
+  <div class="caption cap-bl" data-cap="brake">
+    <div class="cap-eyebrow">03 — Stop</div>
+    <div class="cap-big">PCCB Ceramic<br>6-Piston</div>
+    <div class="cap-sub">前轴 410mm 碳陶瓷复合制动盘，六活塞卡钳。电机回收制动可额外提供约 0.5g 减速，刹车热衰减更低。</div>
+  </div>
+  <div class="caption cap-bl" data-cap="cockpit">
+    <div class="cap-eyebrow">04 — Cockpit</div>
+    <div class="cap-big">Five<br>Drive Modes</div>
+    <div class="cap-sub">E-Power / Hybrid / Sport / Race，外加方向盘上的 Hot Lap 红色按钮。数字仪表实时显示动力与能量流向。</div>
+  </div>
+  <div class="caption cap-bl" data-cap="engine">
+    <div class="cap-eyebrow">05 — Heart</div>
+    <div class="cap-big">4.6 V8<br>+ Twin Motor</div>
+    <div class="cap-sub">中置 4.6L 自吸 V8 源自 RS Spyder 勒芒赛车，红线 9150rpm，132 PS/L 为保时捷自吸最高比功率。前后双电机构成插电混动系统。</div>
+  </div>
+  <!-- rotate -->
+  <div class="caption cap-bl" data-cap="legacy">
+    <div class="cap-eyebrow">07 — Legacy</div>
+    <div class="cap-big">Only 918<br>Built</div>
+    <div class="cap-sub">全球限量 918 台。顶置双排气降低背压；PAA 主动空气动力学以可变尾翼、后扩散器与前底板风门实时调节气流。</div>
+  </div>
+</div>
+
+<!-- 黑场章节字 -->
+<div class="chapter" id="chapterBlack">
+  <div class="ch-big">The Machine</div>
+  <div class="ch-sub">凝视这台机器</div>
+  <div class="ch-desc">一台 887 PS 的混动猛兽，即将在黑暗中逐一展开它的每一处工程细节。</div>
+</div>
+
+<!-- rotate 提示 -->
+<div id="rotateHint"><span class="drag">○</span> Click car to rotate · 点击车辆旋转，再次点击固定</div>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="logo">918<b>.</b>SPYDER</div>
+  <button id="sound" title="声音开关">♪</button>
+</div>
+
+<!-- 进度章节 -->
+<div id="progress"></div>
+
+<!-- 键盘提示 -->
+<div id="keyHint"><b>滚动</b> 或 <b>Enter</b> · 播放下一段</div>
+
+<!-- 滚动占位轨道 -->
+<div id="scrollTrack">
+  <div class="seg" id="segComing"></div>
+  <div class="seg" id="segBlack"></div>
+  <div class="seg" id="segOneshot"></div>
+  <div class="seg" id="segStats"></div>
+  <div class="seg" id="segRotate"></div>
+  <div id="outro">
+    <div class="o-big">Hybrid Hypercar,<br>Redefined.</div>
+    <div class="o-sub">超级跑车电气化时代的奠基之作。</div>
+    <button id="toTop">回到顶部 ↑</button>
+  </div>
+</div>
+
+<!-- 背景音乐 / 声浪 预留挂载位（替换 src 即可启用） -->
+<audio id="bgm" loop preload="none"><!-- <source src="audio/bgm.mp3" type="audio/mpeg"> --></audio>
+<audio id="sfxEngine" preload="none"><!-- <source src="audio/engine.mp3" type="audio/mpeg"> --></audio>
+
+<script>
+/* =========================================================
+   918 SPYDER — 段落式自动播放引擎（station-based）
+   滚一下 / 回车 / ↓ = 播放到下一站（从容真实时长）
+   ↑ = 反向播回上一站
+   rotate 站独立：点击车辆进入/退出鼠标旋转
+   ========================================================= */
+const SEQ={
+  coming:{dir:'seq_coming',count:120,pad:4},
+  oneshot:{dir:'seq_oneshot',count:360,pad:4},
+  rotate:{dir:'seq_rotate',count:192,pad:4}
+};
+function framePath(seq,i){const c=SEQ[seq];return `${c.dir}/frame_${String(i).padStart(c.pad,'0')}.webp`;}
+
+/* ---------- 站点定义 ----------
+   每个站点：用哪个序列、定格在哪一帧、从上一站到本站的动画(序列/起止帧/时长)、文字、特殊屏 */
+const STATIONS=[
+  // 0 驶入（进入后自动播一次）
+  {id:'arrival', seq:'coming', hold:119,
+    anim:{seq:'coming', from:0, to:119, dur:5000},
+    cap:'arrival', eyebrow:0},
+  // 1 黑场过渡（接 oneshot 首帧——暗调车头）
+  {id:'black', seq:'oneshot', hold:0, black:true,
+    anim:{type:'blackthrough', dur:2000},
+    chapter:true, eyebrow:1},
+  // 2 大灯（帧 50）—— 加快进入
+  {id:'light', seq:'oneshot', hold:50,
+    anim:{seq:'oneshot', from:0, to:50, dur:2200},
+    cap:'light', eyebrow:2, sfx:'light'},
+  // 3 前轮刹车（帧 95）—— 加快
+  {id:'brake', seq:'oneshot', hold:95,
+    anim:{seq:'oneshot', from:50, to:95, dur:2800},
+    cap:'brake', eyebrow:3},
+  // 4 座舱（帧 163）
+  {id:'cockpit', seq:'oneshot', hold:163,
+    anim:{seq:'oneshot', from:95, to:163, dur:3000},
+    cap:'cockpit', eyebrow:4, sfx:'cockpit'},
+  // 5 引擎（精确帧 246，高潮最久）
+  {id:'engine', seq:'oneshot', hold:246,
+    anim:{seq:'oneshot', from:163, to:246, dur:4000},
+    cap:'engine', eyebrow:5},
+  // 6 数据屏（停在车尾画面帧 312，数据在车下方）
+  {id:'stats', seq:'oneshot', hold:312, stats:true,
+    anim:{seq:'oneshot', from:246, to:312, dur:2500},
+    eyebrow:6},
+  // 7 旋转（独立交互，到达不自动转；从stats车尾交叉淡入到rotate首帧）
+  {id:'rotate', seq:'rotate', hold:0,
+    anim:{seq:'rotate', from:0, to:0, dur:800, crossfade:true},
+    cap:'legacy', eyebrow:7, rotateStation:true},
+  // 8 结尾
+  {id:'outro', seq:'rotate', hold:191, outro:true,
+    anim:{seq:'rotate', from:0, to:191, dur:2500},
+    eyebrow:8}
+];
+
+/* ---------- DOM ---------- */
+const canvas=document.getElementById('frameCanvas');
+const ctx=canvas.getContext('2d');
+const blackout=document.getElementById('blackout');
+const statsScreen=document.getElementById('statsScreen');
+const chapterBlack=document.getElementById('chapterBlack');
+const rotateHint=document.getElementById('rotateHint');
+const progress=document.getElementById('progress');
+const outroEl=document.getElementById('outro');
+const captions={};
+document.querySelectorAll('.caption').forEach(c=>captions[c.dataset.cap]=c);
+const cursor=document.getElementById('cursor');
+
+/* outro 原本在滚动流里，现改为覆盖层手动控制显隐 */
+outroEl.style.position='fixed';outroEl.style.inset='0';outroEl.style.zIndex='6';
+outroEl.style.opacity='0';outroEl.style.pointerEvents='none';
+outroEl.style.transition='opacity .6s ease';
+outroEl.style.background='rgba(10,10,10,.82)';
+// 移除占位滚动轨道高度（段落式不需要长滚动条）
+document.getElementById('scrollTrack').style.display='none';
+document.body.style.overflow='hidden';
+
+/* ---------- 画布绘制（优先用预解码 bitmap，scrub 更顺） ---------- */
+let cw,ch;
+function resize(){cw=canvas.width=innerWidth*devicePixelRatio;ch=canvas.height=innerHeight*devicePixelRatio;redrawCurrent();}
+addEventListener('resize',resize);
+function drawCover(src){
+  if(!src) return;
+  const w = src.naturalWidth || src.width;
+  const h = src.naturalHeight || src.height;
+  if(!w || !h) return;
+  const ir=w/h, cr=cw/ch;
+  let dw,dh,dx,dy;
+  if(ir>cr){dh=ch;dw=ch*ir;dx=(cw-dw)/2;dy=0;}else{dw=cw;dh=cw/ir;dx=0;dy=(ch-dh)/2;}
+  ctx.clearRect(0,0,cw,ch);ctx.drawImage(src,dx,dy,dw,dh);
+}
+const images={coming:[],oneshot:[],rotate:[]};   // <img> 元素
+const bitmaps={coming:[],oneshot:[],rotate:[]};   // 预解码 ImageBitmap
+function getDrawable(seq,frame){return bitmaps[seq][frame]||images[seq][frame];}
+function showFrame(seq,frame){
+  frame=Math.max(0,Math.min(SEQ[seq].count-1,Math.round(frame)));
+  lastDrawn={seq,frame};
+  drawCover(getDrawable(seq,frame));
+}
+let lastDrawn={seq:'coming',frame:0};
+function redrawCurrent(){drawCover(getDrawable(lastDrawn.seq,lastDrawn.frame));}
+
+/* ---------- 预加载 + 后台预解码 ---------- */
+const totalFrames=Object.values(SEQ).reduce((a,c)=>a+c.count,0);
+const canDecode = typeof createImageBitmap === 'function';
+function preload(onProgress,onDone){
+  let done=0;
+  const tick=()=>{done++;onProgress(done/totalFrames);if(done===totalFrames)onDone();};
+  Object.keys(SEQ).forEach(seq=>{
+    const c=SEQ[seq];
+    for(let i=1;i<=c.count;i++){
+      const idx=i-1;
+      const img=new Image();
+      images[seq][idx]=img;
+      img.onload=()=>{
+        tick(); // 下载完即计入进度，尽快可进入
+        // 后台异步解码为 bitmap（不阻塞）
+        if(canDecode){
+          createImageBitmap(img).then(bm=>{bitmaps[seq][idx]=bm;}).catch(()=>{});
+        }
+      };
+      img.onerror=tick;
+      img.src=framePath(seq,i);
+    }
+  });
+}
+
+/* ---------- 状态机 ---------- */
+let cur=0;            // 当前站点索引
+let playing=false;    // 是否正在播放段落动画（锁输入）
+let entered=false;
+/* 缓动：头尾有加速感、中段不猛冲，尾段拉长减速带消除到站急停 */
+function easeInOut(x){
+  // easeOutCubic 为主（尾部柔），混入少量线性保持中段不拖
+  const o=1-Math.pow(1-x,3);
+  const s=x<0.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+  return o*0.55 + s*0.30 + x*0.15;
+}
+
+function setCaption(name,on){if(captions[name])captions[name].classList.toggle('show',on);}
+function clearCaptions(){Object.values(captions).forEach(c=>c.classList.remove('show'));}
+
+/* 进入某站点的“静止”表现 */
+function settleStation(i){
+  const st=STATIONS[i];
+  // 背景层：黑场站停驻时不再全黑，露出oneshot首帧暗调车头
+  blackout.style.opacity = 0;
+  statsScreen.style.opacity = st.stats?1:0;
+  statsScreen.style.pointerEvents='none';
+  chapterBlack.style.opacity = st.chapter?1:0;
+  outroEl.style.opacity = st.outro?1:0;
+  outroEl.style.pointerEvents = st.outro?'auto':'none';
+  rotateHint.classList.toggle('show', !!st.rotateStation);
+  // 画面定格帧：黑场站显示 oneshot 第一帧（暗调车头）
+  if(st.black) showFrame('oneshot',0);
+  else showFrame(st.seq, st.hold);
+  // 文字
+  clearCaptions();
+  if(st.cap) setCaption(st.cap,true);
+  // 数据屏数字
+  if(st.stats) animateStats();
+  // 进度高亮
+  updateProgress(i);
+  // 旋转状态：进入旋转站重置；离开则强制关闭旋转模式
+  if(st.rotateStation){ rotateMode=false; rotateFrame=0; }
+  else { rotateMode=false; cursor.classList.remove('ring'); }
+}
+
+/* 播放 从 (i-1) 到 i 的段落动画，或反向 */
+function playTo(target){
+  if(playing) return;
+  target=Math.max(0,Math.min(STATIONS.length-1,target));
+  if(target===cur) return;
+  const forward = target>cur;
+  // 一次只走一站
+  const next = forward ? cur+1 : cur-1;
+  const st = STATIONS[next];
+  const anim = forward ? st.anim : STATIONS[cur].anim;
+  playing=true;
+
+  // 过渡期间清掉静止态的文字/特殊屏（动画自己控制）
+  clearCaptions();
+  rotateHint.classList.remove('show');
+
+  if(anim.type==='blackthrough'){
+    // 黑场：coming尾帧 → 全黑(露章节字) → oneshot首帧渐亮
+    playBlackThrough(forward, next, ()=>finishStation(next));
+    return;
+  }
+  if(anim.crossfade){
+    // 跨序列切换（如 stats车尾 → rotate首帧）：短暂压黑盖过硬切
+    playCrossfade(forward, next, ()=>finishStation(next));
+    return;
+  }
+
+  const fromF = forward ? anim.from : anim.to;
+  const toF   = forward ? anim.to   : anim.from;
+  const seq = anim.seq;
+  const dur = anim.dur;
+  const t0 = Date.now();
+
+  // 离开 stats/black/outro 屏的淡出
+  if(STATIONS[cur].stats) statsScreen.style.opacity=0;
+  if(STATIONS[cur].chapter) chapterBlack.style.opacity=0;
+  if(STATIONS[cur].outro){outroEl.style.opacity=0;outroEl.style.pointerEvents='none';}
+  blackout.style.opacity=0;
+
+  // 目标若是 stats 屏，动画放完再淡入数据屏
+  function step(){
+    const k=Math.min(1,(Date.now()-t0)/dur);
+    const e=easeInOut(k);
+    const f=fromF+(toF-fromF)*e;
+    showFrame(seq,f);
+    // sfx 触发（仅前进，过半时）
+    if(forward && st.sfx && k>0.5 && !st._fired){st._fired=true;playSfx(st.sfx);}
+    if(k<1) requestAnimationFrame(step);
+    else { st._fired=false; finishStation(next); }
+  }
+  requestAnimationFrame(step);
+}
+
+function playBlackThrough(forward, nextIdx, done){
+  const dur=2000, t0=Date.now();
+  // 前进：coming(119) 可见 → 渐黑 → 章节字 → 渐亮 oneshot(0)
+  function step(){
+    const k=Math.min(1,(Date.now()-t0)/dur);
+    if(forward){
+      // coming(119)可见 → 渐黑+章节字浮现 → 渐亮露出oneshot(0)，章节字保持可见
+      if(k<0.4){ showFrame('coming',119); blackout.style.opacity=k/0.4; chapterBlack.style.opacity=Math.max(0,(k-0.2)/0.2);}
+      else if(k<0.6){ blackout.style.opacity=1; chapterBlack.style.opacity=1; showFrame('oneshot',0);}
+      else { showFrame('oneshot',0); blackout.style.opacity=(1-k)/0.4; chapterBlack.style.opacity=1;}
+    }else{
+      // 反向：oneshot(0) → 黑 → coming(119)
+      if(k<0.4){ showFrame('oneshot',0); blackout.style.opacity=k/0.4; }
+      else if(k<0.6){ blackout.style.opacity=1; chapterBlack.style.opacity=1; showFrame('coming',119);}
+      else { showFrame('coming',119); blackout.style.opacity=(1-k)/0.4; chapterBlack.style.opacity=Math.max(0,(0.8-k)/0.2);}
+    }
+    if(k<1) requestAnimationFrame(step);
+    else done();
+  }
+  requestAnimationFrame(step);
+}
+
+/* 跨序列短暂压黑过渡：上一站画面 → 快速压黑 → 露出目标站定格帧 */
+function playCrossfade(forward, nextIdx, done){
+  const dur=700, t0=Date.now();
+  const st=STATIONS[nextIdx];
+  const prevSt=STATIONS[forward?nextIdx-1:nextIdx+1];
+  function step(){
+    const k=Math.min(1,(Date.now()-t0)/dur);
+    if(k<0.5){
+      // 前半：保持上一站画面，压黑
+      showFrame(prevSt.seq, prevSt.hold);
+      blackout.style.opacity=k/0.5;
+    }else{
+      // 后半：切到目标帧，渐亮
+      showFrame(st.seq, st.hold);
+      blackout.style.opacity=(1-k)/0.5;
+    }
+    if(k<1) requestAnimationFrame(step);
+    else { blackout.style.opacity=0; done(); }
+  }
+  requestAnimationFrame(step);
+}
+
+function finishStation(i){
+  cur=i;
+  playing=false;
+  settleStation(i);
+}
+
+/* ---------- 输入：滚轮/键盘 = 走一站 ---------- */
+function onIntent(dir){
+  if(!entered||playing) return;
+  // 在 rotate 站，向下不被旋转影响：直接去结尾
+  playTo(cur+dir);
+}
+let wheelLock=false, wheelIdleTimer=null;
+addEventListener('wheel',e=>{
+  if(!entered) return;
+  if(playing){return;}
+  // 惯性滚动会持续发事件：每次都刷新空闲计时，只有真正停止滚动一段时间后才允许下一次
+  if(wheelLock){
+    clearTimeout(wheelIdleTimer);
+    wheelIdleTimer=setTimeout(()=>{wheelLock=false;}, 350);
+    return;
+  }
+  const dir = e.deltaY>0 ? 1 : -1;
+  wheelLock=true;
+  onIntent(dir);
+  clearTimeout(wheelIdleTimer);
+  wheelIdleTimer=setTimeout(()=>{wheelLock=false;}, 350);
+},{passive:true});
+
+addEventListener('keydown',e=>{
+  if(!entered) return;
+  if(['Enter','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();onIntent(1);}
+  else if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();onIntent(-1);}
+});
+
+/* ---------- rotate 站：点击车辆进入/退出鼠标旋转 ---------- */
+let rotateMode=false;     // 是否处于旋转接管模式
+let rotateFrame=0;        // 当前旋转帧
+let rotateAnchorX=0, rotateAnchorFrame=0;
+function inRotateStation(){return STATIONS[cur] && STATIONS[cur].rotateStation && !playing;}
+
+canvas.addEventListener('click',e=>{
+  if(!inRotateStation()) return;
+  rotateMode=!rotateMode;
+  if(rotateMode){
+    // 进入旋转：以当前鼠标X为基准
+    rotateAnchorX=e.clientX; rotateAnchorFrame=rotateFrame;
+    rotateHint.classList.remove('show');
+    cursor.classList.add('ring');
+  }else{
+    // 退出：固定当前角度（rotateFrame保持）
+    cursor.classList.remove('ring');
+  }
+});
+addEventListener('mousemove',e=>{
+  cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px';
+  if(rotateMode && inRotateStation()){
+    const dx=e.clientX-rotateAnchorX;
+    const n=SEQ.rotate.count;
+    // 左移→帧增（车顺时针感）；方向若反，改下面符号
+    let f=rotateAnchorFrame - dx*0.25;
+    f=((f%n)+n)%n;
+    rotateFrame=f;
+    showFrame('rotate',f);
+  }
+});
+
+/* ---------- 数据屏数字动画（缓动，与整体节奏一致） ---------- */
+let statsKey=0;
+function animateStats(){
+  const myKey=++statsKey;
+  const DUR=1400;
+  document.querySelectorAll('#statsScreen .num').forEach(el=>{
+    const t=parseFloat(el.dataset.target);const dec=parseInt(el.dataset.dec||0);
+    const u=el.querySelector('.u').outerHTML;
+    const t0=Date.now();
+    const tick=()=>{
+      if(myKey!==statsKey)return;
+      const k=Math.min(1,(Date.now()-t0)/DUR);
+      const e=1-Math.pow(1-k,3);            // easeOutCubic，尾部柔
+      const v=t*e;
+      el.innerHTML=(dec?v.toFixed(dec):Math.round(v))+u;
+      if(k<1)requestAnimationFrame(tick);
+      else el.innerHTML=(dec?t.toFixed(dec):Math.round(t))+u;
+    };
+    tick();
+  });
+}
+
+/* ---------- 进度章节 ---------- */
+let pdots=[];
+function buildProgress(){
+  const labels=['Arrival','Machine','Light','Stop','Cockpit','Heart','Stats','Rotate','End'];
+  progress.innerHTML='';
+  pdots=labels.map((l,i)=>{
+    const d=document.createElement('div');d.className='pdot';
+    d.innerHTML=`<span>${l}</span><span class="bar"></span>`;
+    d.addEventListener('click',()=>{ if(!playing&&entered){ stepToward(i); } });
+    progress.appendChild(d);return d;
+  });
+}
+function updateProgress(i){ pdots.forEach((d,k)=>d.classList.toggle('active',k===i)); }
+// 点击进度条：逐站走过去（连续播放）
+function stepToward(target){
+  if(playing||target===cur) return;
+  const dir = target>cur?1:-1;
+  playTo(cur+dir);
+  const iv=setInterval(()=>{
+    if(playing) return;
+    if(cur===target){clearInterval(iv);return;}
+    playTo(cur+ (target>cur?1:-1));
+  },60);
+}
+
+/* ---------- 音效（合成占位 + 预留文件） ---------- */
+let audioCtx=null,soundOn=false;
+function initAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}
+function blip(freq,dur,type='sine',gain=0.06){
+  if(!soundOn||!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.value=freq;o.connect(g);g.connect(audioCtx.destination);
+  const t=audioCtx.currentTime;g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(gain,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.start(t);o.stop(t+dur);
+}
+function playSfx(key){
+  if(key==='light')blip(880,0.4,'triangle',0.05);
+  if(key==='cockpit'){blip(523,0.15,'sine',0.05);setTimeout(()=>blip(784,0.25,'sine',0.04),120);}
+}
+const soundBtn=document.getElementById('sound');
+const bgm=document.getElementById('bgm');
+soundBtn.addEventListener('click',()=>{
+  soundOn=!soundOn;initAudio();
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+  soundBtn.classList.toggle('on',soundOn);
+  soundBtn.textContent=soundOn?'♫':'♪';
+  if(bgm.querySelector('source')){if(soundOn)bgm.play().catch(()=>{});else bgm.pause();}
+});
+
+/* hover UI 光标 */
+document.querySelectorAll('button,.pdot').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cursor.classList.add('ring'));
+  el.addEventListener('mouseleave',()=>{if(!rotateMode)cursor.classList.remove('ring');});
+});
+
+/* ---------- 启动 ---------- */
+const preloader=document.getElementById('preloader');
+const plFill=document.getElementById('plFill');
+const plPct=document.getElementById('plPct');
+const enterBtn=document.getElementById('enterBtn');
+
+resize();
+buildProgress();
+preload(
+  (frac)=>{plFill.style.width=(frac*100)+'%';plPct.textContent=Math.round(frac*100)+'%';},
+  ()=>{plPct.textContent='Ready';enterBtn.classList.add('show');}
+);
+
+enterBtn.addEventListener('click',()=>{
+  entered=true;
+  initAudio();
+  preloader.classList.add('hide');
+  document.getElementById('hud').classList.add('show');
+  document.getElementById('progress').classList.add('show');
+  const kh=document.getElementById('keyHint');kh.classList.add('show');
+  // 自动播放开场驶入（站点0的anim），从黑到停稳
+  playing=true; cur=-1;
+  showFrame('coming',0);
+  const a=STATIONS[0].anim, t0=Date.now();
+  (function step(){
+    const k=Math.min(1,(Date.now()-t0)/a.dur);
+    showFrame('coming', k*(a.to-a.from)+a.from);
+    setCaption('arrival', k>0.78);
+    if(k<1)requestAnimationFrame(step);
+    else{ cur=0; playing=false; settleStation(0);
+      setTimeout(()=>kh.classList.remove('show'),5000); }
+  })();
+});
+
+// 预览首帧
+const f0=new Image();f0.onload=()=>drawCover(f0);f0.src=framePath('coming',1);
+</script>
+</body>
+</html>

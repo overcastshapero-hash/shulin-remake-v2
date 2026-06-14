@@ -1,0 +1,18 @@
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/remake-v2/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/base/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/sections/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/showcase-assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/game/*
+  Cache-Control: public, max-age=0, must-revalidate
+

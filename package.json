@@ -1,0 +1,12 @@
+{
+  "name": "shulin-remake-v2-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npx serve . -l 4173",
+    "deploy:cloudflare": "npx wrangler pages deploy . --project-name shulin-remake-v2",
+    "deploy:netlify": "npx netlify deploy --dir .",
+    "deploy:netlify:prod": "npx netlify deploy --dir . --prod"
+  }
+}
+

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#65d6ff">
+  <title>树苗星球冲刺</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2365d6ff'/%3E%3Ccircle cx='32' cy='38' r='14' fill='%234ccc62' stroke='%2312213d' stroke-width='5'/%3E%3Cellipse cx='23' cy='22' rx='11' ry='17' fill='%2363e17a' stroke='%2312213d' stroke-width='5'/%3E%3Cellipse cx='41' cy='22' rx='11' ry='17' fill='%2363e17a' stroke='%2312213d' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="preload" href="../base/fonts/noto-sans-sc-900-gb.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../base/fonts/noto-sans-sc-400-gb.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../base/fonts/archivo-latin-900.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../base/fonts/space-mono-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="game-shell" aria-label="树苗星球冲刺">
+    <canvas id="game" aria-label="游戏画布"></canvas>
+
+    <section class="topbar" aria-label="游戏状态">
+      <a class="brand" href="../index.html">树成林</a>
+      <div class="scoreline">
+        <span>分数 <b id="score">000000</b></span>
+        <span>最高 <b id="best">000000</b></span>
+        <span>连击 <b id="combo">x1</b></span>
+      </div>
+      <div class="actions">
+        <button id="soundBtn" type="button" aria-pressed="false">音效</button>
+        <button id="pauseBtn" type="button">暂停</button>
+      </div>
+    </section>
+
+    <aside class="mission" aria-label="任务">
+      <p>任务</p>
+      <strong id="missionText">收集星核，躲开巡逻块。</strong>
+      <div class="energy" aria-label="能量">
+        <i id="energyBar"></i>
+      </div>
+    </aside>
+
+    <section class="center-card" id="startPanel" aria-label="开始游戏">
+      <p class="eyebrow">SPROUT PLANET</p>
+      <h1>树苗星球冲刺</h1>
+      <p>用方向键或 WASD 移动，空格冲刺。吃星核，攒满能量进入 Fever。</p>
+      <div class="button-row">
+        <button id="startBtn" type="button">开始</button>
+        <button id="howBtn" type="button">玩法</button>
+      </div>
+    </section>
+
+    <section class="center-card is-hidden" id="howPanel" aria-label="玩法说明">
+      <p class="eyebrow">HOW TO PLAY</p>
+      <h2>轻、快、别贪。</h2>
+      <p>连续收集会涨连击。碰到巡逻块会掉一颗心，Fever 期间可以撞碎它们。</p>
+      <div class="button-row">
+        <button id="playFromHowBtn" type="button">开玩</button>
+        <button id="backBtn" type="button">返回</button>
+      </div>
+    </section>
+
+    <section class="center-card is-hidden" id="endPanel" aria-label="游戏结束">
+      <p class="eyebrow">RESULT</p>
+      <h2 id="endTitle">漂亮。</h2>
+      <p id="endText">本局分数 0。</p>
+      <div class="button-row">
+        <button id="restartBtn" type="button">再来</button>
+        <a href="../index.html">回手册站</a>
+      </div>
+    </section>
+
+    <div class="mobile-pad" aria-hidden="true">
+      <div class="stick" id="stick"><i></i></div>
+      <button id="dashTouch" type="button">冲刺</button>
+    </div>
+
+    <p class="hint">WASD / 方向键移动，Space 冲刺，P 暂停，R 重开</p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

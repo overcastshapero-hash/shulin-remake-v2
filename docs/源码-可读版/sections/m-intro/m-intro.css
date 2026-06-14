@@ -1,0 +1,92 @@
+/* ============================================================
+   m-intro.css — 00 序章(窗口 A,第三轮整改版)
+   流程:黑幕计数(真实预载)→ 红幕上切 → FIRST EDUCATION
+   scramble → hold → 2px 中缝悬念 → 红幕睁眼退场 → 品牌幕。
+   本 section 不占滚动行程(height:0,纯覆盖层仪式)。
+   巨字段已拆出为独立 sections/m-slogan/。
+   只动 transform/opacity;缓动 var(--fx-ease);前缀 m-intro。
+   ============================================================ */
+
+.m-intro{position:relative;height:0;}
+
+/* ---------- 加载计数幕(黑) ---------- */
+.m-intro__loader{
+  position:fixed;inset:0;z-index:960;
+  background:var(--fx-k);color:var(--fx-w);
+  padding:var(--fx-pad);
+  display:block;
+}
+.m-intro__loader-tag{
+  position:absolute;top:var(--fx-pad);left:var(--fx-pad);
+  color:var(--fx-g);
+}
+.m-intro__count{
+  position:absolute;right:var(--fx-pad);bottom:calc(var(--fx-pad) - .08em);
+  font-family:var(--fx-mono);font-weight:700;
+  font-size:clamp(96px,17vw,240px);
+  line-height:.9;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+}
+.m-intro__facts{
+  position:absolute;left:var(--fx-pad);bottom:var(--fx-pad);
+  height:1.7em;width:min(560px,70vw);
+  overflow:hidden;
+}
+.m-intro__fact{
+  position:absolute;top:0;left:0;
+  display:block;
+  will-change:transform;
+}
+
+/* ---------- 红幕(开场幕 = 跳色白名单;Reform Collective 式) ----------
+   初始位移由 JS gsap.set 管理(yPercent),CSS 只负责 visibility 防闪。
+   勿在 CSS 里写 transform 初始值:GSAP 会把它解析成像素残留量。 */
+.m-intro__red{
+  position:fixed;inset:0;z-index:970;
+  visibility:hidden;
+  will-change:transform;
+}
+/* 上下两块红色半屏:各高 50%+1px,合拢时中线重叠 2px 无缝;
+   悬念时各退 2px 露中缝,再 yPercent 睁眼退场 */
+.m-intro__red-lid{
+  position:absolute;left:0;right:0;height:calc(50% + 1px);
+  background:var(--fx-r);
+  will-change:transform;
+}
+.m-intro__red-lid--top{top:0;}
+.m-intro__red-lid--bot{bottom:0;}
+/* 公司 wordmark:黑色大字,scramble 字符翻动 */
+.m-intro__word{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  margin:0;
+  font-family:var(--fx-sans);font-weight:900;
+  font-size:clamp(40px,8.2vw,124px);
+  letter-spacing:-.04em;line-height:1;
+  color:var(--fx-k);
+  white-space:nowrap;
+  opacity:0;
+}
+.m-intro__word .m-intro__word-ch{display:inline-block;min-width:.62em;text-align:center;}
+
+/* ---------- 仪式期遮蔽固定 UI ----------
+   红幕上 difference 会泛青:loader/红幕期间隐藏一切固定 UI
+   (含总装 v2-nav,它自行 is-on 不等仪式),睁眼时摘类淡入。 */
+html.m-intro-ritual .v2-nav,
+html.m-intro-ritual [data-fx-chrome]{
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+
+/* ---------- reduced-motion / qa / 无JS:直接显示 ---------- */
+html:not(.fx-js) .m-intro__loader,
+html:not(.fx-js) .m-intro__red,
+.fx-reduced .m-intro__loader,
+.fx-reduced .m-intro__red,
+.m-intro--skip .m-intro__loader,
+.m-intro--skip .m-intro__red{display:none;}
+
+@media (max-width:760px){
+  .m-intro__count{font-size:clamp(80px,22vw,160px);}
+  .m-intro__word{font-size:clamp(28px,9.5vw,72px);}
+}

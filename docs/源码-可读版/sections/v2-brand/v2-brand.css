@@ -1,0 +1,19 @@
+/* v2-brand v3:电影底 + 纯白「树成林」(镂空方案已废) */
+.v2-brand{position:relative;height:150vh;background:#000;color:#fff;}
+.v2-brand__stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.v2-brand__bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;visibility:hidden;}
+.v2-brand__veil{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,.25) 0%,rgba(0,0,0,.78) 78%,#000 100%);}
+.v2-brand__lockup{position:relative;text-align:center;padding:0 24px;}
+.v2-brand__row{display:flex;justify-content:center;gap:.06em;font-size:clamp(5.5rem,17vw,15.5rem);}
+.v2-brand__chwrap{display:inline-block;overflow:hidden;line-height:1.08;}
+.v2-brand__ch{display:inline-block;font-weight:900;color:#fff;will-change:transform;text-shadow:0 6px 60px rgba(0,0,0,.65);}
+.v2-brand__line{width:120px;height:4px;background:#E32B16;margin:20px auto 30px;transform:scaleX(0);transform-origin:center;}
+.v2-brand__subwrap{overflow:hidden;}
+.v2-brand__sub{margin:0;font-weight:400;font-size:clamp(.95rem,1.7vw,1.35rem);letter-spacing:.35em;text-indent:.35em;transform:translateY(110%);will-change:transform;}
+.v2-brand__mono{margin:22px 0 0;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;opacity:0;}
+/* 静态退化 */
+.v2-brand.is-static .v2-brand__bg{display:none;}
+.v2-brand.is-static .v2-brand__ch{transform:none;}
+.v2-brand.is-static .v2-brand__line{transform:scaleX(1);}
+.v2-brand.is-static .v2-brand__sub{transform:none;}
+.v2-brand.is-static .v2-brand__mono{opacity:1;}

@@ -1,0 +1,3150 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>把注意力放回自己身上 — 一份手稿</title>
+<meta name="description" content="一份关于注意力、身体、复利、杠杆、AI 与世界观的手稿。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,700&family=Ma+Shan+Zheng&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================================
+     TOKENS
+     ========================================================================= */
+  :root{
+    --paper:#ffffff;
+    --paper-tone:#fafaf8;     /* faintest off-white for dividers */
+    --ink:#0a0a0a;
+    --ink-2:#161616;
+    --ink-soft:#2a2a2a;
+    --ink-mute:#5a5a5a;
+    --ink-faint:#9a9a9a;
+    --ink-ghost:#cfcfcf;
+    --ink-trace:#ececec;
+    --rule:#e5e3df;
+    --vermilion:#c1272d;
+    --vermilion-d:#9c1c21;
+
+    --serif:'Noto Serif SC', 'Songti SC', 'STSong', serif;
+    --latin:'Fraunces', 'EB Garamond', Georgia, serif;
+    --brush:'Ma Shan Zheng', 'Noto Serif SC', serif;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+
+    --col: 720px;
+    --col-wide: 1080px;
+    --col-narrow: 580px;
+
+    --t-fast: 220ms cubic-bezier(.4,.14,.3,1);
+    --t-mid: 480ms cubic-bezier(.4,.14,.3,1);
+    --t-slow: 1100ms cubic-bezier(.18,.62,.18,1);
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font:400 18px/1.85 var(--serif);
+    font-feature-settings:"palt" 1, "kern" 1;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  ::selection{background:var(--ink);color:var(--paper)}
+
+  /* faint paper texture — extremely subtle */
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    pointer-events:none;
+    z-index:1;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0 0.025'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode:multiply;
+    opacity:.65;
+  }
+
+  /* =========================================================================
+     CHROME (top-left wordmark, top-right counter, menu)
+     ========================================================================= */
+  .chrome{
+    position:fixed;top:0;left:0;right:0;
+    z-index:50;
+    padding:22px 32px;
+    display:flex;justify-content:space-between;align-items:center;
+    pointer-events:none;
+    color:var(--ink);
+    transition: color var(--t-mid);
+  }
+  .chrome.on-dark{color:#fff}
+  .chrome > *{pointer-events:auto}
+  .wordmark{
+    font:500 12px/1 var(--latin);
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:inherit;
+  }
+  .wordmark em{font-style:italic;font-weight:300;opacity:.6}
+  .counter{
+    font:400 11px/1 var(--latin);
+    letter-spacing:.2em;
+    color:inherit;
+    font-feature-settings:"tnum" 1;
+    display:flex;gap:14px;align-items:center;
+  }
+  .counter .ch-now{font-weight:600;font-style:italic}
+  .counter .ch-of{opacity:.5}
+  .menu-btn{
+    background:transparent;
+    border:1px solid currentColor;
+    color:inherit;
+    font:500 11px/1 var(--latin);letter-spacing:.22em;
+    padding:9px 16px;cursor:pointer;
+    text-transform:uppercase;
+    transition: background var(--t-fast), color var(--t-fast);
+  }
+  .chrome:not(.on-dark) .menu-btn:hover{background:var(--ink);color:var(--paper)}
+  .chrome.on-dark .menu-btn:hover{background:#fff;color:var(--ink)}
+  .thread.on-dark::before{background:#fff}
+
+  /* progress thread */
+  .thread{
+    position:fixed;top:0;left:0;right:0;height:1px;
+    background:transparent;z-index:60;pointer-events:none;
+  }
+  .thread::before{
+    content:"";position:absolute;top:0;left:0;height:100%;
+    width:var(--p,0%);
+    background:var(--ink);
+    transition:width 80ms linear;
+  }
+
+  /* =========================================================================
+     TOC — minimalist drawer
+     ========================================================================= */
+  .toc{
+    position:fixed;inset:0;z-index:80;
+    background:var(--paper);
+    padding:120px 8vw 80px;
+    display:none;
+    overflow-y:auto;
+  }
+  .toc.open{display:block}
+  .toc-grid{
+    max-width:1200px;margin:0 auto;
+    display:grid;grid-template-columns:1fr 1fr;gap:60px 80px;
+  }
+  .toc h2{
+    font:300 13px/1 var(--latin);letter-spacing:.3em;
+    text-transform:uppercase;color:var(--ink-mute);
+    margin:0 0 28px;
+  }
+  .toc-list{list-style:none;padding:0;margin:0}
+  .toc-list li{
+    display:flex;gap:18px;align-items:baseline;
+    padding:14px 0;border-bottom:1px solid var(--rule);
+  }
+  .toc-list a{
+    color:var(--ink);text-decoration:none;
+    font:500 22px/1.4 var(--serif);
+    flex:1;
+    transition:color var(--t-fast), padding var(--t-fast);
+  }
+  .toc-list a:hover{color:var(--vermilion);padding-left:8px}
+  .toc-num{
+    font:400 11px/1 var(--latin);
+    letter-spacing:.18em;color:var(--ink-faint);
+    font-feature-settings:"tnum" 1;
+    min-width:38px;
+  }
+  .toc-close{
+    position:absolute;top:30px;right:32px;
+    background:none;border:none;cursor:pointer;
+    font:500 11px/1 var(--latin);letter-spacing:.22em;
+    color:var(--ink);text-transform:uppercase;
+  }
+
+  /* =========================================================================
+     LAYOUT PRIMITIVES
+     ========================================================================= */
+  .stage{
+    position:relative;z-index:2;
+    padding:0 32px;
+  }
+  .col{
+    max-width:var(--col);margin:0 auto;
+  }
+  .col-wide{max-width:var(--col-wide);margin:0 auto}
+  .col-narrow{max-width:var(--col-narrow);margin:0 auto}
+
+  /* full-bleed scene container */
+  .scene{
+    position:relative;
+    min-height:100vh;
+    padding:140px 32px;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+
+  /* a "spread" — two-column editorial */
+  .spread{
+    display:grid;grid-template-columns:1fr 1fr;gap:80px;
+    align-items:start;
+  }
+
+  /* fine rule */
+  .rule{
+    height:1px;background:var(--rule);
+    margin:80px auto;width:60%;
+  }
+
+  /* =========================================================================
+     TYPOGRAPHY
+     ========================================================================= */
+  .eyebrow{
+    font:400 11px/1 var(--latin);
+    letter-spacing:.32em;
+    text-transform:uppercase;
+    color:var(--ink-mute);
+    margin:0 0 28px;
+    display:flex;gap:14px;align-items:center;
+  }
+  .eyebrow::before{
+    content:"";width:24px;height:1px;background:var(--ink-mute);
+  }
+  .eyebrow .vm{color:var(--vermilion)}
+
+  .chapter-num{
+    font:300 13px/1 var(--latin);
+    letter-spacing:.4em;
+    color:var(--ink-faint);
+    font-feature-settings:"tnum" 1;
+  }
+  .chapter-title{
+    font:500 clamp(40px, 7vw, 92px) / 1.1 var(--serif);
+    letter-spacing:-.01em;
+    margin:24px 0 0;
+    color:var(--ink);
+  }
+  .chapter-title em{
+    font-family:var(--latin);font-style:italic;font-weight:400;
+    color:var(--ink-mute);
+  }
+
+  .lede{
+    font:400 clamp(22px, 2.4vw, 30px) / 1.55 var(--serif);
+    color:var(--ink-soft);
+    margin:48px 0 0;
+    max-width:680px;
+  }
+
+  .body p{
+    margin:0 0 1.2em;
+    font:400 19px/1.95 var(--serif);
+    color:var(--ink-2);
+  }
+  .body p.lift{
+    font-size:21px;line-height:1.85;color:var(--ink);
+  }
+  .body strong{
+    font-weight:600;
+    background:linear-gradient(transparent 60%, rgba(193,39,45,.12) 60%);
+  }
+  .body em{
+    font-style:italic;color:var(--ink-soft);
+    font-family:var(--latin);font-weight:400;
+  }
+
+  /* drop cap */
+  .body.lead > p:first-of-type::first-letter{
+    float:left;
+    font:600 76px/.85 var(--serif);
+    margin:6px 14px 0 -2px;
+    color:var(--ink);
+  }
+
+  /* large pull quote */
+  .pull{
+    font:500 clamp(34px, 5vw, 64px) / 1.18 var(--serif);
+    letter-spacing:-.005em;
+    margin:60px auto;
+    max-width:880px;
+    color:var(--ink);
+    text-wrap:balance;
+  }
+  .pull--center{text-align:center}
+  .pull .vm{color:var(--vermilion)}
+  .pull .mute{color:var(--ink-faint)}
+
+  /* sidenote */
+  .sidenote{
+    font:400 14px/1.7 var(--latin);
+    color:var(--ink-mute);
+    border-left:1px solid var(--ink-trace);
+    padding:6px 0 6px 18px;
+    margin:36px 0;
+  }
+
+  /* small italic latin label */
+  .label-en{
+    font:300 italic 14px/1 var(--latin);
+    letter-spacing:.05em;color:var(--ink-faint);
+  }
+
+  /* =========================================================================
+     REVEAL (subtle — content matters more than effect)
+     ========================================================================= */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity 900ms ease, transform 900ms cubic-bezier(.18,.62,.18,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .stagger > *{opacity:0;transform:translateY(10px);transition:opacity 700ms ease, transform 700ms cubic-bezier(.18,.62,.18,1);}
+  .stagger.in > *{opacity:1;transform:none;}
+  .stagger.in > *:nth-child(1){transition-delay:0ms}
+  .stagger.in > *:nth-child(2){transition-delay:90ms}
+  .stagger.in > *:nth-child(3){transition-delay:180ms}
+  .stagger.in > *:nth-child(4){transition-delay:270ms}
+  .stagger.in > *:nth-child(5){transition-delay:360ms}
+  .stagger.in > *:nth-child(6){transition-delay:450ms}
+  .stagger.in > *:nth-child(7){transition-delay:540ms}
+  .stagger.in > *:nth-child(8){transition-delay:630ms}
+
+  @media (prefers-reduced-motion:reduce){
+    .reveal,.stagger>*{opacity:1;transform:none;transition:none}
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+  }
+
+  /* =========================================================================
+     COVER / PROLOGUE
+     ========================================================================= */
+  .cover{
+    position:relative;
+    min-height:100vh;
+    padding:0 32px;
+    display:grid;
+    grid-template-rows:1fr auto 1fr;
+    overflow:hidden;
+  }
+  .cover-meta{
+    align-self:start;padding-top:120px;
+    display:flex;justify-content:space-between;align-items:flex-start;
+    max-width:1400px;margin:0 auto;width:100%;
+  }
+  .cover-meta .left{font:400 12px/1.6 var(--latin);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute)}
+  .cover-meta .left strong{color:var(--ink);font-weight:500;display:block;margin-top:6px}
+  .cover-meta .right{font:400 italic 13px/1.6 var(--latin);color:var(--ink-mute);text-align:right}
+
+  .cover-center{
+    align-self:center;text-align:center;
+    max-width:1100px;margin:0 auto;
+    padding:40px 0;
+  }
+  .cover-mark{
+    font:400 12px/1 var(--latin);letter-spacing:.4em;
+    text-transform:uppercase;color:var(--ink-mute);
+    margin-bottom:36px;
+  }
+  .cover-title{
+    font:600 clamp(56px, 11vw, 168px) / .98 var(--serif);
+    letter-spacing:-.02em;
+    margin:0;
+    color:var(--ink);
+  }
+  .cover-title .ln{display:block}
+  .cover-title .ln-2{
+    text-indent:2.5em;
+    color:var(--ink-soft);
+  }
+  .cover-sub{
+    margin:48px auto 0;
+    max-width:540px;
+    font:400 italic 19px/1.7 var(--latin);
+    color:var(--ink-mute);
+  }
+  .cover-sub::before,.cover-sub::after{
+    content:"——";color:var(--ink-faint);margin:0 .4em;font-style:normal;
+  }
+
+  .cover-foot{
+    align-self:end;padding-bottom:60px;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    max-width:1400px;margin:0 auto;width:100%;
+    font:400 11px/1.6 var(--latin);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute);
+  }
+  .cover-foot .scroll-cue{
+    display:flex;align-items:center;gap:10px;
+  }
+  .cover-foot .scroll-cue::before{
+    content:"";display:block;width:1px;height:36px;
+    background:var(--ink-faint);
+    animation:cueBreath 2.4s ease-in-out infinite;
+  }
+  @keyframes cueBreath{
+    0%,100%{transform:scaleY(.4);transform-origin:top;opacity:.4}
+    50%{transform:scaleY(1);opacity:1}
+  }
+
+  /* =========================================================================
+     TABLE OF FOUNDATIONS — the small "整理线索" map at top
+     ========================================================================= */
+  .foundation{
+    padding:140px 32px 100px;
+    background:var(--paper);
+  }
+  .foundation-inner{
+    max-width:1100px;margin:0 auto;
+  }
+  .foundation h3{
+    font:500 14px/1 var(--latin);letter-spacing:.32em;
+    text-transform:uppercase;color:var(--ink-mute);
+    margin:0 0 56px;
+  }
+  .foundation h3::before{
+    content:"§ ";color:var(--ink-faint);
+  }
+  .foundation-grid{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;
+    border-top:1px solid var(--ink);
+    border-bottom:1px solid var(--ink);
+  }
+  .foundation-cell{
+    padding:48px 36px 56px;
+    border-right:1px solid var(--rule);
+    position:relative;
+  }
+  .foundation-cell:last-child{border-right:none}
+  .foundation-cell .role{
+    font:400 italic 13px/1 var(--latin);
+    color:var(--vermilion);letter-spacing:.05em;
+    margin-bottom:24px;
+  }
+  .foundation-cell .items{
+    font:500 26px/1.4 var(--serif);
+    color:var(--ink);
+    margin:0 0 20px;
+  }
+  .foundation-cell .items .pt{display:block}
+  .foundation-cell .items .pt + .pt{margin-top:6px}
+  .foundation-cell .gloss{
+    font:400 14px/1.7 var(--serif);
+    color:var(--ink-mute);
+    margin:0;
+  }
+  .foundation-arrow{
+    text-align:center;
+    margin-top:48px;
+    font:400 italic 16px/1.6 var(--latin);
+    color:var(--ink-mute);
+  }
+  .foundation-arrow strong{
+    display:block;margin-top:16px;
+    font:600 36px/1.2 var(--serif);
+    color:var(--ink);font-style:normal;letter-spacing:-.01em;
+  }
+  .foundation-arrow strong .vm{color:var(--vermilion)}
+
+  /* =========================================================================
+     CHAPTER-OPENER — full-bleed left page / right page editorial
+     ========================================================================= */
+  .ch-opener{
+    min-height:90vh;
+    padding:160px 32px 100px;
+    border-top:1px solid var(--ink);
+  }
+  .ch-opener-inner{
+    max-width:1180px;margin:0 auto;
+    display:grid;grid-template-columns:120px 1fr;gap:80px;
+  }
+  .ch-spine{
+    border-right:1px solid var(--rule);
+    padding-right:24px;
+    font:400 11px/1.4 var(--latin);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-mute);
+  }
+  .ch-spine .roman{
+    display:block;
+    font:300 64px/1 var(--latin);
+    color:var(--ink);
+    margin-bottom:20px;
+    letter-spacing:0;
+    font-feature-settings:"lnum" 1;
+  }
+  .ch-spine .of{color:var(--ink-faint);margin-top:14px;display:block}
+
+  .ch-opener-body{padding-left:0}
+  .ch-opener-body .kicker{
+    font:400 italic 16px/1.5 var(--latin);
+    color:var(--vermilion);
+    letter-spacing:.02em;
+    margin:0 0 24px;
+  }
+  .ch-opener-body h2{
+    font:500 clamp(48px, 8vw, 108px) / 1.05 var(--serif);
+    letter-spacing:-.015em;
+    margin:0;color:var(--ink);
+    text-wrap:balance;
+  }
+  .ch-opener-body h2 em{
+    font-family:var(--latin);font-style:italic;font-weight:400;
+    color:var(--ink-mute);
+  }
+  .ch-opener-body h2 .vm{color:var(--vermilion)}
+  .ch-opener-body .thesis{
+    margin:64px 0 0;max-width:760px;
+    font:400 22px/1.7 var(--serif);
+    color:var(--ink-soft);
+  }
+
+  /* =========================================================================
+     IMPACT — full-bleed金句屏 (the screenshot moments)
+     The most important screens in the document. Each is a separate room.
+     ========================================================================= */
+  .impact{
+    position:relative;
+    min-height:100vh;
+    padding:14vh 32px 14vh;
+    display:flex;flex-direction:column;justify-content:center;
+    overflow:hidden;
+    border-top:1px solid transparent;
+  }
+  .impact--light{ background:var(--paper); color:var(--ink) }
+  .impact--dark{
+    background:var(--ink); color:var(--paper);
+    border-top-color:transparent;
+  }
+  .impact--dark::before{
+    content:"";position:absolute;inset:0;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' seed='8'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.04'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode:screen;opacity:.5;pointer-events:none;
+  }
+  .impact-inner{
+    max-width:1280px;margin:0 auto;width:100%;
+    position:relative;z-index:2;
+  }
+  .impact-top{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    margin-bottom:8vh;
+    font:400 11px/1 var(--latin);
+    letter-spacing:.28em;text-transform:uppercase;
+    opacity:.5;
+  }
+  .impact--dark .impact-top{opacity:.55}
+  .impact-top .left{display:flex;align-items:center;gap:14px}
+  .impact-top .left::before{
+    content:"";display:inline-block;width:32px;height:1px;
+    background:currentColor;
+  }
+  .impact-top .right{font-style:italic;letter-spacing:.05em;text-transform:none;opacity:.7}
+
+  .impact-line{
+    font:600 clamp(56px, 11vw, 168px) / .98 var(--serif);
+    letter-spacing:-.025em;
+    margin:0;
+    text-wrap:balance;
+  }
+  .impact-line .vm{
+    color:var(--vermilion);
+    font-weight:700;
+  }
+  .impact-line .ghost{
+    color:var(--ink-faint);
+    font-weight:500;
+    font-style:italic;
+    font-family:var(--latin);
+  }
+  .impact--dark .impact-line .ghost{color:rgba(255,255,255,.32)}
+  .impact-line .small{
+    font-size:.42em;font-weight:400;letter-spacing:0;
+    color:var(--ink-mute);font-family:var(--latin);font-style:italic;
+    display:inline-block;vertical-align:middle;
+  }
+  .impact--dark .impact-line .small{color:rgba(255,255,255,.5)}
+
+  /* impact bottom — the dense info row */
+  .impact-bot{
+    margin-top:10vh;
+    display:grid;grid-template-columns:1fr 1fr;gap:60px;
+    align-items:end;
+  }
+  .impact-bot .meta{
+    font:400 13px/1.7 var(--latin);
+    color:var(--ink-mute);
+    max-width:380px;
+    border-left:1px solid var(--ink-trace);
+    padding-left:18px;
+  }
+  .impact--dark .impact-bot .meta{
+    color:rgba(255,255,255,.55);
+    border-left-color:rgba(255,255,255,.18);
+  }
+  .impact-bot .meta strong{
+    display:block;color:var(--ink);font-weight:500;margin-bottom:6px;
+    text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  }
+  .impact--dark .impact-bot .meta strong{color:#fff}
+
+  .impact-bot .seal{
+    justify-self:end;
+    display:flex;align-items:center;gap:14px;
+    font:400 italic 12px/1.4 var(--latin);
+    color:var(--ink-mute);letter-spacing:.06em;
+  }
+  .impact--dark .impact-bot .seal{color:rgba(255,255,255,.5)}
+  .impact-bot .seal-mark{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:54px;height:54px;
+    border:1.5px solid var(--vermilion);
+    color:var(--vermilion);
+    font:400 28px/1 var(--brush);
+    transform:rotate(-4deg);
+  }
+
+  /* impact: countered double-screen (60↓/60↑) */
+  .impact-pair{
+    display:grid;grid-template-columns:1fr 1fr;
+    min-height:100vh;
+    border-top:1px solid var(--ink);
+  }
+  .impact-pair > div{
+    padding:14vh 4vw;
+    display:flex;flex-direction:column;justify-content:center;
+    position:relative;
+  }
+  .impact-pair > .left{ background:var(--paper); color:var(--ink); border-right:1px solid var(--ink) }
+  .impact-pair > .right{ background:var(--ink); color:var(--paper); position:relative; overflow:hidden }
+  .impact-pair > .right::before{
+    content:"";position:absolute;inset:0;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.04'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode:screen;opacity:.4;pointer-events:none;
+  }
+  .impact-pair > div > *{position:relative;z-index:2}
+  .pair-tag{
+    font:400 11px/1 var(--latin);letter-spacing:.28em;
+    text-transform:uppercase;color:var(--ink-mute);
+    margin-bottom:32px;
+  }
+  .impact-pair > .right .pair-tag{color:rgba(255,255,255,.55)}
+  .pair-tag .vm{color:var(--vermilion)}
+  .pair-num{
+    font:300 clamp(140px, 20vw, 280px) / .85 var(--latin);
+    color:var(--ink);
+    margin:0 0 24px;
+    letter-spacing:-.04em;
+    font-feature-settings:"lnum" 1;
+  }
+  .impact-pair > .right .pair-num{
+    color:#fff;
+    text-shadow: 0 0 60px rgba(193,39,45,.18);
+  }
+  .pair-num .unit{
+    font-size:.18em;color:var(--ink-mute);font-weight:300;font-style:italic;
+    margin-left:.2em;font-family:var(--latin);vertical-align:.6em;
+  }
+  .impact-pair > .right .pair-num .unit{color:rgba(255,255,255,.5)}
+  .pair-headline{
+    font:500 clamp(28px, 3.5vw, 44px) / 1.2 var(--serif);
+    margin:0 0 32px;letter-spacing:-.005em;
+    text-wrap:balance;
+  }
+  .impact-pair > .right .pair-headline em,
+  .impact-pair > .right .pair-headline .vm{color:var(--vermilion);font-style:italic;font-family:var(--latin);font-weight:500}
+  .impact-pair > .left .pair-headline em{color:var(--ink-mute);font-style:italic;font-family:var(--latin)}
+  .pair-copy{
+    font:400 16px/1.85 var(--serif);
+    max-width:420px;
+  }
+  .impact-pair > .left .pair-copy{color:var(--ink-soft)}
+  .impact-pair > .right .pair-copy{color:rgba(255,255,255,.78)}
+
+  /* impact: marker label that appears top-right */
+  .impact-marker{
+    position:absolute;top:32px;right:32px;
+    font:400 11px/1.4 var(--latin);
+    letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-mute);text-align:right;
+    z-index:3;
+  }
+  .impact--dark .impact-marker{color:rgba(255,255,255,.55)}
+  .impact-marker strong{display:block;color:var(--ink);font-weight:500;margin-top:4px;font-size:13px;letter-spacing:.1em}
+  .impact--dark .impact-marker strong{color:#fff}
+
+  /* impact line variants */
+  .impact--center .impact-line{ text-align:center }
+  .impact--right .impact-line{ text-align:right }
+
+  /* citation underneath */
+  .impact-cite{
+    margin-top:6vh;
+    display:flex;align-items:flex-start;gap:24px;
+    font:400 italic 15px/1.6 var(--latin);
+    color:var(--ink-mute);
+    max-width:600px;
+  }
+  .impact-cite::before{
+    content:"";display:block;width:32px;height:1px;
+    background:currentColor;flex-shrink:0;margin-top:.7em;
+  }
+  .impact--dark .impact-cite{color:rgba(255,255,255,.6)}
+
+  /* IP marksman impact — bilingual stack */
+  .impact-stack .impact-line{ display:block; line-height:.95 }
+  .impact-stack .impact-line + .impact-line{ margin-top:.18em }
+  .impact-stack .latin{
+    font-family:var(--latin);font-style:italic;font-weight:400;
+    font-size:clamp(36px, 5.5vw, 80px);
+    color:var(--ink-mute);
+    letter-spacing:0;
+    margin-top:.4em;
+  }
+  .impact--dark .impact-stack .latin{color:rgba(255,255,255,.4)}
+
+  /* AI judgment impact — punctuation symbol */
+  .impact-punct{
+    display:inline-block;
+    font:300 1em/1 var(--latin);
+    color:var(--vermilion);
+    margin-right:.1em;
+    transform:translateY(-.05em);
+  }
+
+  /* =========================================================================
+     INSTALLATION 1 — the attention thieves (chapter 1)
+     ========================================================================= */
+  .inst-thieves{
+    position:relative;
+    min-height:100vh;
+    padding:120px 32px;
+    overflow:hidden;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .thieves-stage{
+    position:relative;
+    max-width:1180px;margin:0 auto;width:100%;
+    min-height:560px;
+  }
+  .thieves-anchor{
+    position:relative;z-index:3;
+    text-align:center;
+    pointer-events:none;
+  }
+  .thieves-anchor .you{
+    font:500 clamp(120px, 20vw, 260px) / .9 var(--serif);
+    letter-spacing:-.03em;
+    color:var(--ink);
+    margin:0;
+  }
+  .thieves-anchor .label{
+    margin-top:24px;
+    font:400 italic 16px/1.4 var(--latin);
+    color:var(--ink-mute);
+  }
+  .thief{
+    position:absolute;
+    font:500 var(--sz, 24px)/1 var(--serif);
+    color:rgba(10,10,10,.55);
+    white-space:nowrap;
+    opacity:0;
+    pointer-events:auto;
+    will-change:transform,opacity;
+    cursor:crosshair;
+    user-select:none;
+    transition: color 200ms ease, transform 200ms cubic-bezier(.18,.62,.18,1);
+  }
+  .thief.go{
+    animation: thiefSweep var(--dur, 7s) var(--delay, 0s) cubic-bezier(.55,.06,.27,.98) infinite;
+  }
+  .thief:hover{
+    color:var(--vermilion);
+    transform: translate(var(--cx), var(--cy)) rotate(0deg) scale(1.15);
+  }
+  .thief.caught{
+    animation:none !important;
+    pointer-events:none;
+    color:var(--ink) !important;
+    font-weight:700 !important;
+    opacity:1 !important;
+    transition: all 600ms cubic-bezier(.18,.62,.18,1);
+  }
+  @keyframes thiefSweep{
+    0%{ transform: translate(var(--x0),var(--y0)) rotate(var(--r0)); opacity:0 }
+    8%{ opacity:.7 }
+    50%{ transform: translate(var(--x1),var(--y1)) rotate(var(--r1)); opacity:.6 }
+    92%{ opacity:0 }
+    100%{ transform: translate(var(--x2),var(--y2)) rotate(var(--r2)); opacity:0 }
+  }
+  .thieves-foot{
+    margin-top:64px;text-align:center;
+    font:400 italic 15px/1.5 var(--latin);
+    color:var(--ink-mute);
+  }
+  .thieves-counter{
+    position:absolute;top:0;right:0;
+    font:400 13px/1.4 var(--latin);
+    letter-spacing:.08em;
+    color:var(--ink-mute);
+    text-align:right;
+    font-feature-settings:"tnum" 1;
+  }
+  .thieves-counter strong{
+    display:block;color:var(--ink);font-weight:600;
+    font-size:32px;margin-top:4px;
+    font-family:var(--latin);font-style:italic;
+  }
+  .thieves-counter.full strong{color:var(--vermilion)}
+  .thieves-cta{
+    position:absolute;bottom:-100px;left:50%;transform:translateX(-50%);
+    text-align:center;
+    font:400 italic 14px/1.4 var(--latin);
+    color:var(--ink-mute);
+    opacity:0;
+    transition: opacity 600ms ease;
+  }
+  .thieves-cta.show{opacity:1}
+  .thieves-cta strong{
+    display:block;color:var(--vermilion);font-weight:600;
+    font-style:normal;font-family:var(--serif);font-size:22px;
+    margin-bottom:6px;letter-spacing:-.01em;
+  }
+
+  /* =========================================================================
+     PHONE FRAME (chapter 1, sub-installation: "你不是消费内容，是内容在消费你")
+     ========================================================================= */
+  .phone-spread{
+    display:grid;grid-template-columns:300px 1fr;gap:80px;align-items:center;
+    max-width:1100px;margin:80px auto;
+  }
+  .phone{
+    width:300px;height:600px;
+    border:2px solid var(--ink);
+    border-radius:36px;
+    padding:24px 12px 24px;
+    position:relative;
+    background:var(--paper);
+    overflow:hidden;
+  }
+  .phone::before{
+    content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    width:80px;height:6px;background:var(--ink);border-radius:3px;
+  }
+  .phone-feed{
+    position:absolute;top:48px;left:12px;right:12px;bottom:24px;
+    overflow:hidden;
+  }
+  .phone-feed-track{
+    display:flex;flex-direction:column;gap:14px;
+    animation:feedScroll 18s linear infinite;
+  }
+  @keyframes feedScroll{
+    0%{transform:translateY(0)}
+    100%{transform:translateY(-50%)}
+  }
+  .feed-card{
+    border:1px solid var(--rule);
+    padding:14px 14px 12px;
+    flex-shrink:0;
+  }
+  .feed-card .meta{
+    font:400 9px/1 var(--latin);letter-spacing:.16em;
+    color:var(--ink-mute);text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .feed-card .meta .vm{color:var(--vermilion)}
+  .feed-card .head{
+    font:500 13px/1.4 var(--serif);
+    color:var(--ink);
+    margin:0 0 10px;
+  }
+  .feed-card .stats{
+    font:400 10px/1 var(--latin);
+    color:var(--ink-faint);letter-spacing:.06em;
+    display:flex;gap:14px;
+  }
+
+  /* =========================================================================
+     INSTALLATION 2 — body energy slider (drag to change everything)
+     ========================================================================= */
+  .inst-energy{
+    position:relative;min-height:100vh;
+    padding:120px 32px 160px;
+    overflow:hidden;
+    /* exposed CSS vars driven by JS slider */
+    --e: 59;       /* 0–100 energy */
+    --e-norm: .59; /* 0–1 normalized */
+    --e-cold: 1;   /* 1 when below 60, 0 above */
+    --e-hot: 0;    /* 0 below 60, 1 above */
+    background:
+      linear-gradient(180deg,
+        rgba(255,255,255,1) 0%,
+        rgba(250,247,243, calc(var(--e-cold) * .6)) 100%);
+    transition: background 600ms ease;
+  }
+  .inst-energy.heated{
+    background:
+      linear-gradient(180deg,
+        rgba(255,255,255,1) 0%,
+        rgba(255,250,246, calc(var(--e-hot) * .8)) 100%);
+  }
+
+  .energy-stage{
+    max-width:1100px;margin:0 auto;
+    position:relative;
+  }
+  .energy-stage .pre{
+    font:400 italic 14px/1.6 var(--latin);
+    color:var(--ink-mute);
+    margin:14px 0 64px;
+    max-width:520px;
+  }
+  .energy-stage h3{
+    font:500 clamp(36px,5vw,56px)/1.15 var(--serif);
+    margin:0;color:var(--ink);
+    letter-spacing:-.01em;
+    text-wrap:balance;
+  }
+
+  /* main scrubber */
+  .energy-scrubber{
+    position:relative;
+    margin:80px 0 32px;
+    padding:0 0 80px;
+  }
+  .energy-track{
+    position:relative;
+    height:2px;background:var(--ink-trace);
+    margin:80px 0 0;
+  }
+  .energy-fill{
+    position:absolute;left:0;top:0;height:100%;
+    width:calc(var(--e) * 1%);
+    background: linear-gradient(90deg,
+      var(--ink) 0%,
+      var(--ink) 60%,
+      var(--vermilion) 100%);
+    transition: width 80ms linear;
+  }
+  /* tick marks */
+  .energy-ticks{
+    position:absolute;left:0;right:0;top:-20px;height:20px;
+    pointer-events:none;
+  }
+  .energy-tick{
+    position:absolute;top:0;
+    width:1px;height:8px;background:var(--ink-faint);
+  }
+  .energy-tick.major{height:14px;background:var(--ink-mute)}
+  .energy-tick-label{
+    position:absolute;top:18px;
+    transform:translateX(-50%);
+    font:400 10px/1 var(--latin);letter-spacing:.08em;
+    color:var(--ink-mute);
+    font-feature-settings:"tnum" 1;
+  }
+
+  /* the draggable handle */
+  .energy-handle{
+    position:absolute;top:50%;
+    transform:translate(-50%, -50%);
+    width:64px;height:64px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    cursor:grab;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow: 0 8px 24px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.05);
+    transition: transform 160ms cubic-bezier(.18,.62,.18,1), box-shadow 200ms;
+    z-index:3;
+    left:calc(var(--e) * 1%);
+    touch-action:none;
+  }
+  .energy-handle:hover{
+    transform:translate(-50%,-50%) scale(1.06);
+    box-shadow: 0 12px 32px rgba(0,0,0,.08);
+  }
+  .energy-handle:active,
+  .energy-handle.grabbing{
+    cursor:grabbing;
+    transform:translate(-50%,-50%) scale(1.1);
+    box-shadow: 0 0 0 6px rgba(193,39,45,.12), 0 12px 32px rgba(0,0,0,.1);
+  }
+  .energy-handle .h-num{
+    font:600 22px/1 var(--latin);
+    color:var(--ink);
+    font-feature-settings:"tnum" 1;
+    transition: color 200ms ease;
+  }
+  .inst-energy.heated .energy-handle{
+    border-color:var(--vermilion);
+  }
+  .inst-energy.heated .energy-handle .h-num{
+    color:var(--vermilion);
+  }
+
+  /* Live readout above handle */
+  .energy-readout{
+    position:absolute;top:-90px;
+    left:calc(var(--e) * 1%);
+    transform:translateX(-50%);
+    text-align:center;
+    pointer-events:none;
+    transition: left 80ms linear;
+  }
+  .energy-readout .label{
+    font:400 10px/1 var(--latin);letter-spacing:.22em;
+    color:var(--ink-mute);text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .energy-readout .big{
+    font:300 clamp(64px, 10vw, 120px)/1 var(--latin);
+    color:var(--ink);
+    letter-spacing:-.02em;
+    font-feature-settings:"tnum" 1;
+    transition: color 200ms ease;
+  }
+  .inst-energy.heated .energy-readout .big{color:var(--vermilion)}
+
+  /* anchor labels at 0, 60, 100 */
+  .energy-anchor{
+    position:absolute;top:36px;
+    transform:translateX(-50%);
+    font:400 11px/1.4 var(--latin);
+    letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-faint);
+    text-align:center;
+    pointer-events:none;
+  }
+  .energy-anchor strong{
+    display:block;color:var(--ink);font-weight:500;font-size:13px;
+    margin-top:4px;letter-spacing:.06em;text-transform:none;
+    font-style:italic;font-family:var(--latin);
+  }
+  .energy-anchor.threshold strong{color:var(--vermilion)}
+
+  /* the two states — both visible, opacity driven by --e-cold / --e-hot */
+  .energy-state{
+    display:grid;grid-template-columns:1fr 1fr;gap:80px;
+    margin-top:120px;
+    padding-top:48px;
+    border-top:1px solid var(--rule);
+    position:relative;
+  }
+  .energy-state::before{
+    content:"";position:absolute;top:48px;bottom:0;left:50%;
+    width:1px;background:var(--rule);
+  }
+  .energy-cell{
+    transition: opacity 240ms ease, transform 240ms ease, filter 240ms ease;
+  }
+  .energy-cell .label{
+    font:400 italic 12px/1 var(--latin);letter-spacing:.06em;
+    margin-bottom:16px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .energy-cell .label::before{
+    content:"";display:inline-block;width:18px;height:1px;background:currentColor;
+  }
+  .energy-cell.cold .label{color:var(--ink-mute)}
+  .energy-cell.hot .label{color:var(--vermilion)}
+  .energy-cell .head{
+    font:500 clamp(28px, 3.6vw, 40px)/1.18 var(--serif);
+    color:var(--ink);
+    margin:0 0 20px;
+    letter-spacing:-.005em;
+    text-wrap:balance;
+  }
+  .energy-cell .copy{
+    font:400 16px/1.8 var(--serif);
+    color:var(--ink-soft);
+    margin:0;
+  }
+  .energy-cell .copy .vm{color:var(--vermilion);font-weight:500}
+  .energy-cell.cold{
+    opacity: calc(.35 + var(--e-cold) * .65);
+    filter: saturate(calc(.4 + var(--e-cold) * .6));
+  }
+  .energy-cell.hot{
+    opacity: calc(.35 + var(--e-hot) * .65);
+    filter: saturate(calc(.4 + var(--e-hot) * .6));
+  }
+
+  /* state quote — appears when slider crosses 60 */
+  .energy-quote{
+    position:relative;
+    margin:80px auto 0;
+    max-width:780px;
+    text-align:center;
+    min-height:80px;
+  }
+  .energy-quote .a, .energy-quote .b{
+    position:absolute;left:0;right:0;top:0;
+    font:500 clamp(28px, 3.6vw, 42px) / 1.3 var(--serif);
+    color:var(--ink);
+    transition: opacity 280ms ease, transform 280ms ease;
+    text-wrap:balance;
+  }
+  .energy-quote .a{
+    opacity: var(--e-cold);
+    transform: translateY(calc(var(--e-hot) * 14px));
+  }
+  .energy-quote .b{
+    opacity: var(--e-hot);
+    transform: translateY(calc(var(--e-cold) * -14px));
+  }
+  .energy-quote .b strong{color:var(--vermilion);font-weight:600}
+
+  /* drag hint */
+  .energy-hint{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:-50px;
+    font:400 italic 13px/1.4 var(--latin);
+    color:var(--ink-mute);letter-spacing:.04em;
+    pointer-events:none;
+    transition: opacity 600ms ease;
+  }
+  .energy-hint::before{ content:"← "; }
+  .energy-hint::after{ content:" →"; }
+  .inst-energy.touched .energy-hint{opacity:0}
+
+  /* P=F/S formula */
+  .formula{
+    display:flex;justify-content:center;align-items:baseline;gap:18px;
+    font:300 clamp(80px, 14vw, 200px) / 1 var(--latin);
+    color:var(--ink);
+    margin:80px 0 60px;
+    letter-spacing:-.02em;
+  }
+  .formula .eq{color:var(--ink-faint);font-weight:200}
+  .formula .frac{
+    display:inline-flex;flex-direction:column;align-items:center;
+    font-size:.55em;line-height:1;
+  }
+  .formula .frac .num{padding-bottom:8px}
+  .formula .frac .div{height:2px;background:var(--ink);width:1.4em}
+  .formula .frac .den{padding-top:8px;color:var(--vermilion)}
+
+  /* =========================================================================
+     INSTALLATION 3 — drag-to-publish (notebook → public)
+     ========================================================================= */
+  .inst-locked{
+    position:relative;min-height:100vh;
+    padding:120px 32px 160px;
+    overflow:hidden;
+  }
+  .locked-stage{
+    max-width:1180px;margin:0 auto;
+    display:grid;grid-template-columns:1fr 1fr;gap:80px;
+    align-items:center;
+    position:relative;
+  }
+  .locked-stage::before{
+    content:"→";
+    position:absolute;
+    left:50%;top:50%;transform:translate(-50%,-50%);
+    font:300 32px/1 var(--latin);
+    color:var(--ink-faint);
+    z-index:0;
+    pointer-events:none;
+  }
+  .locked-pile{
+    position:relative;height:520px;
+    cursor:grab;
+    user-select:none;
+  }
+  .locked-pile.grabbing{cursor:grabbing}
+  .locked-pile .pile-label{
+    position:absolute;top:0;left:0;
+    font:400 11px/1.4 var(--latin);
+    letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-mute);
+    z-index:5;
+  }
+  .locked-pile .pile-label strong{
+    display:block;color:var(--ink);font-weight:500;font-size:13px;margin-top:4px;letter-spacing:.06em;
+  }
+  .locked-pile .sheet{
+    position:absolute;left:50%;top:50%;
+    width:260px;height:330px;
+    background:var(--paper);
+    border:1px solid var(--ink-trace);
+    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
+    transform-origin:center;
+    cursor:grab;
+    transition: box-shadow 200ms ease;
+    will-change:transform;
+  }
+  .locked-pile .sheet.is-top{
+    cursor:grab;
+    box-shadow: 0 4px 12px rgba(0,0,0,.06), 0 18px 40px rgba(0,0,0,.08);
+  }
+  .locked-pile .sheet.is-top::after{
+    content:"拖我 ↗";
+    position:absolute;top:14px;left:14px;
+    font:400 italic 11px/1 var(--latin);
+    color:var(--vermilion);letter-spacing:.08em;
+    opacity:.85;
+  }
+  .locked-pile .sheet.dragging{
+    cursor:grabbing;
+    box-shadow: 0 16px 40px rgba(0,0,0,.18);
+    transition:none;
+    z-index:99 !important;
+  }
+  .locked-pile .sheet.flying{
+    transition: transform 700ms cubic-bezier(.4,.14,.18,1), opacity 700ms ease;
+    pointer-events:none;
+  }
+  .locked-pile .sheet .lines{
+    padding:32px 22px 22px;
+  }
+  .locked-pile .sheet .lines span{
+    display:block;height:5px;background:var(--ink-trace);
+    margin-bottom:9px;border-radius:1px;
+  }
+  .locked-pile .sheet .lines span:nth-child(3n){width:75%}
+  .locked-pile .sheet .lines span:nth-child(5n){width:55%}
+  .locked-pile .sheet .lines span:nth-child(7n){width:88%}
+  .locked-pile .sheet .stamp-private{
+    position:absolute;bottom:16px;right:16px;
+    font:400 9px/1 var(--latin);letter-spacing:.2em;
+    color:var(--ink-faint);text-transform:uppercase;
+  }
+  .locked-pile .sheet .stamp-page{
+    position:absolute;bottom:16px;left:16px;
+    font:400 italic 10px/1 var(--latin);
+    color:var(--ink-faint);
+    font-feature-settings:"tnum" 1;
+  }
+
+  .locked-released{
+    position:relative;
+    z-index:2;
+  }
+  .locked-released .heading{
+    font:400 11px/1.4 var(--latin);
+    letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-mute);
+    margin:0 0 8px;
+  }
+  .locked-released .heading strong{
+    display:block;color:var(--ink);font-weight:500;font-size:13px;margin-top:4px;letter-spacing:.06em;
+  }
+  .locked-counter{
+    font:300 clamp(56px, 9vw, 120px)/1 var(--latin);
+    color:var(--ink);
+    letter-spacing:-.02em;
+    font-feature-settings:"tnum" 1;
+    margin:24px 0 12px;
+  }
+  .locked-counter .vm{color:var(--vermilion)}
+  .locked-counter .of{color:var(--ink-faint);font-size:.45em}
+  .locked-released .priced-line{
+    font:500 clamp(22px, 2.6vw, 30px)/1.45 var(--serif);
+    color:var(--ink);margin:0 0 16px;letter-spacing:-.005em;
+    text-wrap:balance;
+    transition: opacity 600ms ease, transform 600ms ease;
+  }
+  .locked-released .priced-line.in{opacity:1;transform:none}
+  .locked-released .priced-line.idle{
+    opacity:.35;
+    transform:translateY(6px);
+    color:var(--ink-mute);
+  }
+  .locked-released .priced-line .vm{color:var(--vermilion);font-weight:600}
+  .locked-released .meta{
+    font:400 italic 14px/1.6 var(--latin);
+    color:var(--ink-mute);
+    margin:24px 0 0;max-width:340px;
+  }
+  .locked-released .reward{
+    margin-top:36px;
+    padding-top:24px;
+    border-top:1px solid var(--rule);
+    font:400 italic 15px/1.5 var(--latin);
+    color:var(--ink-mute);
+    transition: opacity 600ms ease;
+    opacity:0;
+  }
+  .locked-released .reward.show{opacity:1}
+  .locked-released .reward strong{
+    display:block;color:var(--vermilion);font-weight:600;
+    font-style:normal;font-family:var(--serif);font-size:22px;
+    margin-bottom:6px;letter-spacing:-.005em;
+  }
+
+  .locked-cta{
+    margin-top:48px;text-align:center;
+    font:400 italic 14px/1 var(--latin);
+    color:var(--ink-mute);letter-spacing:.04em;
+  }
+
+  /* =========================================================================
+     INSTALLATION 4 — capital extraction timeline + leverage
+     ========================================================================= */
+  .inst-capital{
+    padding:120px 32px;background:var(--paper);
+  }
+  .capital-stage{max-width:1180px;margin:0 auto}
+  .capital-rail{
+    position:relative;
+    border-top:1px solid var(--ink);
+    margin-top:80px;
+    padding-top:0;
+  }
+  .capital-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:0;
+  }
+  .capital-stage-cell{
+    padding:32px 28px 36px;
+    border-right:1px solid var(--rule);
+    position:relative;
+  }
+  .capital-stage-cell:last-child{border-right:none}
+  .capital-stage-cell::before{
+    content:"";position:absolute;top:-1px;left:0;
+    height:6px;width:100%;background:var(--ink);
+    transform-origin:left;transform:scaleX(0);
+    transition: transform 1200ms cubic-bezier(.18,.62,.18,1);
+    transition-delay: var(--seq, 0ms);
+  }
+  .capital-stage-cell.in::before{transform:scaleX(1)}
+  .capital-stage-cell .stage-num{
+    font:400 11px/1 var(--latin);letter-spacing:.22em;
+    color:var(--vermilion);text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .capital-stage-cell .takes{
+    font:500 28px/1.2 var(--serif);
+    color:var(--ink);margin:0 0 6px;letter-spacing:-.01em;
+  }
+  .capital-stage-cell .who{
+    font:400 italic 14px/1 var(--latin);
+    color:var(--ink-mute);
+    margin-bottom:18px;
+  }
+  .capital-stage-cell .copy{
+    font:400 14px/1.7 var(--serif);
+    color:var(--ink-soft);margin:0;
+  }
+
+  /* leverage ladder */
+  .leverage-stage{
+    margin:140px auto 0;
+    text-align:center;
+    max-width:1080px;
+  }
+  .leverage-numbers{
+    display:flex;justify-content:center;align-items:baseline;
+    gap:clamp(20px, 4vw, 64px);
+    font:300 clamp(80px, 14vw, 200px) / 1 var(--latin);
+    color:var(--ink);
+    letter-spacing:-.02em;
+    margin:60px 0;
+  }
+  .leverage-numbers .x{
+    font-size:.55em;color:var(--ink-faint);
+    font-weight:300;
+    margin:0 -.1em;
+  }
+  .leverage-numbers .lvl{position:relative;display:inline-block;}
+  .leverage-numbers .lvl sup{
+    font-size:.45em;
+    color:var(--ink);
+    font-weight:400;
+    position:relative;top:-.5em;
+  }
+  .leverage-numbers .lvl .tag{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:-32px;
+    font:400 italic 13px/1 var(--latin);
+    color:var(--ink-mute);white-space:nowrap;
+    letter-spacing:.02em;
+  }
+  .leverage-numbers .lvl.peak{color:var(--vermilion)}
+
+  /* =========================================================================
+     INSTALLATION 5 — AI dialogue (two bubbles)
+     ========================================================================= */
+  .inst-ai{
+    padding:140px 32px;
+  }
+  .ai-stage{max-width:1080px;margin:0 auto;display:grid;gap:80px}
+  .ai-line{
+    display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start;
+  }
+  .ai-line.right{grid-template-columns:1fr auto;text-align:right}
+  .ai-line.right .ai-meta{order:2}
+  .ai-line.right .ai-bubble{order:1;justify-self:end}
+  .ai-meta{
+    font:400 11px/1.5 var(--latin);letter-spacing:.18em;
+    color:var(--ink-mute);text-transform:uppercase;
+    width:120px;
+  }
+  .ai-meta strong{
+    display:block;color:var(--ink);font-weight:600;margin-top:4px;
+    font-size:14px;letter-spacing:.1em;
+  }
+  .ai-bubble{
+    max-width:760px;
+    font:500 clamp(28px, 3.6vw, 44px)/1.32 var(--serif);
+    color:var(--ink);letter-spacing:-.005em;
+    text-wrap:balance;
+  }
+  .ai-bubble.score{
+    font-feature-settings:"tnum" 1;
+  }
+  .ai-bubble .score-num{
+    font-family:var(--latin);font-style:italic;
+    font-weight:500;color:var(--vermilion);
+  }
+  .ai-bubble .strike-soft{
+    text-decoration:line-through;text-decoration-thickness:1px;
+    text-decoration-color:var(--ink-faint);color:var(--ink-faint);
+  }
+  .ai-conclusion{
+    margin-top:24px;
+    font:400 italic 16px/1.7 var(--latin);
+    color:var(--ink-mute);
+    max-width:560px;
+  }
+  .ai-line.right .ai-conclusion{margin-left:auto}
+
+  /* =========================================================================
+     INSTALLATION 6 — worldview chain (the spine)
+     ========================================================================= */
+  .inst-spine{
+    padding:140px 32px;
+  }
+  .spine-stage{
+    max-width:1100px;margin:0 auto;
+    text-align:center;
+  }
+  .spine-chain{
+    display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+    gap:0;
+    margin:80px auto 60px;
+    max-width:1000px;
+  }
+  .spine-node{
+    position:relative;
+    flex:0 0 auto;
+    margin:8px 0;
+    padding:14px 22px;
+    border:1px solid var(--rule);
+    background:var(--paper);
+    transition: all var(--t-fast);
+  }
+  .spine-node:hover{
+    border-color:var(--ink);
+    transform:translateY(-2px);
+  }
+  .spine-node .lbl{
+    display:block;
+    font:400 10px/1 var(--latin);letter-spacing:.22em;
+    color:var(--ink-faint);text-transform:uppercase;
+    margin-bottom:6px;
+    font-feature-settings:"tnum" 1;
+  }
+  .spine-node .nm{
+    font:500 18px/1 var(--serif);color:var(--ink);
+    letter-spacing:-.005em;
+  }
+  .spine-arrow{
+    flex:0 0 auto;
+    color:var(--ink-faint);
+    font:300 16px/1 var(--latin);
+    margin:0 10px;
+  }
+  .spine-arrow.loop{
+    flex-basis:100%;
+    margin:24px 0 0;
+    color:var(--vermilion);
+    font-style:italic;
+    font-size:13px;
+    letter-spacing:.1em;
+  }
+  .spine-arrow.loop::before{
+    content:"⤴ ";font-style:normal;
+  }
+  .spine-cap{
+    font:400 italic 17px/1.7 var(--latin);
+    color:var(--ink-mute);
+    max-width:680px;margin:40px auto 0;
+  }
+
+  /* =========================================================================
+     CODA
+     ========================================================================= */
+  .coda{
+    background:var(--ink);
+    color:var(--paper);
+    padding:160px 32px 100px;
+    min-height:80vh;
+    position:relative;
+    overflow:hidden;
+  }
+  .coda::before{
+    content:"";position:absolute;inset:0;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.05'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    mix-blend-mode:screen;opacity:.4;pointer-events:none;
+  }
+  .coda-inner{
+    max-width:1100px;margin:0 auto;position:relative;z-index:2;
+  }
+  .coda .eyebrow{color:rgba(255,255,255,.6)}
+  .coda .eyebrow::before{background:rgba(255,255,255,.4)}
+
+  .coda-headline{
+    font:500 clamp(56px, 9vw, 132px) / 1.05 var(--serif);
+    letter-spacing:-.02em;
+    margin:24px 0 80px;
+    color:var(--paper);max-width:1000px;
+    text-wrap:balance;
+  }
+  .coda-headline em{
+    font-family:var(--latin);font-style:italic;font-weight:400;
+    color:rgba(255,255,255,.6);
+  }
+
+  .coda-body{
+    display:grid;grid-template-columns:1fr 1fr;gap:80px;
+    align-items:start;margin:80px 0;
+  }
+  .coda-body p{
+    font:400 18px/1.95 var(--serif);
+    color:rgba(255,255,255,.85);
+    margin:0 0 1.2em;
+  }
+  .coda-body p strong{
+    color:#fff;font-weight:500;
+    background:none;
+  }
+
+  .coda-seal{
+    margin:120px auto 80px;
+    width:200px;height:200px;
+    position:relative;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .coda-seal::before{
+    content:"";position:absolute;inset:0;
+    border:8px solid var(--vermilion);
+    transform: rotate(-3deg);
+    box-shadow: 0 0 0 1px rgba(193,39,45,.3);
+  }
+  .coda-seal::after{
+    content:"";position:absolute;inset:18px;
+    border:1px solid rgba(193,39,45,.5);
+    transform:rotate(-3deg);
+  }
+  .coda-seal .seal-char{
+    font:400 130px/1 var(--brush);
+    color:var(--vermilion);
+    transform: rotate(-3deg);
+    position:relative;z-index:2;
+  }
+
+  .coda-final{
+    text-align:center;
+    margin:80px auto 0;
+    max-width:800px;
+  }
+  .coda-final .ln{
+    font:400 italic clamp(24px, 3vw, 36px)/1.6 var(--latin);
+    color:rgba(255,255,255,.85);
+    display:block;
+    margin:8px 0;
+  }
+  .coda-final .ln-cn{
+    font-family:var(--serif);font-style:normal;
+    color:#fff;font-weight:500;
+    margin-top:32px;
+  }
+
+  .colophon{
+    margin-top:120px;padding-top:48px;
+    border-top:1px solid rgba(255,255,255,.18);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;
+    font:400 12px/1.6 var(--latin);
+    color:rgba(255,255,255,.5);
+    letter-spacing:.08em;
+  }
+  .colophon strong{color:rgba(255,255,255,.85);font-weight:500}
+
+  /* =========================================================================
+     RESPONSIVE
+     ========================================================================= */
+  @media (max-width: 980px){
+    .chrome{padding:18px 22px}
+    .stage,.scene,.foundation,.ch-opener,.inst-thieves,.inst-energy,.inst-locked,.inst-capital,.inst-ai,.inst-spine,.coda{
+      padding-left:22px;padding-right:22px;
+    }
+    .toc{padding:90px 24px 60px}
+    .toc-grid{grid-template-columns:1fr;gap:40px}
+    .spread{grid-template-columns:1fr;gap:40px}
+    .ch-opener-inner{grid-template-columns:1fr;gap:40px}
+    .ch-spine{border-right:none;border-bottom:1px solid var(--rule);padding-bottom:24px;padding-right:0}
+    .ch-spine .roman{font-size:48px;display:inline-block;margin-right:24px;margin-bottom:0}
+    .foundation-grid{grid-template-columns:1fr}
+    .foundation-cell{border-right:none;border-bottom:1px solid var(--rule)}
+    .foundation-cell:last-child{border-bottom:none}
+    .phone-spread{grid-template-columns:1fr;gap:40px;justify-items:center}
+    .energy-state{grid-template-columns:1fr;gap:40px}
+    .energy-toggle{position:static;transform:none;margin:48px auto 0;width:fit-content}
+    .locked-stage{grid-template-columns:1fr;gap:60px}
+    .locked-pile{height:360px}
+    .capital-grid{grid-template-columns:1fr;gap:0}
+    .capital-stage-cell{border-right:none;border-bottom:1px solid var(--rule)}
+    .capital-stage-cell:last-child{border-bottom:none}
+    .leverage-numbers{flex-wrap:wrap;gap:8px}
+    .ai-line,.ai-line.right{grid-template-columns:1fr;text-align:left;gap:16px}
+    .ai-line.right .ai-meta{order:initial}
+    .ai-line.right .ai-bubble{order:initial;justify-self:start}
+    .ai-line.right .ai-conclusion{margin-left:0}
+    .coda-body{grid-template-columns:1fr;gap:32px}
+    .colophon{flex-direction:column}
+  }
+  @media (max-width: 640px){
+    body{font-size:17px}
+    .body p{font-size:17px;line-height:1.85}
+    .body p.lift{font-size:18px}
+    .pull{margin:40px auto}
+    .scene{padding:80px 22px}
+    .ch-opener{padding:100px 22px 60px}
+    .cover-meta{padding-top:80px;flex-direction:column;gap:24px}
+    .cover-meta .right{text-align:left}
+    .cover-foot{padding-bottom:36px;flex-direction:column;gap:24px;align-items:flex-start}
+    .formula{margin:48px 0 36px}
+    .leverage-numbers{font-size:64px}
+  }
+</style>
+</head>
+<body>
+
+<!-- progress thread -->
+<div class="thread" id="thread"></div>
+
+<!-- chrome -->
+<header class="chrome">
+  <div class="wordmark">把注意力放回 / <em>a manuscript</em></div>
+  <div class="counter">
+    <span class="ch-now" id="chNow">— · 序</span>
+    <span class="ch-of">/ vii</span>
+    <button class="menu-btn" id="menuBtn">索引 ↗</button>
+  </div>
+</header>
+
+<!-- TOC -->
+<nav class="toc" id="toc" aria-hidden="true">
+  <button class="toc-close" id="tocClose">关闭 ✕</button>
+  <div class="toc-grid">
+    <div>
+      <h2>章节 · Chapters</h2>
+      <ul class="toc-list">
+        <li><span class="toc-num">00</span><a href="#prologue">序 — 入口在哪里</a></li>
+        <li><span class="toc-num">I</span><a href="#ch1">把注意力拿回来</a></li>
+        <li><span class="toc-num">II</span><a href="#ch2">注意力装在身体里</a></li>
+        <li><span class="toc-num">III</span><a href="#ch3">使用，才是复利的开始</a></li>
+        <li><span class="toc-num">IV</span><a href="#ch4">IP 是这个时代的马克沁</a></li>
+        <li><span class="toc-num">V</span><a href="#ch5">AI 时代</a></li>
+        <li><span class="toc-num">VI</span><a href="#ch6">世界观这条链</a></li>
+        <li><span class="toc-num">∞</span><a href="#coda">尾声 — 灵魂陪着身体</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2>主线 · The thread</h2>
+      <p style="font:400 18px/1.85 var(--serif);color:var(--ink-soft);margin:0">
+        身体地基撑起注意力<br>
+        → 注意力的朝向决定时间<br>
+        → 时间在使用中形成复利<br>
+        → 复利通过封装变成被定价的资产<br>
+        → 资产通过 IP 杠杆放大，并嵌入更贵的社会网络<br>
+        → AI 时代会重新定价所有没有被校准过的聪明<br>
+        → 所以最后回到 <em>叙事</em> 和 <em>结构</em>。
+      </p>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     COVER
+     ============================================================ -->
+<section class="cover" id="prologue">
+  <div class="cover-meta">
+    <div class="left">
+      Volume 01 · 2026<br>
+      <strong>把注意力放回自己身上</strong>
+    </div>
+    <div class="right">
+      <em>A manuscript</em><br>
+      on attention, the body,<br>
+      compounding, leverage, AI &amp; worldview
+    </div>
+  </div>
+
+  <div class="cover-center reveal in">
+    <div class="cover-mark">序 · prologue</div>
+    <h1 class="cover-title">
+      <span class="ln">把注意力</span>
+      <span class="ln ln-2">放回自己身上</span>
+    </h1>
+    <div class="cover-sub">
+      一年前我每天感觉幸福的时间，一年只有三四次。<br>
+      现在我基本不数了。
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <div>七 章 · 一 个 尾 声</div>
+    <div class="scroll-cue">scroll · 翻页</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOUNDATION MAP — 整理线索
+     ============================================================ -->
+<section class="foundation reveal">
+  <div class="foundation-inner">
+    <h3>整理线索 · the foundation</h3>
+
+    <div class="foundation-grid">
+      <div class="foundation-cell">
+        <div class="role">地基 · foundation</div>
+        <div class="items">
+          <span class="pt">灵魂</span>
+          <span class="pt">身体</span>
+          <span class="pt">语言自我</span>
+          <span class="pt">注意力</span>
+        </div>
+        <p class="gloss">一个人的系统是从内到外长出来的。这四样不撑住，下面什么都长不出来。</p>
+      </div>
+      <div class="foundation-cell">
+        <div class="role">果子 · the fruit</div>
+        <div class="items">
+          <span class="pt">资产</span>
+          <span class="pt">人脉</span>
+          <span class="pt">亲密关系</span>
+        </div>
+        <p class="gloss">是地基长出来的果子。地基不在了，果子也保不住——你保得住的果子，永远只来自你保得住的地基。</p>
+      </div>
+      <div class="foundation-cell">
+        <div class="role">入口 · the way in</div>
+        <div class="items">
+          <span class="pt">注意力</span>
+        </div>
+        <p class="gloss">入口在哪里？入口是注意力。所有事情都从这里开始——也都从这里被偷走。</p>
+      </div>
+    </div>
+
+    <div class="foundation-arrow">
+      这份手稿就一句话——
+      <strong>身体地基撑起注意力，注意力的朝向决定一切。<span class="vm">所以入口在这里。</span></strong>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CHAPTER I — 把注意力拿回来
+     ============================================================ -->
+<section class="ch-opener" id="ch1" data-chapter="1" data-name="把注意力拿回来">
+  <div class="ch-opener-inner reveal">
+    <div class="ch-spine">
+      <span class="roman">I</span>
+      第 一 章<br>
+      <span class="of">of vii</span>
+    </div>
+    <div class="ch-opener-body">
+      <div class="kicker">First — taking it back</div>
+      <h2>你为什么过得不好？<br>因为你的注意力<br>一直被<em>切碎</em>、<em>吸走</em>、<em>劫持</em>。</h2>
+      <p class="thesis">
+        短视频一分钟打断你一次，DMN 在晚上启动让你审判自己。
+        四个小时光在骂自己——而我四个小时变成了资产。
+        <strong>你最大的人格独立性，来自于你对时间的朝向。</strong>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 装置 1：注意力小偷 — hover 抢回来 -->
+<section class="inst-thieves reveal">
+  <div class="thieves-stage" id="thievesStage">
+    <div class="thieves-counter" id="thievesCounter">
+      抢回来的注意力<br>
+      <strong><span id="thievesNum">0</span><span style="font-size:.5em;color:var(--ink-faint)">/25</span></strong>
+    </div>
+    <div class="thieves-anchor">
+      <p class="you">你</p>
+      <p class="label">把鼠标移到那些飘过的词上——把它们抢回来。</p>
+    </div>
+    <div class="thieves-cta" id="thievesCta">
+      <strong>25 / 25 — 你抢回来了所有的注意力。</strong>
+      这是练习。下面的整本书都是练习。
+    </div>
+    <!-- thieves are injected by JS -->
+  </div>
+  <p class="thieves-foot reveal">每一片划过，都是你今天少掉的一点时间。</p>
+</section>
+
+<!-- 子段落：愤怒的五分钟 + 嘴上骂我 -->
+<section class="scene reveal">
+  <div class="col">
+    <p class="eyebrow"><span>§ 1.1</span><span>愤怒最贵的，不是那五分钟</span></p>
+    <div class="body lead">
+      <p class="lift">愤怒的本质，就是把你最重要的四五分钟，疯狂地咒骂一个人。最快乐、最饱满的五分钟，变成你在脑子里攻击他。</p>
+      <p>而你越攻击一个人，你的注意力就在哪里——大概率你越容易成为他。</p>
+      <p>这五分钟最宝贵的时间消失了，且你还靠近了你更讨厌的那个人。<strong>人心是一面镜子。</strong>它反过来提醒你：你的能量太低，你的情绪太弱了。</p>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT #1 — 嘴上骂我，心里有我 -->
+<section class="impact impact--light impact--center" data-impact="1">
+  <div class="impact-marker">
+    impact · I<br>
+    <strong>第一击</strong>
+  </div>
+  <div class="impact-inner">
+    <div class="impact-top">
+      <div class="left">第一章 · §1.1 · 愤怒的真相</div>
+      <div class="right">an aphorism on attention</div>
+    </div>
+
+    <h2 class="impact-line">
+      嘴上骂我，<br>
+      <span class="vm">心里有我。</span>
+    </h2>
+
+    <div class="impact-bot">
+      <div class="meta">
+        <strong>注脚 · footnote</strong>
+        骂这个人，他把他最重要的注意力给到了你。攻击是模仿的一种形式——
+        <em>这就是为什么骂我的人最后心里只有我。</em>
+      </div>
+      <div class="seal">
+        <span class="seal-mark">怒</span>
+        愤怒是一种<br>反向<em>占有</em>。
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene reveal">
+  <div class="col">
+    <div class="body">
+      <p>你最好的讨厌一个人的方式就是无视他。我最怕什么？兄弟们，我最怕有一天我开播了，<em>No one</em> 都没有，<em>One</em> 都没有。零第一。我像幽灵一样穿过这个世界。<strong>因为你不重要了。</strong></p>
+      <p>你越攻击一个人，你的注意力就越长在他身上。你的语气、措辞、反应方式都开始向他靠拢——攻击是模仿的一种形式。这就是为什么骂我的人最后心里只有我：他们的注意力替我打工了。</p>
+      <p class="lift">化愤怒为力量。如果你讨厌我，就干死我——这不是帅吗？黑粉一旦松动，他的情绪能量是最高的，对你付的费是最狠的。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 子段落：瘾的本质 + 短视频/手机壳 -->
+<section class="scene reveal">
+  <div class="col">
+    <p class="eyebrow"><span>§ 1.2</span><span>瘾的本质</span></p>
+  </div>
+</section>
+
+<!-- IMPACT #2 — 瘾的本质：不可撤销的注意力 (dark) -->
+<section class="impact impact--dark impact--center" data-impact="2">
+  <div class="impact-marker">
+    impact · II<br>
+    <strong>不可撤销</strong>
+  </div>
+  <div class="impact-inner">
+    <div class="impact-top">
+      <div class="left">第一章 · §1.2 · the nature of addiction</div>
+      <div class="right">addiction · attention you can&rsquo;t withdraw</div>
+    </div>
+
+    <h2 class="impact-line">
+      瘾的本质，是<br>
+      <span class="vm">不可撤销</span>的<br>
+      注意力。
+    </h2>
+
+    <div class="impact-bot">
+      <div class="meta">
+        <strong>逻辑链 · the chain</strong>
+        你今天<em>无法</em>把昨晚刷掉的两小时，<em>取消</em>。
+        瘾不是"上瘾"——是<em>过去式</em>无法被改写。
+        所以——保护当下的每一份注意力。
+      </div>
+      <div class="seal">
+        七 个 字<br>
+        <em>装</em>下整个时代的<br>消费陷阱。
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene reveal">
+  <div class="phone-spread reveal">
+    <div class="phone">
+      <div class="phone-feed">
+        <div class="phone-feed-track" id="feedTrack">
+          <!-- cards injected by JS -->
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="body lead">
+        <p class="lift">你刷短视频的本质，是<strong>被刷</strong>。</p>
+        <p>你的注意力被这些博主拿走，投放给你广告，广告商再给他们钱——交换你们的注意力。事实上，你的时间被拿来卖钱了。</p>
+        <p>但被刷的不光是时间。每一次你被音乐拽进去、被节奏甩出来，你的情绪节律就被那个节奏塑形一次。三个月之后，你的注意力再也回不到一本书的长度。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 子段落：DMN -->
+<section class="scene reveal">
+  <div class="col">
+    <p class="eyebrow"><span>§ 1.3</span><span>夜里那个让你越想越烂的网络</span></p>
+    <h3 style="font:500 clamp(36px,5vw,56px)/1.15 var(--serif);letter-spacing:-.01em;margin:0 0 32px;color:var(--ink);text-wrap:balance;">
+      晚上的 emo 不是性格——是一个<em>叫 DMN 的网络</em>，被你喂错了。
+    </h3>
+    <div class="body">
+      <p>白天能量、情绪、体力耗尽了，然后早早睡不着。躺在床上干什么呢？刷短视频。或者奖励一下自己，奖励完了再刷。这时候更虚弱。情绪又出来又回去。能量更低，注意力全部往内，然后再发散。</p>
+      <p class="lift">这有个名字，叫 <strong>DMN（默认模式网络）</strong>。DMN 是个很中性的网络。大部分有灵感的人、文思泉涌的人，就是这个网络——漫游，大脑发散。<em>艺术家在这里面找灵感。</em></p>
+      <p>同样的网络，差别不在网络本身，<strong>在你给它喂什么。</strong></p>
+    </div>
+
+    <div class="sidenote" style="margin-top:48px">
+      但当你的能量很低、白天没晒到太阳，夜里它就开始干三件事：
+    </div>
+
+    <div class="stagger reveal" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;margin:24px 0 60px">
+      <div>
+        <div class="label-en" style="margin-bottom:14px;color:var(--vermilion);font-style:italic;font-size:13px">first · 问意义</div>
+        <p style="font:400 16px/1.7 var(--serif);color:var(--ink-soft);margin:0">我是谁？我从哪里来？要到哪里去？生命能量足、多巴胺旺盛的人不需要意义。你每一次都是深夜在追问意义——因为你能量低到必须问。</p>
+      </div>
+      <div>
+        <div class="label-en" style="margin-bottom:14px;color:var(--vermilion);font-style:italic;font-size:13px">second · 比较</div>
+        <p style="font:400 16px/1.7 var(--serif);color:var(--ink-soft);margin:0">看到别人朋友圈，他们都很厉害，我很菜。要在社会中找到自己的位置——本质上是这个时候你恐慌你的存在了。</p>
+      </div>
+      <div>
+        <div class="label-en" style="margin-bottom:14px;color:var(--vermilion);font-style:italic;font-size:13px">third · 自我攻击</div>
+        <p style="font:400 16px/1.7 var(--serif);color:var(--ink-soft);margin:0">我好菜，我配不上，我连这个都做不好。能量低的时候，DMN 把所有镜子都对准了你自己。</p>
+      </div>
+    </div>
+
+    <div class="body" style="margin-top:48px">
+      <p>我也会启动这个网络。我会问自己：今天要做什么？明天后天的计划是什么？错的事儿改掉，对的事儿加强。它一方面让我的注意力休息、精神放松；同时我在计划未来、总结过去。</p>
+      <p class="lift">而我这个总结，<strong>我是不批判我自己的。</strong></p>
+      <p>能写就不要停下来。能跑就不要停下来。<em>只有行动才能阻断。</em>多想都没用，因为你想也是在语言里面循环你自己。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CHAPTER II — 注意力装在身体里
+     ============================================================ -->
+<section class="ch-opener" id="ch2" data-chapter="2" data-name="装在身体里">
+  <div class="ch-opener-inner reveal">
+    <div class="ch-spine">
+      <span class="roman">II</span>
+      第 二 章<br>
+      <span class="of">of vii</span>
+    </div>
+    <div class="ch-opener-body">
+      <div class="kicker">Second — it lives in the body</div>
+      <h2>注意力<em>不是抽象的</em>。<br>它装在<span class="vm">身体里</span>。</h2>
+      <p class="thesis">
+        你知道注意力重要，为什么还是拿不回来？因为身体撑不起。
+        <strong>人是烧炭的机器</strong>，ATP 不够你赚不到钱，睾酮不够你走不出那一步。
+        60 分以下是审判席，60 分以上是游乐场。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT #3 — 60 分对仗 (paired light/dark) -->
+<section class="impact-pair" data-impact="3">
+  <div class="left">
+    <div class="impact-marker">
+      impact · III·a<br>
+      <strong>内 耗</strong>
+    </div>
+    <div class="pair-tag">below sixty · <span>能量低落</span></div>
+    <h2 class="pair-num">59<span class="unit">/100</span></h2>
+    <p class="pair-headline">天天<em>审判</em>自己。</p>
+    <p class="pair-copy">能量低的时候，看外界任何东西都在否定和攻击他。孔子审判他，苏格拉底审判他，所有这一生学过的正确道理都在审判他。<em>一天只能工作两个小时。</em></p>
+  </div>
+  <div class="right">
+    <div class="impact-marker">
+      impact · III·b<br>
+      <strong>外 耗</strong>
+    </div>
+    <div class="pair-tag">above sixty · <span>能量爆棚</span></div>
+    <h2 class="pair-num">90<span class="unit">/100</span></h2>
+    <p class="pair-headline">把世界<span class="vm">当游乐场</span>。</p>
+    <p class="pair-copy">脑子里有无限的想法、灵感；身体想动；想表达、想探索、想做事。<em>这是你能写、能跑、能赚到钱的全部前提。</em></p>
+  </div>
+</section>
+
+<!-- 装置 2：能量滑块 — 真的拖一下 -->
+<section class="inst-energy reveal" id="instEnergy">
+  <div class="energy-stage">
+    <p class="eyebrow"><span>§ 2 · 装置</span><span>能量决定一切 — 拖一下试试</span></p>
+    <h3>同一个世界。<br>59 分的眼里 / 90 分的眼里——<em>是两件事。</em></h3>
+    <p class="pre">下面这个把手，拖到 60 之前，整页是审判席。拖到 60 之后，整页是游乐场。这不是比喻——这是身体的真实切换点。</p>
+
+    <div class="energy-scrubber">
+      <div class="energy-readout">
+        <div class="label">现在</div>
+        <div class="big" id="energyBig">59</div>
+      </div>
+
+      <div class="energy-track">
+        <div class="energy-fill"></div>
+        <div class="energy-ticks" id="energyTicks"><!-- ticks injected by JS --></div>
+
+        <!-- threshold line at 60 -->
+        <div class="energy-anchor threshold" style="left:60%">
+          <span>threshold</span>
+          <strong>60 — 分水岭</strong>
+        </div>
+        <div class="energy-anchor" style="left:0%">
+          <span>min</span><strong>0</strong>
+        </div>
+        <div class="energy-anchor" style="left:100%">
+          <span>max</span><strong>100</strong>
+        </div>
+
+        <div class="energy-handle" id="energyHandle">
+          <span class="h-num" id="energyHandleNum">59</span>
+        </div>
+      </div>
+
+      <div class="energy-hint">拖动这个把手</div>
+    </div>
+
+    <div class="energy-quote">
+      <div class="a">"我天天审判自己——还要<em>找一堆人</em>来审判自己。"</div>
+      <div class="b">"想表达，想探索，<strong>想做事</strong>。"</div>
+    </div>
+
+    <div class="energy-state">
+      <div class="energy-cell cold">
+        <div class="label">below sixty · 内 耗</div>
+        <h4 class="head">天天审判自己。</h4>
+        <p class="copy">
+          一天只能工作两个小时。嘴巴溃疡，喉咙发炎，胃食管反流，IBS。<em>全是炎症。</em>
+          那时候的产量是一周一篇文章——我是在这么一个高度被削弱的情况下做事的。
+        </p>
+      </div>
+      <div class="energy-cell hot">
+        <div class="label">above sixty · 外 耗</div>
+        <h4 class="head">把世界当游乐场。</h4>
+        <p class="copy">
+          消化系统更好，免疫更好，睡眠加跑步，加合适的营养。脑子里有无限的想法，身体想动，<span class="vm">有性能量、探索欲、攻击性、表达欲、食欲。</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT #4 — 人是烧炭的机器 (dark) -->
+<section class="impact impact--dark" data-impact="4">
+  <div class="impact-marker">
+    impact · IV<br>
+    <strong>身体即代谢</strong>
+  </div>
+  <div class="impact-inner">
+    <div class="impact-top">
+      <div class="left">第二章 · §2.1 · the carbon engine</div>
+      <div class="right">a metaphor on metabolism</div>
+    </div>
+
+    <h2 class="impact-line">
+      人，本质上是<br>
+      <span class="vm">烧炭</span>的机器。
+    </h2>
+
+    <div class="impact-bot">
+      <div class="meta">
+        <strong>燃料 · the fuel</strong>
+        葡萄糖 · 脂肪 → 脂肪酸 · 蛋白质 → 氨基酸。
+        三种碳烧出 <em>ATP</em>。
+        ATP 不够你赚不到钱，睾酮不够你走不出那一步。
+        <em>所以——先修身体。</em>
+      </div>
+      <div class="seal">
+        身体之外没有<br>"心理问题"。<br><em>多数时候只是 ATP 不够。</em>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene reveal">
+  <div class="col">
+    <div class="body">
+      <p>你的碳有几种供应？第一，葡萄糖。第二，脂肪水解成脂肪酸。第三，蛋白质水解成氨基酸。这三个东西供应你的碳，然后你烧——把碳氧化，中间释放的化学能变成 <em>ATP</em>，让你能行动。</p>
+      <p class="lift">为什么你赚不到钱？<strong>因为你的 ATP 太少。</strong>ATP 水解的能量驱使你的大脑思考、身体行动、执行力、长期的前额叶执行——都是靠这个东西。</p>
+      <p>当一个人脑子里、身体里能量爆棚的时候，脑子里就有无限的想法、灵感、思维碰撞；身体就想动，会有性能量。这里不单单是性欲，是一种性能量，会驱使这个人：第一，性欲；第二，探索欲；第三，攻击性、张力；第四，表达欲；第五，食欲。</p>
+      <p>如果你长时间没有什么食欲，也没有什么表达欲——其实就是身体的消化系统和能量代谢已经塌陷了。先修身体。</p>
+    </div>
+    <div class="sidenote">
+      Note · 这里写的是一个能量代谢的常识画像，不是诊断。具体问题请找具体医生，不要把网页当处方。
+    </div>
+  </div>
+</section>
+
+<!-- 子段落：P=F/S 压强（不再用大黑球，只用公式 + 一段话） -->
+<section class="scene reveal">
+  <div class="col-wide">
+    <p class="eyebrow" style="justify-content:center"><span>§ 2.2</span><span>注意力的压强</span></p>
+
+    <div class="formula reveal">
+      <span>P</span><span class="eq">=</span>
+      <span class="frac">
+        <span class="num">F</span>
+        <span class="div"></span>
+        <span class="den">S</span>
+      </span>
+    </div>
+
+    <p style="text-align:center;font:400 italic 15px/1.6 var(--latin);color:var(--ink-mute);max-width:560px;margin:0 auto 64px">
+      不是物理公式。是一个意象——
+      你的总能量 F 不变，<strong style="color:var(--vermilion);font-style:normal">受力面积 S 越小</strong>，压强 P 越大。
+    </p>
+  </div>
+
+  <div class="col">
+    <div class="body">
+      <p class="lift">你看高跟鞋怎么踩穿木栈道？所有体重都聚焦在那个根的尖上。<strong>那就是一根针，在扎下面的木栈道。</strong>这么厚的木板怎么能被刺穿？太恐怖了——这么大个洞就是这么被刺穿的。</p>
+      <p>更早之前，有人说我要做高考——你做不了。那高考里面你选一科。做语文——你也做不了。语文里面再选一科，做作文——作文你也做不了。那做作文的开头。开头你也做不了——那做开头的两句话。</p>
+      <p>这总能做了吧。</p>
+      <p>人会焦虑，本质来自于你现在的注意力放在了未来——放在了许多无限的未来。你的未来有一条线。你的注意力可以在这条线上的任何一个点。但<strong>你的身体只能在当下。</strong>这种多对一的关系让你的身体感觉到非常害怕。</p>
+      <p>大脑对情绪过度反应，肠胃就会缩成一团。生命能量被极致地供应在大脑里面，从消化系统抽走。所以特别容易紧张的人，肠胃都不太好——敏感的人肠胃都不好。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 子段落：上瘾就是失控 + 惯性 -->
+<section class="scene reveal">
+  <div class="col">
+    <p class="eyebrow"><span>§ 2.3</span><span>上瘾的本质都是失控</span></p>
+    <p class="pull pull--center reveal">
+      人好好的，<br>
+      <span class="vm">人不当狗</span>干嘛？
+    </p>
+    <div class="body">
+      <p>咖啡上瘾也是。我前段时间大概一周前，每天就只喝茶了。因为我发现我咖啡上瘾了——<strong>上瘾的本质就是不受控制，我被劫持了。</strong></p>
+      <p class="lift">兄弟们，你怎么能接受给别人当狗啊？谈恋爱给别人当狗，喝个咖啡也给别人当狗，短视频也给别人当狗，软色情也给别人当狗——你怎么天天当狗？</p>
+      <p>做人不好吗？</p>
+      <p>另外说一句惯性：任何一件事，你只要持续地做，就会越来越容易持续地做下去。我停了这大半年，第一个月、第二个月感觉还能回来。停到四五个月的时候，我觉得可以不用回来了。<em>很多有钱人为什么这么有钱？因为他不有钱很痛苦。他惯性地有钱。</em>神经系统会习惯你的行为，行为会变成习惯，反过来塑造你的神经系统。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CHAPTER III — 复利
+     ============================================================ -->
+<section class="ch-opener" id="ch3" data-chapter="3" data-name="复利">
+  <div class="ch-opener-inner reveal">
+    <div class="ch-spine">
+      <span class="roman">III</span>
+      第 三 章<br>
+      <span class="of">of vii</span>
+    </div>
+    <div class="ch-opener-body">
+      <div class="kicker">Third — using is the start of compounding</div>
+      <h2>身体好了。<br>那这股能量<br>该用来<em>做什么？</em></h2>
+      <p class="thesis">
+        不是收藏更多道理。
+        <strong>认知不重要，使用才是复利的开始。</strong>
+        复利的本质是注意力——你的牛逼如果只在脑子里，对世界来说等于不存在。
+        把情绪凝结成一个产品，你就开始被定价。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 装置 3：备忘录堆 → 公开的一行字 -->
+<section class="inst-locked reveal">
+  <div class="locked-stage">
+    <div class="locked-pile" id="lockedPile">
+      <div class="pile-label">
+        私域 · private<br>
+        <strong>你脑子里的备忘录</strong>
+      </div>
+      <!-- sheets injected by JS -->
+    </div>
+    <div class="locked-released">
+      <p class="heading">
+        公域 · public<br>
+        <strong>世界看到的那一面</strong>
+      </p>
+      <div class="locked-counter">
+        <span id="lockedCount">0</span><span class="of"> / 5</span>
+      </div>
+      <p class="priced-line idle" data-step="0">点上面的纸——把它送出去。</p>
+      <p class="priced-line idle" data-step="1">第 1 张：<span class="vm">朋友圈那一句。</span></p>
+      <p class="priced-line idle" data-step="2">第 2 张：被一个陌生人转发。</p>
+      <p class="priced-line idle" data-step="3">第 3 张：第一次，有人转你 2 元。</p>
+      <p class="priced-line idle" data-step="4">第 4 张：你的<span class="vm">人格</span>开始<span class="vm">被定价</span>。</p>
+      <p class="priced-line idle" data-step="5">第 5 张：复利的车，开了。</p>
+      <p class="meta">这一边没拖出来——世界就看不见。世界看不见——你就没价。</p>
+      <div class="reward" id="lockedReward">
+        <strong>够了。</strong>
+        你的复利开始了。剩下的事情就是<em>每天</em>都拖一张出去。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 子段落：复利 + 急切 + 牛逼为什么不值钱 -->
+<section class="scene reveal">
+  <div class="col">
+    <p class="eyebrow"><span>§ 3.1</span><span>复利的真正起点是使用</span></p>
+    <div class="body lead">
+      <p class="lift">复利这个词，我以前最讨厌了。听老王说过，听查理·芒格说过，看爱因斯坦说"复利是世界第八大奇迹"。我一直都不理解。</p>
+      <p>大概是去年 10 月 11 月，我才刚刚摸到这个词的门槛。摸到之后，结合自己的生活，我跟 GPT 大概聊了 500–600 个小时。</p>
+      <p>我可以告诉大家：在大半年时间里，我基本上每天都写了一万字以上。但我并没有增加什么粉丝，也没有获得更多注意力。</p>
+      <p class="lift"><strong>因为这一万字全部都在我的备忘录里。我没有把它发出来。</strong></p>
+      <p>这其实是你们大多数人——哪怕你觉得自己很厉害——为什么赚不到钱？<em>你的所有最厉害的东西都在你的脑子里面。</em>你并没有公开给这个世界。</p>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT #5 — 只有世界看到了 (light, dense) -->
+<section class="impact impact--light" data-impact="5">
+  <div class="impact-marker">
+    impact · V<br>
+    <strong>定 价</strong>
+  </div>
+  <div class="impact-inner">
+    <div class="impact-top">
+      <div class="left">第三章 · §3.1 · the price of being seen</div>
+      <div class="right">a manifesto on publication</div>
+    </div>
+
+    <h2 class="impact-line">
+      只有世界看到了，<br>
+      世界才能<span class="vm">给你<br>定价。</span>
+    </h2>
+
+    <div class="impact-bot">
+      <div class="meta">
+        <strong>事实 · the math</strong>
+        500 小时聊天 + 每天一万字 + 没人看见 = <em>0 元</em>。
+        发出去的<em>那一句</em>—— = 复利的起点。
+        把情绪凝结成一个产品，<em>你就开始被定价。</em>
+      </div>
+      <div class="seal">
+        <span class="seal-mark">价</span>
+        被定价是<br>一种<em>解放</em>。
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene reveal">
+  <div class="col">
+    <div class="body">
+      <p>把你脑子里的黑箱写的东西发出来。发到朋友圈也好，发到公众号也好，发到小红书或 B 站抖音也好。这时候才会有人看见，有人共鸣，有些人心里很有触动——<strong>把情绪凝结成一个产品，你就开始被定价。</strong></p>
+    </div>
+
+    <div class="sidenote" style="margin-top:60px">
+      § 3.2 · 急切就是不复利
+    </div>
+
+    <div class="body" style="margin-top:24px">
+      <p>跟一个男生或女生今天聊得非常开心，吃了一顿饭，看了一个电影。互道晚安之后，他上了王者荣耀，你打开网易云开始云。这时候你的心情骤然低落。</p>
+      <p>血糖又开始波动，白天的多巴胺、血清素消耗太多，刚好又没有太阳。你晚上睡不着，辗转反侧，心里抓心挠肝。要不要确认一下关系？然后发出了一句话——</p>
+      <p class="lift" style="text-align:center;color:var(--vermilion);font-style:italic;font-family:var(--latin);font-size:24px">"你喜不喜欢我？"</p>
+      <p>发了之后又觉得不合适，又在后面补了一大段。结果对方第二天一睡醒，看到你发了十来条消息。</p>
+      <p>你想想：头一天约会的人，第二天跟你说"我们结婚吧"——你觉得有病吗？<strong>那本质是同一个行为。</strong>你原本是有好感的，因为你的急切，被贴上了精神病的标签。一急——这一瞬间的下头让你的所有后续都没了。</p>
+      <p class="lift">这就是<em>急切就是不复利。</em></p>
+    </div>
+
+    <div class="sidenote" style="margin-top:60px">
+      § 3.3 · 你不是不会赚钱，你卡在三个地方
+    </div>
+
+    <div class="stagger reveal" style="margin:24px 0 60px;display:grid;gap:32px">
+      <div>
+        <div class="label-en" style="color:var(--vermilion);font-style:italic;margin-bottom:8px">第一</div>
+        <p style="font:500 22px/1.5 var(--serif);color:var(--ink);margin:0 0 8px">你其实没有知道得那么多。</p>
+        <p style="font:400 16px/1.7 var(--serif);color:var(--ink-mute);margin:0">如果你真知道那么多，你会觉得只要你开口，凡你开口必有好事。</p>
+      </div>
+      <div>
+        <div class="label-en" style="color:var(--vermilion);font-style:italic;margin-bottom:8px">第二</div>
+        <p style="font:500 22px/1.5 var(--serif);color:var(--ink);margin:0 0 8px">哪怕你有，你不敢讲。</p>
+        <p style="font:400 16px/1.7 var(--serif);color:var(--ink-mute);margin:0">你的认知低，你对这个世界是恐惧的。你的所有的钱都靠交易获得。</p>
+      </div>
+      <div>
+        <div class="label-en" style="color:var(--vermilion);font-style:italic;margin-bottom:8px">第三</div>
+        <p style="font:500 22px/1.5 var(--serif);color:var(--ink);margin:0 0 8px">认知高的人必然有勇气暴露自己。</p>
+        <p style="font:400 16px/1.7 var(--serif);color:var(--ink-mute);margin:0">陌生人的本质就是 <em>everyone</em>——每一个都是我潜在的客户。你恐惧陌生人，所以不敢发朋友圈。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CHAPTER IV — 杠杆
+     ============================================================ -->
+<section class="ch-opener" id="ch4" data-chapter="4" data-name="杠杆">
+  <div class="ch-opener-inner reveal">
+    <div class="ch-spine">
+      <span class="roman">IV</span>
+      第 四 章<br>
+      <span class="of">of vii</span>
+    </div>
+    <div class="ch-opener-body">
+      <div class="kicker">Fourth — leverage as the levee</div>
+      <h2>但被定价还不够。<br>要用上<span class="vm">杠杆</span>。</h2>
+      <p class="thesis">
+        打工的本质也是 IP，员工到老板的差别是结算周期。
+        营销是中性的，陌生人是要感恩的，因为你的所有钱都靠交易。
+        <strong>铁器对锄头是 4 倍，IP 对面对面是一万倍——IP 是这个时代的马克沁。</strong>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 装置 4a：资本剥削四阶时间轴 -->
+<section class="inst-capital reveal">
+  <div class="capital-stage" id="capitalStage">
+    <p class="eyebrow" style="margin-bottom:0"><span>§ 4.1</span><span>资本怎么一步步要走你的东西</span></p>
+    <h3 style="font:500 clamp(36px,5vw,52px)/1.18 var(--serif);margin:24px 0 0;letter-spacing:-.01em;color:var(--ink);text-wrap:balance;max-width:840px">
+      剥削这件事，从你<em>拥有的东西</em>，挪到了你<span class="vm">还没拥有的东西</span>。
+    </h3>
+
+    <div class="capital-rail">
+      <div class="capital-grid">
+        <div class="capital-stage-cell" style="--seq:0ms" data-cap>
+          <div class="stage-num">stage I</div>
+          <div class="takes">拿走粮食</div>
+          <div class="who">地主阶级</div>
+          <p class="copy">农民最开始都有地。遇到荒年，借就叫高利贷，利滚利，最后拿钱来抵——不停地抵田。聚集在一两个、四五个人手里，就叫地主。</p>
+        </div>
+        <div class="capital-stage-cell" style="--seq:200ms" data-cap>
+          <div class="stage-num">stage II</div>
+          <div class="takes">拿走工时</div>
+          <div class="who">工厂主</div>
+          <p class="copy">我提供工具、提供场地。你每天工作十个小时，我给你两个小时的钱。剩余的八个小时就是我的超额利润——是我给你承担的不确定性。</p>
+        </div>
+        <div class="capital-stage-cell" style="--seq:400ms" data-cap>
+          <div class="stage-num">stage III</div>
+          <div class="takes">拿走注意力</div>
+          <div class="who">信息时代</div>
+          <p class="copy">工作时间剥削完了。但他们发现你还有一个剩余——你休息时间有大量的注意力。再给你整点短视频看看，让你在休息时间也看广告、也消费。</p>
+        </div>
+        <div class="capital-stage-cell" style="--seq:600ms" data-cap>
+          <div class="stage-num">stage IV</div>
+          <div class="takes">拿走未来</div>
+          <div class="who">借贷时代</div>
+          <p class="copy">不好意思，你今天的注意力都被卷走了。但你还有未来——花呗、白条、消费贷。你今天没有的东西，他们也提前要走了。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 装置 4b：杠杆数字 -->
+    <div class="leverage-stage reveal">
+      <p class="eyebrow" style="justify-content:center;margin-bottom:0"><span>§ 4.2</span><span>为什么一份注意力可以卖给很多人</span></p>
+
+      <div class="leverage-numbers reveal">
+        <span class="lvl"><span>1</span><span class="tag">面对面 · 一份劳力</span></span>
+        <span class="x">×</span>
+        <span class="lvl"><span>10<sup>3</sup></span><span class="tag">铁器 · 工业</span></span>
+        <span class="x">×</span>
+        <span class="lvl peak"><span>10<sup>5</sup></span><span class="tag">IP · 这个时代的马克沁</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT #6 — IP 是这个时代的马克沁 (dark, bilingual stack) -->
+<section class="impact impact--dark impact-stack" data-impact="6">
+  <div class="impact-marker">
+    impact · VI<br>
+    <strong>IP</strong>
+  </div>
+  <div class="impact-inner">
+    <div class="impact-top">
+      <div class="left">第四章 · §4.2 · the maxim gun</div>
+      <div class="right">a thesis on leverage</div>
+    </div>
+
+    <h2 class="impact-line">
+      IP，是这个时代的<br>
+      <span class="vm">马克沁。</span>
+    </h2>
+    <p class="impact-line latin">
+      IP — the maxim gun<br>
+      <span style="font-size:.6em;font-style:normal;letter-spacing:.05em">of our time.</span>
+    </p>
+
+    <div class="impact-bot">
+      <div class="meta">
+        <strong>历史的代差 · the gap</strong>
+        铁器对锄头是 <em>4×</em>。<br>
+        重机枪对骑兵是 <em>骑兵被横扫</em>。<br>
+        IP 对面对面是 <em>10⁵×</em>。<br>
+        <em>这是一道你不站上去就被踩平的代差。</em>
+      </div>
+      <div class="seal">
+        不干了就没钱<br>= 没用杠杆。<br>
+        <em>不用就被卷走。</em>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene reveal" style="padding-top:0">
+  <div class="col">
+      <div class="body">
+        <p class="lift">杠杆的本质不是 IP——<strong>是封装、公开、被复用。</strong></p>
+        <p>如果你是一个员工，做完新的事情，通过大量时间经验学习完——如果你不把内容封装变成文字、不变成文档数字化、不公开，你就只是干了一遍。</p>
+        <p>你公开的越多——公开十个人你就变成主管，公开一百个人你就变成部门经理。本质上就是同一份时间可以复利多次使用。本质上就是写书，或者它是分段式的写书。</p>
+      </div>
+
+      <div class="sidenote" style="margin-top:48px">
+        § 4.3 · 你赚多少钱，取决于你嵌入什么样的社会网络
+      </div>
+
+      <div class="body" style="margin-top:24px">
+        <p>为什么我在县城洗碗 3000，在杭州 7000，在日本两万？<strong>因为你服务的社会网络不一样。</strong></p>
+        <p>县城洗碗——这里最高的工资可能也就七八千、一万。但杭州洗碗，你可能不小心服务的就是一个一年创造几亿价值的人。你在这个地方洗碗，因为你服务的人更贵，所以你就更贵。</p>
+        <p class="lift">如果你是个法务，身边有一个几亿的老板，他对法律的采购可能一年就有两三百万。这个律师只要靠近这个十亿级的老板，一年就可以拿四五百万。本质上他间接服务了几万人。<em>你嵌入了更贵的社会网络。</em></p>
+      </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CHAPTER V — AI 时代
+     ============================================================ -->
+<section class="ch-opener" id="ch5" data-chapter="5" data-name="AI 时代">
+  <div class="ch-opener-inner reveal">
+    <div class="ch-spine">
+      <span class="roman">V</span>
+      第 五 章<br>
+      <span class="of">of vii</span>
+    </div>
+    <div class="ch-opener-body">
+      <div class="kicker">Fifth — does this still hold in the age of AI?</div>
+      <h2>这套系统在<br><span class="vm">AI 时代</span>还成立吗？</h2>
+      <p class="thesis">
+        你不是消费内容，是<strong>内容在消费你</strong>。
+        Claude 击穿了我的傲慢——我打 95 分，他第一次使用 92 分。
+        当中等智能变便宜，没认知、不掌握、傲慢、单因果的人会被精确放大。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 装置 5：两段对话 -->
+<section class="inst-ai reveal">
+  <div class="ai-stage">
+    <div class="ai-line reveal">
+      <div class="ai-meta"><em>narrator</em><strong>我以为</strong></div>
+      <div>
+        <div class="ai-bubble">我以前对自己的 AI 段位有一种<span class="strike-soft">傲慢</span>——我估计自己 <span class="score-num">95</span> 分，是顶级用户。</div>
+      </div>
+    </div>
+
+    <div class="ai-line right reveal">
+      <div class="ai-meta"><em>fact</em><strong>事实是</strong></div>
+      <div>
+        <div class="ai-bubble score">Claude 打开第一次，我看了一会儿——<br>它已经是 <span class="score-num">92</span> 分了。</div>
+        <p class="ai-conclusion">击穿。中等智能变便宜了。当 95 → 92 只剩 3 分，<em>你会发现，没认知、不掌握、傲慢、相信单因果的人，会被精确地放大。</em></p>
+      </div>
+    </div>
+
+    <div class="ai-line right reveal">
+      <div class="ai-meta"><em>but</em><strong>而你最后的护城河</strong></div>
+      <div>
+        <div class="ai-bubble">真正能换钱的表达——<br>是<span class="score-num">只有你这个具体的人</span>，<br>走过这一段具体的路，<br>才说得出来的话。</div>
+        <p class="ai-conclusion">别人能模仿你的句式，但模仿不了你那个晚上 27 岁觉得自己快死了的实感。<strong>这是 AI 替代不了你的最后一道护城河。</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col" style="margin-top:120px">
+    <div class="sidenote">§ 5.1 · 给所有人的一个建议</div>
+    <div class="body" style="margin-top:24px">
+      <p class="lift">普通人至少拿出 <strong>3000–5000 块钱花在 AI 上</strong>。不是花给我，不是买课——是充 GPT、Gemini、Claude 的会员，或者只充一个就 Claude。</p>
+      <p>AI 一落地，就跳过了实习生这一阶。以前我们的就职路线：实习生→职员→专员→部门主管。但 AI 一落地，它就有部门主管甚至专家的水平，同时它还很快地长上手脚了。</p>
+      <p>兄弟们，今天你们真的要庆幸——<em>机器人还没有很强。</em>机器人一旦很强，所有这些事情，人类确实会进入一个很尴尬的时期。</p>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT #7 — 傻 X 才让 AI 替你做判断 (light, with punctuation) -->
+<section class="impact impact--light" data-impact="7">
+  <div class="impact-marker">
+    impact · VII<br>
+    <strong>判 断</strong>
+  </div>
+  <div class="impact-inner">
+    <div class="impact-top">
+      <div class="left">第五章 · §5.1 · the rule of judgement</div>
+      <div class="right">a warning for the AI age</div>
+    </div>
+
+    <h2 class="impact-line">
+      <span class="impact-punct">"</span>傻 X 才让<br>
+      AI 替你<br>
+      <span class="vm">做判断</span><span class="impact-punct">。"</span>
+    </h2>
+
+    <div class="impact-bot">
+      <div class="meta">
+        <strong>用法 · the use</strong>
+        用 AI <em>学</em>东西，不是用 AI <em>替</em>你做判断。
+        聪明人只是想获得更多信息，对一个东西有更深入的认识。
+        身体酸了拍片子问，emo 了问血糖——<em>慢慢你就知道越来越多。</em>
+      </div>
+      <div class="seal">
+        判断<br>是你最后的<br><em>护城河</em>。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CHAPTER VI — 世界观这条链
+     ============================================================ -->
+<section class="ch-opener" id="ch6" data-chapter="6" data-name="世界观这条链">
+  <div class="ch-opener-inner reveal">
+    <div class="ch-spine">
+      <span class="roman">VI</span>
+      第 六 章<br>
+      <span class="of">of vii</span>
+    </div>
+    <div class="ch-opener-body">
+      <div class="kicker">Sixth — the spine</div>
+      <h2>世界观<br>这条<em>链。</em></h2>
+      <p class="thesis">
+        从世界观一路下来到结果、关系，
+        关系反过来又塑造你的世界观——这是一条会自我闭环的链。
+        <strong>要改，从这条链上任何一环切下去都行。但要切深一点——浅了会被惯性弹回来。</strong>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 装置 6：世界观链 -->
+<section class="inst-spine reveal">
+  <div class="spine-stage">
+    <p class="eyebrow" style="justify-content:center"><span>§ 6.1</span><span>这条链，你可以和 AI 聊十天半个月</span></p>
+
+    <div class="spine-chain stagger reveal">
+      <div class="spine-node"><span class="lbl">i</span><span class="nm">世界观</span></div>
+      <span class="spine-arrow">→</span>
+      <div class="spine-node"><span class="lbl">ii</span><span class="nm">思维</span></div>
+      <span class="spine-arrow">→</span>
+      <div class="spine-node"><span class="lbl">iii</span><span class="nm">判断</span></div>
+      <span class="spine-arrow">→</span>
+      <div class="spine-node"><span class="lbl">iv</span><span class="nm">决定</span></div>
+      <span class="spine-arrow">→</span>
+      <div class="spine-node"><span class="lbl">v</span><span class="nm">行为</span></div>
+      <span class="spine-arrow">→</span>
+      <div class="spine-node"><span class="lbl">vi</span><span class="nm">习惯</span></div>
+      <span class="spine-arrow">→</span>
+      <div class="spine-node"><span class="lbl">vii</span><span class="nm">结果</span></div>
+      <span class="spine-arrow">→</span>
+      <div class="spine-node"><span class="lbl">viii</span><span class="nm">关系</span></div>
+      <div class="spine-arrow loop">关系反过来塑造你的世界观</div>
+    </div>
+
+    <p class="spine-cap">
+      要切深一点。浅了会被惯性弹回来。
+    </p>
+  </div>
+
+  <div class="col" style="margin-top:80px">
+    <div class="sidenote">§ 6.2 · 嘴上骂我心里有我，回扣到这里</div>
+    <div class="body" style="margin-top:24px">
+      <p class="lift">他们把这么多宝贵的时间都给到了我。<strong>感恩，感恩，感恩。</strong></p>
+      <p>这个人骂我，他把他最重要的注意力给到了我。同时他的注意力还让他收获了痛苦——他不停地看我又干不掉我，他就很痛苦。</p>
+      <p>我现在连很讨厌的人，都不讲他的坏话。如果我跟兄弟不停地骂一个人，会导致我有个习惯，经常在背后骂人。<em>我对自己的要求是：如果我要背后骂这个人，我就一定能当面骂他。</em></p>
+    </div>
+
+    <div class="sidenote" style="margin-top:60px">§ 6.3 · 大部分人当不了老板，是自己为自己工作时养不活自己</div>
+    <div class="body" style="margin-top:24px">
+      <p>完整的商业链路是什么？发现一个人的需求，做出一个产品，跟他发生一个交换。你营销他——不停告诉他我的产品能解决你什么需求，不停降低他的决策成本。</p>
+      <p>很多人对营销这个词非常讨厌。但客观来说，<strong>营销应该是中性的。</strong>如果你的产品真的能解决一个困住人很多年的问题——三五十万很贵，但事实上市面上大把的人会认为这个东西只要让我知道了，我一定会去使用。</p>
+    </div>
+
+    <div class="sidenote" style="margin-top:60px">§ 6.4 · 为什么熟人的钱最难赚</div>
+    <div class="body" style="margin-top:24px">
+      <p class="lift">人的心理底层里面是知道——<strong>感情是贵的。</strong></p>
+      <p>跟你们太熟不是好事，因为熟人不好卖了。所谓的熟人关系，你们所有的钱、所有的交换都在你们的情感关系里面了——它不好变现。</p>
+      <p>而陌生人，你们的关系就很纯粹——只有交易，1V1 买卖交易。<em>你看托尼老师，他不停跟你聊天，他不用今天让你办卡——他只要跟你聊到心里去。</em></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CODA
+     ============================================================ -->
+<section class="coda" id="coda">
+  <div class="coda-inner">
+    <p class="eyebrow"><span>尾 声 · coda</span></p>
+    <h2 class="coda-headline">
+      以前我只有<em>叙事</em>。<br>
+      现在叙事和<span style="color:var(--vermilion)">结构</span>，一体两面。
+    </h2>
+
+    <div class="coda-body reveal">
+      <div>
+        <p>我以前大部分的存在感，其实都是靠跟你们的交互获得的。我发朋友圈，你们点赞；我直播，你们捧场——我是靠这种维系的。</p>
+        <p>而这一次，<strong>我切断了我接近八年的存在感。</strong>我从 19 岁就开始做这件事，今年 28 岁，27 岁半的时候停更，有大半年的时间。</p>
+        <p>这件事的惯性非常大。我对这件事是有瘾的。瘾就在于：再一再二不再三嘛，但是我一直再三再四再五再十再一百了。所以我对这件事应该是最上瘾的那个人。</p>
+        <p>而这大半年时间，我把这个东西戒掉了。我通过自己跟自己对话——<em>我可以在这东西写完的那一刻就结束了。我很平静，就结束了。</em></p>
+      </div>
+      <div>
+        <p>最差的情绪不是愤怒。<strong>是愧疚。</strong>愧疚会剥夺你最后的存在感——"生而为人，我很抱歉"的浓度太高了，太宰治最后自杀了。</p>
+        <p>愧疚怎么处理？要么赖账，要么慢慢还。我现在愧疚就还。我有计划地还，缓慢地还。<em>我只要知道我要还，我就不用愧疚了——反正我要还的，我怕什么呢？</em></p>
+        <p>我希望慢一点的直播。太足的情绪会消耗你们的多巴胺。<strong>发呆的能力。</strong>把手机关掉，关掉两分钟——你看一看，你是不是能够脱离短视频、脱离情绪、脱离听歌？你能独自地跟自己相处。</p>
+        <p>我在这几个月里最大的注意力的恢复动作，就叫发呆。<em>什么都不干地在那儿发呆。</em></p>
+      </div>
+    </div>
+
+    <div class="coda-seal" aria-label="止 — 印章">
+      <span class="seal-char">止</span>
+    </div>
+
+    <div class="coda-final reveal">
+      <span class="ln">向外投射秩序——</span>
+      <span class="ln">这是一个人活着，真正在做的事。</span>
+      <span class="ln ln-cn">
+        灵魂陪着身体，<br>
+        身体陪着灵魂。
+      </span>
+    </div>
+
+    <div class="colophon">
+      <div>
+        <strong>把注意力放回自己身上</strong><br>
+        Volume 01 · Manuscript · 2026
+      </div>
+      <div>
+        七 章 · 一 个 尾 声 · 一 个 印
+      </div>
+      <div>
+        Edit · 全文取自一场直播的整理稿；为可读性做了局部压缩与结构重组，主要观点与措辞保留原貌。
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+(() => {
+  'use strict';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- progress thread + chapter counter
+  const thread = document.getElementById('thread');
+  const chNow = document.getElementById('chNow');
+  const chapters = Array.from(document.querySelectorAll('[data-chapter], #prologue, #coda'));
+  const chapterNames = {
+    'prologue': '— · 序',
+    'ch1': 'I · 拿回来',
+    'ch2': 'II · 身体',
+    'ch3': 'III · 复利',
+    'ch4': 'IV · 杠杆',
+    'ch5': 'V · AI',
+    'ch6': 'VI · 链',
+    'coda': '∞ · 尾声'
+  };
+  let ticking = false;
+  const updateProgress = () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    const p = max > 0 ? (h.scrollTop / max) * 100 : 0;
+    thread.style.setProperty('--p', p.toFixed(1) + '%');
+    let curr = 'prologue';
+    const y = h.scrollTop + 80;
+    for (const c of chapters) {
+      if (c.offsetTop <= y) curr = c.id;
+    }
+    if (chNow && chapterNames[curr]) chNow.textContent = chapterNames[curr];
+    ticking = false;
+  };
+  const onScroll = () => {
+    if (!ticking) { requestAnimationFrame(updateProgress); ticking = true; }
+  };
+  document.addEventListener('scroll', onScroll, {passive:true});
+  updateProgress();
+
+  // ---------- TOC
+  const toc = document.getElementById('toc');
+  const menuBtn = document.getElementById('menuBtn');
+  const tocClose = document.getElementById('tocClose');
+  const openToc = () => { toc.classList.add('open'); toc.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; };
+  const closeToc = () => { toc.classList.remove('open'); toc.setAttribute('aria-hidden','true'); document.body.style.overflow=''; };
+  menuBtn?.addEventListener('click', openToc);
+  tocClose?.addEventListener('click', closeToc);
+  toc?.querySelectorAll('a').forEach(a => a.addEventListener('click', closeToc));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeToc();
+    if (e.key === 'm' && !toc.classList.contains('open')) openToc();
+  });
+
+  // ---------- reveal observer
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        en.target.classList.add('in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal, .stagger').forEach(el => io.observe(el));
+
+  // ---------- chrome dark mode for dark sections (coda + impact--dark)
+  const chrome = document.querySelector('.chrome');
+  const threadEl = document.getElementById('thread');
+  const darkEls = document.querySelectorAll('.coda, .impact--dark, .impact-pair > .right');
+  if (chrome && darkEls.length) {
+    let darkCount = 0;
+    const dio = new IntersectionObserver(es => {
+      es.forEach(en => {
+        if (en.isIntersecting) darkCount++;
+        else darkCount = Math.max(0, darkCount - 1);
+      });
+      const isDark = darkCount > 0;
+      chrome.classList.toggle('on-dark', isDark);
+      threadEl?.classList.toggle('on-dark', isDark);
+    }, { rootMargin: '-80px 0px -50% 0px' });
+    darkEls.forEach(el => dio.observe(el));
+  }
+
+  // =================================================================
+  // INSTALLATION 1 — thieves: hover to catch
+  // =================================================================
+  const thievesStage = document.getElementById('thievesStage');
+  const thievesNum = document.getElementById('thievesNum');
+  const thievesCounter = document.getElementById('thievesCounter');
+  const thievesCta = document.getElementById('thievesCta');
+
+  if (thievesStage) {
+    const thieves = [
+      {t:'短视频', s:34}, {t:'他喜不喜欢我', s:26}, {t:'30 岁还没结婚', s:24},
+      {t:'我配不上', s:30}, {t:'内卷', s:38}, {t:'别人朋友圈', s:22},
+      {t:'KPI', s:34}, {t:'房价', s:32}, {t:'我好菜', s:30},
+      {t:'刷一会儿', s:24}, {t:'再看一条', s:24}, {t:'已读不回', s:26},
+      {t:'同龄人都', s:22}, {t:'AI 替代我', s:28}, {t:'裁员', s:34},
+      {t:'催婚', s:26}, {t:'对比同事', s:22}, {t:'卷不动了', s:28},
+      {t:'我是谁', s:32}, {t:'生命的意义', s:24}, {t:'emo', s:36},
+      {t:'身体不舒服', s:22}, {t:'失眠', s:28}, {t:'胃不舒服', s:22},
+      {t:'存在感', s:28}
+    ];
+
+    let caught = 0;
+    const total = thieves.length;
+    const stageW = thievesStage.offsetWidth || 1100;
+    const stageH = 560;
+    const cx = stageW / 2;
+    const cy = stageH / 2;
+
+    thieves.forEach((th, i) => {
+      const el = document.createElement('span');
+      el.className = 'thief';
+      el.textContent = th.t;
+      el.style.setProperty('--sz', th.s + 'px');
+
+      const angle = Math.random() * Math.PI * 2;
+      const angle2 = angle + Math.PI + (Math.random()-0.5)*0.6;
+      const startR = Math.max(stageW, stageH) * 0.7;
+      const endR = Math.max(stageW, stageH) * 0.7;
+      const passR = 140 + Math.random()*200;
+      const passAngle = angle + Math.PI*0.5 + (Math.random()-0.5)*0.6;
+
+      const x0 = Math.cos(angle) * startR;
+      const y0 = Math.sin(angle) * startR;
+      const x1 = Math.cos(passAngle) * passR;
+      const y1 = Math.sin(passAngle) * passR;
+      const x2 = Math.cos(angle2) * endR;
+      const y2 = Math.sin(angle2) * endR;
+
+      el.style.setProperty('--x0', x0.toFixed(0) + 'px');
+      el.style.setProperty('--y0', y0.toFixed(0) + 'px');
+      el.style.setProperty('--x1', x1.toFixed(0) + 'px');
+      el.style.setProperty('--y1', y1.toFixed(0) + 'px');
+      el.style.setProperty('--x2', x2.toFixed(0) + 'px');
+      el.style.setProperty('--y2', y2.toFixed(0) + 'px');
+      el.style.setProperty('--r0', ((Math.random()-.5)*30).toFixed(0) + 'deg');
+      el.style.setProperty('--r1', ((Math.random()-.5)*20).toFixed(0) + 'deg');
+      el.style.setProperty('--r2', ((Math.random()-.5)*30).toFixed(0) + 'deg');
+
+      el.style.left = cx + 'px';
+      el.style.top = cy + 'px';
+      el.style.setProperty('--dur', (9 + Math.random()*7) + 's');
+      el.style.setProperty('--delay', (-Math.random()*16) + 's');
+
+      // catch on first hover or click
+      const catch_ = () => {
+        if (el.classList.contains('caught')) return;
+        el.classList.add('caught');
+
+        // place caught word in a stable spot near anchor's bottom
+        const idx = caught;
+        caught++;
+        const cols = 5;
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        const finalX = (col - (cols-1)/2) * 110 + (Math.random()-.5)*8;
+        const finalY = 140 + row * 38 + (Math.random()-.5)*4;
+        el.style.transform = `translate(${finalX}px, ${finalY}px) rotate(${(Math.random()-.5)*4}deg) scale(.7)`;
+        el.style.fontSize = '14px';
+
+        if (thievesNum) thievesNum.textContent = caught;
+        if (caught >= total) {
+          thievesCounter?.classList.add('full');
+          thievesCta?.classList.add('show');
+        }
+      };
+
+      el.addEventListener('mouseenter', catch_);
+      el.addEventListener('click', catch_);
+      el.addEventListener('touchstart', catch_, {passive:true});
+
+      thievesStage.appendChild(el);
+    });
+
+    // start animations only when in view
+    const tio = new IntersectionObserver(es => {
+      es.forEach(en => {
+        if (en.isIntersecting && !reduce) {
+          thievesStage.querySelectorAll('.thief:not(.caught)').forEach(t => t.classList.add('go'));
+          tio.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    tio.observe(thievesStage);
+  }
+
+  // =================================================================
+  // PHONE FEED
+  // =================================================================
+  const feedTrack = document.getElementById('feedTrack');
+  if (feedTrack) {
+    const cards = [
+      {tag:'recommended', tagLbl:'推荐', head:'震惊！90 后已经 emo 到这种地步', stats:'♥ 28.4w   ↻ 12.1k   0:30'},
+      {tag:'trending', tagLbl:'热门', head:'月薪三千怎么过得像月薪三万', stats:'♥ 50.1w   ↻ 8.7k   0:45'},
+      {tag:'for you', tagLbl:'为你定制', head:'看完这个视频你就明白他为什么不回你了', stats:'♥ 100.2w   ↻ 23.5k   0:28'},
+      {tag:'live', tagLbl:'直播中', head:'三十岁还没结婚是不是真的很失败', stats:'♥ 73.6w   ↻ 19.2k   1:00'},
+      {tag:'recommended', tagLbl:'推荐', head:'同龄人都买房了，只有你还在租房', stats:'♥ 42.8w   ↻ 14.2k   0:35'},
+      {tag:'trending', tagLbl:'热门', head:'AI 来了，这五个职业三年内消失', stats:'♥ 89.7w   ↻ 31.4k   0:50'}
+    ];
+    [...cards, ...cards].forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'feed-card';
+      el.innerHTML = `<div class="meta"><span class="vm">${c.tag}</span> · ${c.tagLbl}</div><p class="head">${c.head}</p><div class="stats">${c.stats}</div>`;
+      feedTrack.appendChild(el);
+    });
+  }
+
+  // =================================================================
+  // INSTALLATION 2 — energy slider (drag handle controls full stage)
+  // =================================================================
+  const instEnergy = document.getElementById('instEnergy');
+  const energyHandle = document.getElementById('energyHandle');
+  const energyHandleNum = document.getElementById('energyHandleNum');
+  const energyBig = document.getElementById('energyBig');
+  const energyTicks = document.getElementById('energyTicks');
+
+  if (instEnergy && energyHandle && energyTicks) {
+    // build ticks
+    for (let i = 0; i <= 10; i++) {
+      const t = document.createElement('div');
+      t.className = 'energy-tick' + (i === 0 || i === 6 || i === 10 ? ' major' : '');
+      t.style.left = (i * 10) + '%';
+      energyTicks.appendChild(t);
+      if (i === 0 || i === 6 || i === 10) {
+        const lbl = document.createElement('div');
+        lbl.className = 'energy-tick-label';
+        lbl.style.left = (i * 10) + '%';
+        lbl.textContent = i * 10;
+        energyTicks.appendChild(lbl);
+      }
+    }
+
+    let value = 59;
+    const setValue = v => {
+      value = Math.max(0, Math.min(100, v));
+      const norm = value / 100;
+      const cold = value < 60 ? 1 : Math.max(0, 1 - (value - 60) / 30);
+      const hot = value >= 60 ? 1 : Math.max(0, (value - 30) / 30);
+      instEnergy.style.setProperty('--e', value);
+      instEnergy.style.setProperty('--e-norm', norm);
+      instEnergy.style.setProperty('--e-cold', cold.toFixed(3));
+      instEnergy.style.setProperty('--e-hot', hot.toFixed(3));
+      instEnergy.classList.toggle('heated', value >= 60);
+      const display = Math.round(value);
+      if (energyBig) energyBig.textContent = display;
+      if (energyHandleNum) energyHandleNum.textContent = display;
+    };
+
+    const track = instEnergy.querySelector('.energy-track');
+    let dragging = false;
+
+    const onMove = (clientX) => {
+      const rect = track.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const v = (x / rect.width) * 100;
+      setValue(v);
+    };
+
+    const startDrag = (e) => {
+      dragging = true;
+      energyHandle.classList.add('grabbing');
+      instEnergy.classList.add('touched');
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      onMove(cx);
+      e.preventDefault();
+    };
+    const moveDrag = (e) => {
+      if (!dragging) return;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      onMove(cx);
+    };
+    const endDrag = () => {
+      dragging = false;
+      energyHandle.classList.remove('grabbing');
+    };
+
+    energyHandle.addEventListener('mousedown', startDrag);
+    energyHandle.addEventListener('touchstart', startDrag, {passive:false});
+    track.addEventListener('mousedown', startDrag);
+    track.addEventListener('touchstart', startDrag, {passive:false});
+    document.addEventListener('mousemove', moveDrag);
+    document.addEventListener('touchmove', moveDrag, {passive:false});
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchend', endDrag);
+
+    setValue(59);
+
+    // demo animation when scrolled into view first time
+    const eio = new IntersectionObserver(es => {
+      es.forEach(en => {
+        if (en.isIntersecting && !reduce && !instEnergy.classList.contains('demoed')) {
+          instEnergy.classList.add('demoed');
+          // Wait, then animate 59 → 90 → 70 to show range
+          setTimeout(() => {
+            const tweenTo = (target, dur) => new Promise(res => {
+              const start = value;
+              const t0 = performance.now();
+              const step = (t) => {
+                const k = Math.min(1, (t - t0) / dur);
+                const ease = k < .5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+                setValue(start + (target - start) * ease);
+                if (k < 1) requestAnimationFrame(step);
+                else res();
+              };
+              requestAnimationFrame(step);
+            });
+            (async () => {
+              await tweenTo(90, 1400);
+              await new Promise(r => setTimeout(r, 600));
+              await tweenTo(45, 1100);
+              await new Promise(r => setTimeout(r, 400));
+              await tweenTo(72, 900);
+            })();
+          }, 800);
+          eio.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    eio.observe(instEnergy);
+  }
+
+  // =================================================================
+  // INSTALLATION 3 — locked pile (drag sheets to publish)
+  // =================================================================
+  const lockedPile = document.getElementById('lockedPile');
+  const lockedCount = document.getElementById('lockedCount');
+  const lockedReward = document.getElementById('lockedReward');
+  const pricedLines = document.querySelectorAll('.locked-released .priced-line');
+
+  if (lockedPile) {
+    const sheetCount = 7;
+    const sheets = [];
+    for (let i = 0; i < sheetCount; i++) {
+      const sheet = document.createElement('div');
+      sheet.className = 'sheet';
+      const tx = (Math.random()-0.5) * 90;
+      const ty = (Math.random()-0.5) * 60;
+      const rot = (Math.random()-0.5) * 18;
+      sheet.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${rot}deg)`;
+      sheet.style.zIndex = i;
+      sheet.dataset.tx = tx;
+      sheet.dataset.ty = ty;
+      sheet.dataset.rot = rot;
+
+      let lines = '';
+      const lineCount = 12 + Math.floor(Math.random()*4);
+      for (let j = 0; j < lineCount; j++) lines += '<span></span>';
+      sheet.innerHTML = `
+        <div class="lines">${lines}</div>
+        <div class="stamp-page">${String(i+1).padStart(2,'0')} / 07</div>
+        <div class="stamp-private">private · 我的备忘录</div>
+      `;
+      lockedPile.appendChild(sheet);
+      sheets.push(sheet);
+    }
+
+    let topIdx = sheetCount - 1;
+    let publishedCount = 0;
+
+    const updateTopSheet = () => {
+      sheets.forEach(s => s.classList.remove('is-top'));
+      if (topIdx >= 0) sheets[topIdx].classList.add('is-top');
+    };
+    updateTopSheet();
+
+    const showStep = (n) => {
+      pricedLines.forEach(l => {
+        const step = parseInt(l.dataset.step, 10);
+        if (step <= n) {
+          l.classList.add('in');
+          l.classList.remove('idle');
+        } else {
+          l.classList.remove('in');
+          l.classList.add('idle');
+        }
+      });
+    };
+
+    const flyOut = (sheet) => {
+      // Fly the sheet to the right (toward the public side)
+      const rect = sheet.getBoundingClientRect();
+      const stageRect = lockedPile.getBoundingClientRect();
+      // Target: across stage + some
+      const dx = stageRect.width + 200;
+      const dy = -40 - Math.random() * 60;
+      const rotEnd = (Math.random() < .5 ? -1 : 1) * (8 + Math.random()*14);
+      sheet.classList.remove('dragging','is-top');
+      sheet.classList.add('flying');
+      sheet.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(${rotEnd}deg) scale(.7)`;
+      sheet.style.opacity = '0';
+      setTimeout(() => sheet.remove(), 750);
+
+      publishedCount++;
+      if (lockedCount) lockedCount.textContent = publishedCount;
+      showStep(publishedCount);
+      if (publishedCount >= 5 && lockedReward) {
+        lockedReward.classList.add('show');
+      }
+
+      topIdx--;
+      updateTopSheet();
+    };
+
+    // drag mechanics
+    let dragSheet = null;
+    let dragStart = null;
+    let baseTransform = null;
+
+    const onPointerDown = (e) => {
+      const sheet = e.currentTarget;
+      if (!sheet.classList.contains('is-top')) return;
+      dragSheet = sheet;
+      sheet.classList.add('dragging');
+      lockedPile.classList.add('grabbing');
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      dragStart = {x:cx, y:cy};
+      baseTransform = {tx:parseFloat(sheet.dataset.tx), ty:parseFloat(sheet.dataset.ty), rot:parseFloat(sheet.dataset.rot)};
+      e.preventDefault();
+    };
+    const onPointerMove = (e) => {
+      if (!dragSheet) return;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      const dx = cx - dragStart.x;
+      const dy = cy - dragStart.y;
+      const newRot = baseTransform.rot + dx * 0.05;
+      dragSheet.style.transform = `translate(calc(-50% + ${baseTransform.tx + dx}px), calc(-50% + ${baseTransform.ty + dy}px)) rotate(${newRot}deg)`;
+    };
+    const onPointerUp = (e) => {
+      if (!dragSheet) return;
+      const cx = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
+      const dx = cx - dragStart.x;
+      lockedPile.classList.remove('grabbing');
+      // If dragged > 80px to the right OR > 60px in any direction, publish
+      if (dx > 80 || Math.abs(dx) > 120) {
+        flyOut(dragSheet);
+      } else {
+        // snap back
+        dragSheet.classList.remove('dragging');
+        dragSheet.style.transform = `translate(calc(-50% + ${baseTransform.tx}px), calc(-50% + ${baseTransform.ty}px)) rotate(${baseTransform.rot}deg)`;
+      }
+      dragSheet = null;
+    };
+
+    sheets.forEach(s => {
+      s.addEventListener('mousedown', onPointerDown);
+      s.addEventListener('touchstart', onPointerDown, {passive:false});
+      // Also, click (not drag) should publish — easier UX
+      let clickTimer = null;
+      s.addEventListener('click', (e) => {
+        if (!s.classList.contains('is-top')) return;
+        // Avoid double-fire from a drag. We detect drag via the dragSheet state:
+        // if a drag just published, this click won't fire on the removed element.
+        // For top sheet that wasn't dragged, treat click as quick-publish.
+        if (s.parentNode && s.classList.contains('is-top') && !s.classList.contains('flying')) {
+          flyOut(s);
+        }
+      });
+    });
+    document.addEventListener('mousemove', onPointerMove);
+    document.addEventListener('touchmove', onPointerMove, {passive:false});
+    document.addEventListener('mouseup', onPointerUp);
+    document.addEventListener('touchend', onPointerUp);
+  }
+
+  // =================================================================
+  // INSTALLATION 4 — capital cells sequence reveal
+  // =================================================================
+  const capStage = document.getElementById('capitalStage');
+  if (capStage) {
+    const cio = new IntersectionObserver(es => {
+      es.forEach(en => {
+        if (en.isIntersecting) {
+          capStage.querySelectorAll('[data-cap]').forEach(c => c.classList.add('in'));
+          cio.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    cio.observe(capStage);
+  }
+
+  // =================================================================
+  // KEYBOARD NAV
+  // =================================================================
+  const navTargets = ['#prologue', '#ch1', '#ch2', '#ch3', '#ch4', '#ch5', '#ch6', '#coda'];
+  document.addEventListener('keydown', e => {
+    if (toc.classList.contains('open')) return;
+    if (['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)) return;
+    let dir = 0;
+    if (e.key === 'j' || e.key === 'ArrowDown') dir = 1;
+    if (e.key === 'k' || e.key === 'ArrowUp') dir = -1;
+    if (dir === 0) return;
+    const y = window.scrollY + 80;
+    let curIdx = 0;
+    navTargets.forEach((s, i) => {
+      const el = document.querySelector(s);
+      if (el && el.offsetTop <= y) curIdx = i;
+    });
+    const ni = Math.max(0, Math.min(navTargets.length - 1, curIdx + dir));
+    const t = document.querySelector(navTargets[ni]);
+    if (t) {
+      e.preventDefault();
+      t.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>树成林 · 用 AI 给你的生意赋能</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@400;700&family=Fraunces:ital,opsz,wght@1,9..144,700&family=Long+Cang&display=swap" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@400;700&family=Fraunces:ital,opsz,wght@1,9..144,700&family=Long+Cang&display=swap" crossorigin>
+<style>
+:root{
+  /* 通体绿色系 — 1 米奶 + 5 绿，由浅到深 */
+  --cream:#fbf2e2;        /* 主底 · 米奶 */
+  --green1:#e8ebd9;       /* 极浅绿 · 微章节分隔 / 浅底 */
+  --green2:#c9d4b5;       /* 浅绿 · 案例区 / 服务标准区 / 高亮 */
+  --green3:#7a956b;       /* 中绿 · 主品牌色 / 按钮 / 强调 */
+  --green4:#4a6741;       /* 深绿 · 赋能区背景 */
+  --green5:#2c3e27;       /* 墨绿 · 收尾品牌区 */
+  /* 别名：旧变量名全部映射到新绿色，CSS 其余部分无需改动 */
+  --sage:var(--green2);
+  --sage2:var(--green1);
+  --sage3:#bbb2a2;        /* 中性灰绿（极少用，保留） */
+  --moss:var(--green3);
+  --moss-d:var(--green4);
+  --moss-soft:var(--green1);
+  --forest:var(--green5);
+  --ink:#14120b;--ink2:#5d5445;--ink3:#948a76;
+  --line:rgba(28,24,10,.15);--line2:rgba(28,24,10,.08);
+  /* 兼容旧变量名 */
+  --green:var(--green3);--g2:var(--green4);--gd:var(--green5);--gsoft:var(--green1);
+  --lime:var(--green2);--lime2:#bbb2a2;
+  --dp:'Bricolage Grotesque',-apple-system,sans-serif;
+  --cn:'Noto Sans SC',-apple-system,'PingFang SC',sans-serif;
+  --fr:'Fraunces',Georgia,serif;
+  --wild:'Long Cang','Noto Sans SC',cursive;                   /* 行草 · 大字 */
+  --brushA:'Noto Serif SC','Noto Sans SC',serif;                /* 思源宋体 · 文气关键词 */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--cn);line-height:1.78;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.w{max-width:1180px;margin:0 auto;padding:0 32px;position:relative;z-index:2}
+.acc{font-family:var(--brushA);font-weight:400;font-size:1.16em;line-height:1;color:var(--moss-d)}
+
+/* ─── INTRO ─── */
+#intro{position:fixed;inset:0;z-index:9999;pointer-events:none}
+#intro .half{position:absolute;left:0;right:0;height:50.5%;background:var(--forest);transition:transform .85s cubic-bezier(.76,0,.24,1) .08s}
+#intro .ht{top:0}#intro .hb{bottom:0}
+#intro .iw{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:opacity .4s}
+#intro .iword{font-family:var(--wild);color:var(--sage);line-height:1.1;
+  opacity:0;transform:translateY(26px) scale(.92);animation:iup .6s cubic-bezier(.2,.75,.2,1) forwards}
+#intro .iw1{font-size:clamp(80px,16vw,200px);animation-delay:.08s}
+#intro .iw2{font-size:clamp(36px,6vw,80px);animation-delay:.28s}
+#intro .iline{width:0;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--moss),var(--sage));animation:iln .5s cubic-bezier(.6,0,.3,1) .5s forwards}
+@keyframes iup{to{opacity:1;transform:none}}
+@keyframes iln{to{width:clamp(120px,18vw,260px)}}
+#intro.gone .ht{transform:translateY(-101%)}
+#intro.gone .hb{transform:translateY(101%)}
+#intro.gone .iw{opacity:0}
+
+/* ─── NAV ─── */
+nav{position:sticky;top:0;z-index:60;background:rgba(244,241,227,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line2)}
+.nav-in{max-width:1180px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.logo{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink)}
+.logo .mk{width:32px;height:32px;border-radius:8px;background:var(--moss);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo .mk svg{width:18px;height:18px}
+.logo .logo-txt{font-family:var(--wild);font-size:24px;line-height:1;letter-spacing:.04em;white-space:nowrap}
+.nav-links{display:flex;gap:30px;font-size:16px;font-weight:500;color:var(--ink2)}
+.nav-links a{color:inherit;text-decoration:none;transition:color .2s}.nav-links a:hover{color:var(--ink)}
+.nav-cta{font-family:var(--cn);font-size:15px;font-weight:700;color:var(--ink);background:var(--moss-soft);padding:10px 22px;border-radius:100px;text-decoration:none;transition:transform .2s,background .2s}
+.nav-cta:hover{transform:translateY(-2px);background:var(--moss);color:var(--cream)}
+@media(max-width:800px){.nav-links{display:none}}
+
+/* ─── HERO ─── */
+header{position:relative;padding:clamp(64px,9vw,118px) 0 clamp(54px,8vw,96px);overflow:hidden}
+.hi{position:relative;z-index:3;max-width:900px;margin:0 auto;text-align:center}
+.ey{display:inline-flex;align-items:center;gap:9px;font-family:var(--cn);font-weight:700;font-size:15.5px;color:var(--ink);
+  background:var(--moss-soft);padding:8px 19px;border-radius:100px;margin-bottom:32px;
+  opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.75,.2,1),transform .8s cubic-bezier(.2,.75,.2,1)}
+h1{font-family:var(--cn);font-weight:900;font-size:clamp(52px,10vw,122px);line-height:1.1;letter-spacing:.07em;margin-bottom:28px}
+h1 .l{display:block;opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.75,.2,1),transform .9s cubic-bezier(.2,.75,.2,1)}
+h1 .hl{position:relative;display:inline-block;z-index:1;font-family:var(--brushA);font-weight:400;font-size:1.1em}
+h1 .hl::before{content:'';position:absolute;left:-.06em;right:-.06em;bottom:.06em;top:.26em;background:var(--moss-soft);z-index:-1;transform:rotate(-1.5deg)}
+.sub{max-width:600px;margin-left:auto;margin-right:auto;font-size:clamp(19px,2.5vw,22px);color:var(--ink2);margin-bottom:38px;
+  opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.75,.2,1),transform .9s cubic-bezier(.2,.75,.2,1)}
+.sub b{color:var(--ink);font-weight:700}
+.ha{display:flex;flex-wrap:wrap;gap:13px;justify-content:center;opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.75,.2,1),transform .9s cubic-bezier(.2,.75,.2,1)}
+.btn{font-family:var(--cn);font-weight:700;font-size:17.5px;padding:15px 30px;border-radius:100px;text-decoration:none;
+  transition:transform .2s,background .2s,color .2s;display:inline-flex;align-items:center;gap:8px}
+.btn.p{background:var(--ink);color:var(--cream)}.btn.p:hover{transform:translateY(-3px);background:var(--moss-d)}
+.btn.g{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}.btn.g:hover{background:var(--ink);color:var(--cream)}
+.hst{display:flex;flex-wrap:wrap;gap:0;justify-content:center;margin-top:54px;
+  opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.75,.2,1),transform .9s cubic-bezier(.2,.75,.2,1)}
+.st{padding-right:40px;margin-right:40px;border-right:1px solid var(--line);text-align:left}.st:last-child{border:none;margin:0;padding:0}
+.st .n{font-family:var(--dp);font-weight:800;font-size:52px;line-height:1}.st .n .u{color:var(--moss-d);font-size:26px}
+.st .t{font-size:15px;color:var(--ink2);margin-top:6px}
+body.loaded .ey{opacity:1;transform:none;transition-delay:.08s}
+body.loaded h1 .l:nth-child(1){opacity:1;transform:none;transition-delay:.18s}
+body.loaded h1 .l:nth-child(2){opacity:1;transform:none;transition-delay:.3s}
+body.loaded .sub{opacity:1;transform:none;transition-delay:.44s}
+body.loaded .ha{opacity:1;transform:none;transition-delay:.56s}
+body.loaded .hst{opacity:1;transform:none;transition-delay:.7s}
+
+/* ─── SECTIONS ─── */
+section{padding:clamp(64px,9vw,108px) 0;position:relative}
+.tag{display:inline-block;font-family:var(--dp);font-weight:700;font-size:13.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss-d);margin-bottom:16px}
+.h2{font-family:var(--cn);font-weight:900;font-size:clamp(34px,6.2vw,64px);line-height:1.08;letter-spacing:.01em}
+.lead{font-size:clamp(17px,2.3vw,19px);color:var(--ink2);max-width:540px;margin-top:14px}
+.rv{opacity:0;transform:translateY(40px);transition:opacity .9s cubic-bezier(.2,.75,.2,1),transform .9s cubic-bezier(.2,.75,.2,1)}
+.rv.lx{transform:translateX(-46px)}.rv.in{opacity:1;transform:none}
+
+/* ─── CAPABILITIES ─── */
+.caps{margin-top:38px;border-top:1.5px solid var(--ink)}
+.cap{display:grid;grid-template-columns:70px 1fr 38px;align-items:center;gap:20px;padding:16px 0;
+  border-bottom:1px solid var(--line);position:relative;overflow:hidden;cursor:default;transition:padding .32s}
+.cap::before{content:'';position:absolute;left:-100%;top:0;bottom:0;width:100%;background:var(--moss-soft);transition:left .38s cubic-bezier(.2,.7,.2,1);z-index:-1}
+.cap:hover::before{left:0}.cap:hover{padding-left:20px}
+.cap .n{font-family:var(--dp);font-weight:800;font-size:34px;color:var(--ink3);transition:color .3s;line-height:1}
+.cap:hover .n{color:var(--moss)}
+.cap .ttl{font-family:var(--cn);font-weight:700;font-size:20px}
+.cap .dsc{font-size:15px;color:var(--ink2)}
+.cap .ic{color:var(--ink);opacity:.4;transition:opacity .3s,color .3s;display:flex;align-items:center;justify-content:flex-end}
+.cap:hover .ic{opacity:1;color:var(--moss-d)}.cap .ic svg{width:22px;height:22px}
+.cap-more{opacity:.85}
+@media(max-width:560px){.cap{grid-template-columns:52px 1fr}.cap .ic{display:none}}
+
+/* ─── MARQUEE ─── */
+.mq{background:var(--moss);color:var(--cream);border-top:1.5px solid var(--moss-d);border-bottom:1.5px solid var(--moss-d);padding:13px 0;overflow:hidden}
+.mq-t{display:flex;white-space:nowrap;animation:mq 22s linear infinite}
+.mqi{display:inline-flex;align-items:center;gap:13px;padding:0 34px;font-family:var(--dp);font-weight:700;font-size:19px;color:var(--cream)}
+.mqi .dot{width:6px;height:6px;border-radius:50%;background:var(--sage);flex-shrink:0}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ─── EMPOWER ─── */
+.empower{background:var(--moss-d);color:var(--cream);overflow:hidden;position:relative}
+.empower .eb{position:absolute;width:380px;height:380px;border-radius:50%;background:rgba(201,212,181,.12);top:-120px;left:-90px;will-change:transform;pointer-events:none}
+.empower .tag{color:var(--sage)}
+.empg{display:grid;grid-template-columns:1fr 1.06fr;gap:clamp(44px,5vw,70px);align-items:center}
+@media(max-width:880px){.empg{grid-template-columns:1fr;gap:36px}}
+.ebig{font-family:var(--cn);font-weight:900;font-size:clamp(26px,3.6vw,40px);line-height:1.3;letter-spacing:-.01em}
+.ebig .lm{color:var(--inkgreen);background:linear-gradient(transparent 58%,#DCE4C8 58%);padding:0 2px}
+.ebigs{font-size:15.5px;color:rgba(251,242,226,.78);margin-top:18px;max-width:400px;line-height:1.85}
+.elist{border-top:1px solid rgba(251,242,226,.22)}
+.erow{display:grid;grid-template-columns:32px 1fr;gap:16px;align-items:start;padding:21px 0;border-bottom:1px solid rgba(251,242,226,.16)}
+.erow .ck{width:28px;height:28px;border-radius:7px;background:var(--sage);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-family:var(--dp);font-size:14px;flex-shrink:0;margin-top:2px}
+.erow h4{font-family:var(--cn);font-weight:700;font-size:18.5px}
+.erow p{font-size:15px;color:rgba(251,242,226,.7);margin-top:3px}
+
+/* ─── CASES: dual marquee rows ─── */
+.cases{background:var(--sage);padding:clamp(60px,8vw,96px) 0 clamp(64px,9vw,104px);overflow:hidden}
+.cases-head{max-width:1180px;margin:0 auto 38px;padding:0 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.cases-hint{font-family:var(--cn);font-size:14px;color:var(--ink3);padding-bottom:8px}
+.crow{height:32vh;min-height:248px;max-height:400px;margin-bottom:24px;overflow:hidden;position:relative}
+.crow:last-child{margin-bottom:0}
+.ctrack{display:flex;gap:22px;width:max-content;height:100%;animation:rollL var(--dur,64s) linear infinite}
+.crow.rev .ctrack{animation-name:rollR}
+.crow:hover .ctrack{animation-play-state:paused}
+@keyframes rollL{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes rollR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.ccard{height:100%;aspect-ratio:16/10.6;border-radius:16px;overflow:hidden;background:#fff;cursor:pointer;flex-shrink:0;
+  border:1px solid rgba(22,20,13,.1);box-shadow:0 18px 44px -22px rgba(52,71,43,.32);
+  display:flex;flex-direction:column;position:relative;transition:transform .35s cubic-bezier(.2,.8,.3,1),box-shadow .35s}
+.ccard:hover{transform:translateY(-7px);box-shadow:0 30px 60px -24px rgba(52,71,43,.46)}
+.ccard .cprev{flex:1;position:relative;overflow:hidden;background:var(--cream)}
+.ccard .cprev video{width:100%;height:100%;object-fit:cover;display:block}
+.ccard .cprev iframe{pointer-events:none;width:200%;height:200%;border:none;transform:scale(.5);transform-origin:top left;display:block}
+.ccard .cfoot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 17px;border-top:1px solid var(--line2);background:#fff}
+.ccard .cf-l{min-width:0}
+.ccard .cf-t{font-family:var(--cn);font-weight:900;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ccard .cf-d{font-size:13px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ccard .cf-h{flex-shrink:0;font-family:var(--dp);font-weight:700;font-size:11px;letter-spacing:.08em;color:var(--moss-d);
+  border:1px solid var(--moss);border-radius:100px;padding:3px 11px;background:var(--moss-soft)}
+.ccard .ctag{position:absolute;top:11px;left:11px;z-index:3;font-family:var(--cn);font-weight:700;font-size:12px;
+  background:rgba(20,18,11,.78);color:var(--sage);padding:4px 11px;border-radius:100px;backdrop-filter:blur(4px)}
+/* compact daily-report preview inside card */
+.cdaily{position:absolute;inset:0;padding:13px;display:flex;flex-direction:column;gap:8px;background:linear-gradient(160deg,#fff, var(--moss-soft))}
+.cdaily .db{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;background:var(--moss);color:#fff;border-radius:8px;padding:6px 10px}
+.cdaily .db i{width:7px;height:7px;border-radius:50%;background:var(--sage);flex-shrink:0}
+.cdaily ul{list-style:none;font-size:12px;line-height:1.55;color:var(--ink2);display:flex;flex-direction:column;gap:3px}
+.cdaily ul b{color:var(--ink)}
+.cdaily ul li{padding-left:11px;position:relative}
+.cdaily ul li::before{content:'·';position:absolute;left:0;color:var(--moss);font-weight:900}
+.cdaily .dq{font-size:12px;border-left:3px solid var(--moss);background:#fff;padding:4px 9px;border-radius:0 6px 6px 0;color:var(--ink)}
+
+/* ─── PROMISE (elevated) ─── */
+.svc{background:var(--sage2)}
+.prs{margin-top:46px;border-top:2.5px solid var(--ink)}
+.pr{display:grid;grid-template-columns:148px 1fr;gap:34px;align-items:baseline;padding:40px 0;border-bottom:1px solid var(--line);position:relative;overflow:hidden;cursor:default;transition:padding .35s}
+.pr::before{content:'';position:absolute;left:-100%;top:0;bottom:0;width:100%;background:rgba(122,149,107,.13);z-index:-1;transition:left .4s cubic-bezier(.2,.7,.2,1)}
+.pr:hover::before{left:0}.pr:hover{padding-left:22px}
+.pr .pn{font-family:var(--dp);font-weight:800;font-size:clamp(58px,9vw,108px);color:var(--moss-d);line-height:.82;transition:color .3s}
+.pr:hover .pn{color:var(--moss)}
+.pr h4{font-family:var(--cn);font-weight:900;font-size:clamp(24px,3.4vw,30px)}
+.pr p{font-size:17px;color:var(--ink2);margin-top:8px;max-width:620px}
+@media(max-width:560px){.pr{grid-template-columns:78px 1fr;gap:16px}}
+.sign{margin-top:46px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;padding-top:26px;border-top:3px solid var(--ink)}
+.sign .k{font-family:var(--dp);font-weight:700;font-size:12.5px;letter-spacing:.1em;color:var(--moss-d);margin-bottom:5px}
+.sign .nameslot{font-family:var(--cn);font-size:30px;font-weight:900;border-bottom:6px solid var(--moss);padding-bottom:1px}
+.sign .org{font-size:14px;color:var(--ink2);margin-top:8px}
+.sign .vl{font-family:var(--dp);font-weight:400;font-size:12.5px;color:var(--ink3)}
+
+/* ─── BRAND FOOTER ─── */
+.bfooter{height:100vh;position:relative;background:var(--forest);overflow:hidden}
+.bfs{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.bfi{will-change:transform,opacity;text-align:center;padding:0 24px;position:relative;z-index:2}
+.bfi .bfsub{font-family:var(--dp);font-weight:500;font-size:16px;letter-spacing:.18em;text-transform:uppercase;color:rgba(251,242,226,.55);margin-bottom:14px;display:block}
+.bfi .bfw{font-family:var(--wild);font-weight:400;font-size:clamp(80px,22vw,320px);line-height:1;letter-spacing:.06em;color:var(--sage);display:block;white-space:nowrap;
+  text-shadow:0 24px 70px rgba(201,212,181,.18)}
+.bfi .bfen{font-family:var(--fr);font-style:italic;font-size:clamp(20px,3.6vw,46px);color:rgba(251,242,226,.7);letter-spacing:.06em;margin-top:14px;display:block}
+.bf-blob{position:absolute;width:520px;height:520px;border-radius:50%;background:rgba(201,212,181,.08);top:-160px;right:-130px;pointer-events:none;will-change:transform}
+
+/* ─── FOOTER ─── */
+footer{border-top:1px solid var(--line);padding:36px 0;text-align:center;background:var(--cream)}
+footer .fn{font-size:12px;color:var(--ink3);margin-top:8px}
+
+/* ─── LIGHTBOX ─── */
+#wlb{position:fixed;inset:0;z-index:9000;background:rgba(10,30,18,.78);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:3vmin}
+#wlb.on{display:flex}
+#wlb-inner{position:relative;background:var(--cream);border-radius:18px;overflow:hidden;max-width:94vw;max-height:90vh;
+  box-shadow:0 40px 120px -30px rgba(0,0,0,.6);display:flex;flex-direction:column}
+#wlb-title{font-family:var(--cn);font-weight:900;font-size:15px;padding:13px 56px 13px 20px;border-bottom:1px solid var(--line)}
+#wlb-body{overflow:auto;display:flex;align-items:center;justify-content:center;background:#0c0f0c}
+#wlb-body video{max-width:90vw;max-height:78vh;display:block}
+#wlb-body iframe{width:min(1200px,92vw);height:78vh;border:none;background:#fff}
+#wlb-body .lb-daily{background:var(--cream);padding:22px;max-width:620px;max-height:78vh;overflow:auto}
+#wlb-close{position:absolute;top:9px;right:10px;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--ink);color:var(--cream);font-size:15px;line-height:1;z-index:5}
+/* daily full card (lightbox) */
+.wd-daily{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;font-size:12.5px}
+.wd-daily-bar{display:flex;align-items:center;gap:8px;background:var(--moss);color:#fff;padding:8px 13px}
+.wd-daily-dot{width:8px;height:8px;border-radius:50%;background:var(--sage);flex-shrink:0}
+.wd-daily-meta{font-weight:700;font-size:11.5px;letter-spacing:.02em;flex:1}
+.wd-daily-badge{font-family:var(--dp);font-weight:700;font-size:9.5px;letter-spacing:.12em;background:var(--sage);color:var(--ink);padding:2px 7px;border-radius:100px}
+.wd-daily-body{padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:10px}
+.wd-daily-label{font-family:var(--cn);font-weight:700;font-size:11px;color:var(--moss-d);letter-spacing:.06em;margin-bottom:4px}
+.wd-daily-list{list-style:none;display:flex;flex-direction:column;gap:3px}
+.wd-daily-list li{padding-left:14px;position:relative;color:var(--ink2);line-height:1.5}
+.wd-daily-list li::before{content:'·';position:absolute;left:0;color:var(--moss);font-weight:900}
+.wd-daily-list li b{color:var(--ink);font-weight:700}
+.wd-daily-quote{padding:5px 10px;border-left:3px solid var(--sage);color:var(--ink);font-weight:500;line-height:1.5;margin-bottom:2px;background:var(--moss-soft);border-radius:0 6px 6px 0}
+.wd-daily-concept{padding:7px 10px;background:var(--sage);border-radius:8px;color:var(--ink2);line-height:1.6}
+.wd-daily-concept b{color:var(--moss-d)}
+.wd-daily-noise{font-size:11px;color:var(--ink3);padding:5px 8px;background:var(--sage);border-radius:6px;text-align:center}
+
+/* ═══════════════════════════════════════
+   MOBILE (≤768px)
+   ═══════════════════════════════════════ */
+@media(max-width:768px){
+  .w{padding:0 18px}
+  .nav-in{padding:10px 18px}
+  .logo .logo-txt{font-size:18px;letter-spacing:.03em}
+  .nav-cta{font-size:13px;padding:8px 16px}
+  section{padding:clamp(44px,8vw,68px) 0}
+  /* hero */
+  h1{font-size:clamp(38px,11vw,60px);line-height:1.08;letter-spacing:.04em;margin-bottom:20px}
+  h1 .hl{font-size:1.06em}
+  .sub{font-size:16px;max-width:100%}
+  .ey{font-size:13px;padding:6px 14px;margin-bottom:24px}
+  .hst{flex-direction:column;align-items:center;gap:18px;margin-top:32px}
+  .st{padding-right:0;margin-right:0;border-right:none;text-align:center}
+  .st .n{font-size:40px}.st .n .u{font-size:22px}
+  .ha{gap:10px}
+  .btn{font-size:15px;padding:13px 24px}
+  /* sections */
+  .h2{font-size:clamp(28px,7vw,40px)}
+  .acc{font-size:1.04em}
+  .tag{font-size:11.5px;margin-bottom:10px}
+  .lead{font-size:15px;margin-top:8px}
+  /* capabilities */
+  .caps{margin-top:28px}
+  .cap{grid-template-columns:44px 1fr;gap:12px;padding:13px 0}
+  .cap .n{font-size:26px}.cap .ic{display:none}
+  .cap .ttl{font-size:17px}.cap .dsc{font-size:13px}
+  .cap:hover{padding-left:10px}
+  /* empower */
+  .empg{grid-template-columns:1fr;gap:28px}
+  .ebig{font-size:clamp(26px,5.2vw,36px)}
+  .ebigs{font-size:15px}
+  .erow{grid-template-columns:24px 1fr;gap:12px;padding:15px 0}
+  .erow h4{font-size:16px}.erow p{font-size:13px}
+  /* cases */
+  .cases-head{margin-bottom:22px}
+  .cases-head .h2{font-size:clamp(26px,6vw,36px)}
+  .cases-hint{font-size:12px}
+  .crow{height:22vh;min-height:170px;max-height:260px;margin-bottom:16px}
+  .ctrack{gap:14px}
+  .ccard{border-radius:12px}
+  .ccard .cf-t{font-size:14px}
+  .ccard .cf-d{font-size:11px}
+  .ccard .cf-h{font-size:9px;padding:2px 8px}
+  .ccard .ctag{font-size:10px;padding:3px 7px;top:7px;left:7px}
+  .ccard .cfoot{padding:9px 12px}
+  /* promise */
+  .pr{grid-template-columns:52px 1fr;gap:14px;padding:26px 0}
+  .pr .pn{font-size:clamp(42px,9vw,60px)}
+  .pr h4{font-size:clamp(19px,3vw,24px)}
+  .pr p{font-size:14px}
+  .pr:hover{padding-left:10px}
+  .sign{margin-top:32px;flex-direction:column;align-items:flex-start;gap:12px}
+  .sign .nameslot{font-size:22px;border-bottom-width:4px}
+  /* brand footer */
+  .bfooter{height:100vh}
+  .bfi .bfsub{font-size:13px;letter-spacing:.12em}
+  .bfi .bfw{font-size:clamp(54px,18vw,160px)}
+  .bfi .bfen{font-size:clamp(16px,3vw,26px)}
+  /* marquee */
+  .mqi{font-size:14px;padding:0 20px}
+  .mqi .dot{width:5px;height:5px}
+  /* footer */
+  footer{padding:22px 0}
+  footer .fn{font-size:11px}
+}
+
+/* ═══════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════ */
+@media(prefers-color-scheme:dark){
+  :root{
+    --cream:#1a2317;
+    --green1:#202d1b;
+    --green2:#283820;
+    --green3:#6a8a5c;
+    --green4:#344a28;
+    --green5:#121a0e;
+    --ink:#e6e0d4;
+    --ink2:#b0a898;
+    --ink3:#706a5e;
+    --line:rgba(230,224,212,.12);
+    --line2:rgba(230,224,212,.06);
+    --sage3:#554e44;
+  }
+  body::before{opacity:.06;mix-blend-mode:screen}
+  nav{background:rgba(22,32,20,.93)}
+  .mq{background:var(--green3);border-color:var(--green4)}
+  .ccard{background:#1a2317;border-color:var(--line2);box-shadow:0 18px 44px -22px rgba(0,0,0,.5)}
+  .ccard .cfoot{background:#1e2a19;border-color:var(--line2)}
+  .ccard .ctag{background:rgba(230,224,212,.1);color:var(--green2)}
+  .cdaily{background:linear-gradient(160deg,#1e2a19,var(--green1))}
+  .cdaily .dq{background:#1a2317}
+  #wlb{background:rgba(8,16,6,.88)}
+  #wlb-inner{background:var(--cream)}
+  #wlb-body{background:#080c06}
+  .wd-daily-body{background:#1a2317}
+  .btn.p{background:var(--ink);color:var(--cream)}
+  .btn.g{color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+  .btn.g:hover{background:var(--ink);color:var(--cream)}
+  .svc{background:var(--green1)}
+  .cases{background:var(--green2)}
+  #intro .half{background:var(--green5)}
+  #intro .iword{color:var(--green2)}
+  #intro .iline{background:linear-gradient(90deg,var(--green3),var(--green2))}
+}
+</style>
+<style id="plan-b">
+/* ═══ 方案B · 纸上墨绿 ═══ */
+:root{
+  --paper:#fbf2e2; --paper2:#f4ecd8; --paper3:#efe6cf;
+  --inkgreen:#24341f; --inkgreen2:#3e5a2e;
+  --cinnabar:#c2492b;
+}
+/* 强制浅色（预览用，覆盖暗色模式） */
+@media(prefers-color-scheme:dark){
+  :root{--cream:#fbf2e2;--green1:#e8ebd9;--green2:#c9d4b5;--green3:#7a956b;--green4:#4a6741;--green5:#2c3e27;
+    --ink:#14120b;--ink2:#5d5445;--ink3:#948a76;--line:rgba(28,24,10,.15);--line2:rgba(28,24,10,.08);--sage3:#bbb2a2}
+  body::before{opacity:.04;mix-blend-mode:multiply}
+  nav{background:rgba(244,241,227,.88)}
+}
+
+/* 开场遮罩：纸底 + 墨绿字 */
+#intro .half{background:var(--paper2)}
+#intro .iword{color:var(--inkgreen)}
+#intro .iline{background:var(--cinnabar)}
+
+/* 跑马灯：纸底 + 墨绿粗线 */
+.mq{background:var(--paper);border-top:2.5px solid var(--inkgreen);border-bottom:2.5px solid var(--inkgreen)}
+.mqi{color:var(--inkgreen)}
+.mqi .dot{background:var(--cinnabar)}
+
+/* 赋能区：深色墙 → 纸面 + 序号列表 */
+.empower{background:var(--paper2);color:var(--ink);border-bottom:1px solid var(--line)}
+.empower .eb{display:none}
+.empower .tag{color:var(--cinnabar)}
+.empower .h2{color:var(--inkgreen)!important}
+.ebig{color:var(--inkgreen)}
+.ebig .lm{color:var(--inkgreen)}
+.ebigs{color:var(--ink2)}
+.elist{border-top:2.5px solid var(--inkgreen);counter-reset:er}
+.erow{border-bottom:1px solid var(--line);counter-increment:er;grid-template-columns:44px 1fr}
+.erow .ck{background:transparent;color:transparent;font-size:0;width:auto;height:auto;margin-top:0}
+.erow .ck::before{content:"0" counter(er);font-family:var(--dp);font-weight:800;font-size:19px;color:var(--cinnabar);line-height:1.4}
+.erow h4{color:var(--ink)}
+.erow p{color:var(--ink2)}
+
+/* 案例区：浅绿 → 米纸，靠粗线分节 */
+.cases{background:var(--paper3);border-bottom:1px solid var(--line)}
+.cases .tag{color:var(--cinnabar)}
+
+/* 服务承诺：保持纸底，编号换朱砂 */
+.svc{background:var(--paper)}
+.svc .tag{color:var(--cinnabar)}
+.pr .pn{color:var(--cinnabar);opacity:.85}
+.pr:hover .pn{color:var(--cinnabar);opacity:1}
+.sign .nameslot{border-bottom-color:var(--cinnabar)}
+.sign .k{color:var(--cinnabar)}
+
+/* 品牌收尾：墨绿夜幕 → 浅纸上一行墨绿大字 */
+.bfooter{background:var(--paper2);border-top:2.5px solid var(--inkgreen)}
+.bf-blob{display:none}
+.bfi .bfsub{color:var(--ink3)}
+.bfi .bfw{color:var(--inkgreen);text-shadow:none}
+.bfi .bfen{color:var(--cinnabar)}
+
+/* 页脚 */
+footer{background:var(--paper)}
+</style>
+
+
+
+<style id="catalog-style">
+/* ═══ 目录式展示区 · 纸上墨绿 ═══ */
+.showcase{position:relative;background:var(--paper2);border-top:2.5px solid var(--inkgreen);border-bottom:1px solid var(--line);padding:clamp(56px,7vw,90px) 0;overflow:hidden}
+.scs{max-width:1180px;margin:0 auto;padding:0 32px}
+.sch{text-align:left;margin-bottom:clamp(26px,4vh,40px)}
+.sch h2{font-family:var(--cn);font-weight:900;font-size:clamp(28px,4.6vw,46px);letter-spacing:-.02em;color:var(--inkgreen)}
+.sch p{font-size:13.5px;color:var(--ink2);margin-top:7px}
+.cat-wrap{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(210px,1fr);gap:clamp(26px,4vw,54px);align-items:start}
+/* 左侧大画布 */
+.cat-panel{position:relative;min-height:480px}
+.cat-panel .wd-card{display:none;flex-direction:column;gap:14px}
+.cat-panel .wd-card.on{display:flex;animation:catIn .38s ease}
+@keyframes catIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.wd-tag{display:inline-flex;align-self:flex-start;font-family:var(--dp);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cinnabar);background:rgba(194,73,43,.08);padding:4px 12px;border-radius:100px}
+.wd-h{font-family:var(--cn);font-weight:900;font-size:clamp(26px,3.4vw,40px);line-height:1.08;letter-spacing:-.02em;color:var(--inkgreen)}
+.wd-video{position:relative;width:100%;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0d0d0a;flex-shrink:0}
+.wd-video video{display:block;width:100%;max-height:330px;object-fit:contain;background:#0d0d0a}
+.wd-video-hint{position:absolute;bottom:0;left:0;right:0;padding:8px 14px;background:linear-gradient(to top,rgba(13,13,10,.74),transparent);color:#fbf2e2;font-family:var(--cn);font-weight:700;font-size:13px;cursor:pointer;text-align:center;letter-spacing:.04em;transition:background .2s}
+.wd-video-hint:hover{background:linear-gradient(to top,rgba(194,73,43,.85),transparent)}
+.wd-io{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+.io-b{flex:1;min-width:150px;background:rgba(255,255,255,.45);border:1px solid var(--inkgreen);border-radius:10px;padding:11px 15px}
+.io-b.out{background:var(--inkgreen);color:var(--paper);border-color:var(--inkgreen)}
+.io-k{display:block;font-family:var(--dp);font-weight:700;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--cinnabar);margin-bottom:3px}
+.io-b.out .io-k{color:rgba(251,242,226,.62)}
+.io-b .v{font-size:14.5px;font-weight:500}.io-b .v b{font-family:var(--dp);font-weight:800;font-size:17px}
+.io-arrow{display:flex;align-items:center;font-family:var(--dp);font-weight:800;font-size:22px;color:var(--cinnabar)}
+.wd-stat{display:flex;align-items:baseline;gap:13px;border-left:3px solid var(--cinnabar);padding-left:15px}
+.wd-stat b{font-family:var(--dp);font-weight:800;font-size:clamp(24px,3vw,34px);color:var(--inkgreen);line-height:1;white-space:nowrap}
+.wd-stat span{font-size:13px;color:var(--ink2)}
+.wd-pts{list-style:none;display:flex;flex-direction:column;gap:7px;padding:0;margin:0}
+.wd-pts li{position:relative;padding-left:22px;font-size:14px;color:var(--ink2)}
+.wd-pts li::before{content:'';position:absolute;left:0;top:.6em;width:9px;height:9px;border-radius:50%;background:var(--inkgreen2)}
+.wd-val{font-family:var(--cn);font-weight:700;font-size:15.5px;color:var(--inkgreen)}
+.wd-note{font-size:12.5px;color:var(--cinnabar);background:rgba(194,73,43,.07);border-radius:10px;padding:9px 13px}
+.wd-daily-section{display:flex;flex-direction:column;gap:4px}
+.showcase .wd-daily{font-size:12.5px;max-width:640px}
+.showcase .wd-daily-bar{background:var(--inkgreen)}
+.showcase .wd-daily-dot{background:var(--cinnabar)}
+.showcase .wd-daily-badge{background:var(--cinnabar);color:#FBF2E2}
+.showcase .wd-daily-label{color:var(--inkgreen2)}
+.showcase .wd-daily-list li::before{color:var(--cinnabar)}
+.showcase .wd-daily-quote{border-left-color:var(--cinnabar);background:rgba(194,73,43,.07)}
+.showcase .wd-daily-concept{background:rgba(36,52,31,.08)}
+.showcase .wd-daily-concept b{color:var(--inkgreen)}
+.showcase .wd-daily-noise{background:rgba(36,52,31,.06)}
+/* 右侧目录：手风琴，贴右 */
+.cat-wrap{grid-template-columns:minmax(0,1fr) clamp(240px,23vw,300px);gap:clamp(30px,5vw,70px)}
+.cat-index{display:flex;flex-direction:column;border-top:2.5px solid var(--cinnabar);height:100%;width:100%;background:#FAF5E8}
+.cat-row{display:flex;flex-direction:column;justify-content:center;padding:14px 12px;background:none;border:none;border-bottom:1px solid var(--line);cursor:pointer;font:inherit;text-align:left;flex-grow:1;flex-shrink:0;min-height:52px;transition:flex-grow .45s cubic-bezier(.3,.7,.3,1),background .25s,padding .25s;overflow:hidden}
+.ci-head{display:flex;align-items:baseline;gap:10px}
+.cat-row .ci-n{font-family:var(--dp);font-weight:800;font-size:17px;color:var(--ink3);line-height:1;transition:font-size .35s,color .25s}
+.cat-row .ci-t{font-family:var(--cn);font-weight:700;font-size:16.5px;color:var(--ink3);transition:color .25s,font-size .35s}
+.cat-row .ci-d,.cat-row .ci-now{max-height:0;opacity:0;overflow:hidden;transition:max-height .4s ease,opacity .3s ease,margin .35s}
+.cat-row:hover{background:rgba(255,255,255,.55)}
+.cat-row.on{flex-grow:1.9;background:#fff;box-shadow:inset 3px 0 0 var(--cinnabar);padding:18px 14px}
+.cat-row.on .ci-n{font-size:30px;color:var(--cinnabar)}
+.cat-row.on .ci-t{font-size:19px;color:var(--inkgreen)}
+.cat-row.on .ci-d{max-height:72px;opacity:1;margin-top:9px;font-size:13.5px;color:var(--ink2);line-height:1.65}
+.cat-row.on .ci-now{max-height:22px;opacity:1;margin-top:11px;font-family:var(--dp);font-weight:700;font-size:11px;letter-spacing:.14em;color:var(--cinnabar)}
+.cat-row:focus-visible{outline:3px solid var(--inkgreen);outline-offset:-3px}
+@media(max-width:860px){
+  .cat-wrap{grid-template-columns:1fr;gap:18px}
+  .cat-index{height:auto;flex-direction:row;flex-wrap:wrap;border-top-width:2px}
+  .cat-row{flex:1 1 46%;min-width:46%;padding:11px 10px}
+  .cat-row.on{padding:11px 10px}
+  .cat-row .ci-d,.cat-row.on .ci-d,.cat-row .ci-now,.cat-row.on .ci-now{display:none}
+  .cat-row.on .ci-n{font-size:15px}.cat-row.on .ci-t{font-size:14px}
+  .cat-panel{min-height:0}
+}
+/* 能做什么 · 看实例（浅苔绿底块，常驻） */
+.cap{grid-template-columns:70px 1fr auto 38px}
+.cap[data-case]{cursor:pointer}
+.cap-go{font-family:var(--cn);font-weight:700;font-size:13px;color:var(--inkgreen);background:#DCE4C8;border-radius:100px;padding:7px 16px;white-space:nowrap;justify-self:end;margin-right:14px;transition:background .25s,transform .25s}
+.cap[data-case]:hover .cap-go{background:#C9D4B5;transform:translateX(3px)}
+@media(max-width:560px){.cap{grid-template-columns:44px 1fr}.cap-go{display:none}}
+/* 视频墙下说明 */
+.cases-note{max-width:1180px;margin:30px auto 0;padding:0 32px;font-size:14.5px;color:var(--ink2);line-height:1.8}
+.cases-note::before{content:'';display:inline-block;width:22px;height:3px;background:var(--cinnabar);vertical-align:middle;margin-right:12px}
+/* ═══ 承诺区压缩：两列两行 ═══ */
+.prs{margin-top:34px;border-top:2px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;column-gap:clamp(28px,4vw,60px)}
+.pr{display:grid;grid-template-columns:64px 1fr;gap:18px;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--line)}
+.pr:hover{padding-left:12px}
+.pr .pn{font-size:clamp(28px,3.4vw,40px)}
+.pr h4{font-size:clamp(17px,2vw,21px)}
+.pr p{font-size:14px;margin-top:4px}
+@media(max-width:760px){.prs{grid-template-columns:1fr}.pr{grid-template-columns:52px 1fr;gap:14px;padding:16px 0}}
+</style>
+</head>
+
+<body>
+
+<!-- INTRO -->
+
+
+<!-- LIGHTBOX -->
+<div id="wlb" onclick="if(event.target===this)wallClose()">
+  <div id="wlb-inner">
+    <button id="wlb-close" onclick="wallClose()" aria-label="关闭">✕</button>
+    <div id="wlb-title"></div>
+    <div id="wlb-body"></div>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-in">
+    <a href="#" class="logo">
+      <span class="mk"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21V11M12 11C12 8 9.5 6 6.5 6.5M12 11C12 7.5 14.5 4 18 4.5M12 14C12 11.5 9 10 6.5 10.5M12 14C12 12 15 10.5 17.5 11" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+      <span class="logo-txt">树成林AI赋能服务</span>
+    </a>
+    <div class="nav-links">
+      <a href="#cap">能做什么</a><a href="#emp">AI 赋能</a><a href="#work">真实案例</a><a href="#promise">服务承诺</a>
+    </div>
+    <a href="#bfooter" class="nav-cta">联系我们</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header>
+  <div class="w hi">
+    <span class="ey">树成林 · 用 AI 给你的生意赋能</span>
+    <h1>
+      <span class="l">你的事</span>
+      <span class="l">交给<span class="hl">我们</span></span>
+    </h1>
+    <p class="sub">一支用 AI 武装的年轻团队。<b>凡是能在电脑上解决的事</b>，我们都替你做得更快、更好、更省。</p>
+    <div class="ha">
+      <a href="#work" class="btn p">看看我们做的 →</a>
+      <a href="#bfooter" class="btn g">联系我们</a>
+    </div>
+    <div class="hst">
+      <div class="st"><div class="n">13<span class="u">+</span></div><div class="t">真实案例，点开就能看</div></div>
+      <div class="st"><div class="n">24<span class="u">/7</span></div><div class="t">AI 不下班，随时待命</div></div>
+      <div class="st"><div class="n">0<span class="u">门槛</span></div><div class="t">不用懂技术，开口就行</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- CAPABILITIES -->
+<section id="cap">
+  <div class="w">
+    <div class="rv"><span class="tag">What we do</span><div class="h2">这些事，我们<span class="acc">都能办</span></div><p class="lead">从一句话的需求，到能直接拿去用的成品。</p></div>
+    <div class="caps">
+      <div class="cap rv"><div class="n">01</div><div><div class="ttl">写材料</div><div class="dsc">发言稿、汇报、文案、推文，给方向我们成稿。</div></div><div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+      <div class="cap rv" role="button" tabindex="0" data-case="wall"><div class="n">02</div><div><div class="ttl">做图做海报</div><div class="dsc">产品图、活动海报，风格统一，要几张有几张。</div></div><span class="cap-go">看实例 →</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 16l5-4 4 3 3-3 6 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="cap rv" role="button" tabindex="0" data-case="wall"><div class="n">03</div><div><div class="ttl">拍片做视频</div><div class="dsc">文案配音剪辑一条龙，产品宣传片交付。</div></div><span class="cap-go">看实例 →</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M10 9l5 3-5 3V9z" fill="currentColor"/></svg></div></div>
+      <div class="cap rv" role="button" tabindex="0" data-case="3"><div class="n">04</div><div><div class="ttl">整理数据</div><div class="dsc">杂乱文件表格理成报表和看板，一目了然。</div></div><span class="cap-go">看实例 →</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+      <div class="cap rv" role="button" tabindex="0" data-case="4"><div class="n">05</div><div><div class="ttl">搭网站 · 上线</div><div class="dsc">官网、小程序，几天上线，对外有面子。</div></div><span class="cap-go">看实例 →</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 8h18" stroke="currentColor" stroke-width="2"/></svg></div></div>
+      <div class="cap rv" role="button" tabindex="0" data-case="0"><div class="n">06</div><div><div class="ttl">配数字助手</div><div class="dsc">盯日报进度，AI 自动跑、自动汇报，不喊累。</div></div><span class="cap-go">看实例 →</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+      <div class="cap cap-more rv" role="button" tabindex="0" data-case="wall"><div class="n">···</div><div><div class="ttl">还有更多</div><div class="dsc">只要能在电脑上做的，开口我们就能接。</div></div><span class="cap-go">看更多实例 →</span><div class="ic"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mq">
+  <div class="mq-t">
+    <span class="mqi"><span class="dot"></span>树成林</span><span class="mqi"><span class="dot"></span>AI 赋能</span><span class="mqi"><span class="dot"></span>写材料</span><span class="mqi"><span class="dot"></span>做视频</span><span class="mqi"><span class="dot"></span>搭网站</span><span class="mqi"><span class="dot"></span>理数据</span><span class="mqi"><span class="dot"></span>配助手</span><span class="mqi"><span class="dot"></span>SHU CHENG LIN</span><span class="mqi"><span class="dot"></span>凡是电脑能做的事</span><span class="mqi"><span class="dot"></span>AI 时代</span>
+    <span class="mqi"><span class="dot"></span>树成林</span><span class="mqi"><span class="dot"></span>AI 赋能</span><span class="mqi"><span class="dot"></span>写材料</span><span class="mqi"><span class="dot"></span>做视频</span><span class="mqi"><span class="dot"></span>搭网站</span><span class="mqi"><span class="dot"></span>理数据</span><span class="mqi"><span class="dot"></span>配助手</span><span class="mqi"><span class="dot"></span>SHU CHENG LIN</span><span class="mqi"><span class="dot"></span>凡是电脑能做的事</span><span class="mqi"><span class="dot"></span>AI 时代</span>
+  </div>
+</div>
+
+<!-- EMPOWER -->
+<section id="emp" class="empower">
+  <div class="eb" data-par="0.28"></div>
+  <div class="w">
+    <div class="rv" style="margin-bottom:44px"><span class="tag">AI · Empower</span><div class="h2" style="color:var(--cream)">成为你的 AI 助理，能做的远不止这些</div></div>
+    <div class="empg">
+      <div class="rv lx">
+        <div class="ebig">凡是电脑上能做的事，<br><span class="lm">都能交给我们</span></div>
+        <p class="ebigs">把我们当成一支随时待命的远程团队——你专注做生意，电脑前的活，交给我们和 AI。</p>
+      </div>
+      <div class="elist rv">
+        <div class="erow"><span class="ck">✓</span><div><h4>日常杂活，全都接</h4><p>整理资料、做台账——重复费时的事，自动化掉。</p></div></div>
+        <div class="erow"><span class="ck">✓</span><div><h4>行业资料，快速调研</h4><p>市场、对手、政策，我们查全并整理成结论。</p></div></div>
+        <div class="erow"><span class="ck">✓</span><div><h4>一次搭好，长期省心</h4><p>把常做的流程做成自动化工具，往后天天替你跑。</p></div></div>
+        <div class="erow"><span class="ck">✓</span><div><h4>按你的行业量身定</h4><p>不管哪一行，AI 都能在你的环节里提效、省钱。</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CASES: dual-row marquee wall -->
+<!-- CATALOG SHOWCASE · 五大能力（目录式） -->
+<div class="showcase" id="wheel">
+  <div class="scs">
+    <div class="sch rv"><span class="tag">Flagship work</span><h2>真实素材进，成品出</h2><p>点右侧目录切换 · 五大能力，每个都有真实输入、输出与数字</p></div>
+    <div class="cat-wrap">
+      <div class="cat-panel">
+        <!-- 01 日报和总结 -->
+        <article class="wd-card on">
+          <span class="wd-tag">日报 · 飞书卡片</span>
+          <h3 class="wd-h">日报和总结</h3>
+
+          <div class="wd-daily">
+            <div class="wd-daily-bar">
+              <span class="wd-daily-dot"></span>
+              <span class="wd-daily-meta">AI 日报 · 2026-05-19 · 群聊 78 条 → 精华 38 条</span>
+              <span class="wd-daily-badge">已清洗</span>
+            </div>
+            <div class="wd-daily-body">
+              <div class="wd-daily-section">
+                <div class="wd-daily-label">⚡ 生成器</div>
+                <ul class="wd-daily-list">
+                  <li><b>斜率优先于起点</b> — 迭代速度够快，起点差也能跑出好结果</li>
+                  <li><b>给权限+时间盒，不要问</b> — 派任务 = 全权 2 小时，不打断</li>
+                  <li><b>激励先付，再谈交付</b> — 动起来再补协议，信任前置</li>
+                  <li><b>退到能成的颗粒度</b> — 100 人 → 30 人，能办才办</li>
+                </ul>
+              </div>
+              <div class="wd-daily-section">
+                <div class="wd-daily-label">💬 金句</div>
+                <div class="wd-daily-quote">斜率够大，屎也能跑成好。</div>
+                <div class="wd-daily-quote">不要怕，我的兄弟，有我在。</div>
+              </div>
+              <div class="wd-daily-section">
+                <div class="wd-daily-label">🔲 概念骨架</div>
+                <div class="wd-daily-concept">
+                  终点 = 起点 + <b>斜率 × 时间</b><br>
+                  可控变量是斜率，不是起点
+                </div>
+              </div>
+              <div class="wd-daily-noise">🔇 已剥离噪音约 40 行（红包 / 时间确认 / 打卡罗列）</div>
+            </div>
+          </div>
+          <div class="wd-io">
+            <div class="io-b"><span class="io-k">输入</span><span class="v">群聊记录 / 工作信息流 <b>78 条</b></span></div>
+            <span class="io-arrow">→</span>
+            <div class="io-b out"><span class="io-k">输出</span><span class="v">飞书日报卡片 <b>38 条精华</b></span></div>
+          </div>
+          <div class="wd-stat"><b>压缩 51%</b><span>噪音剥离，只留决策与金句</span></div>
+          <p class="wd-val">每天的群聊乱流，变成一份真正能看的日报。</p>
+        </article>
+
+        <!-- 02 Bot 安装以及交付 -->
+        <article class="wd-card">
+          <span class="wd-tag">Bot · 飞书部署</span>
+          <h3 class="wd-h">Bot 安装与交付</h3>
+          <div class="wd-video">
+            <video src="assets/videos/bot-install.mp4" muted playsinline loop autoplay preload="auto"
+              style="pointer-events:none"></video>
+          <div class="wd-video-hint" onclick="wdVideoOpen('assets/videos/bot-install.mp4')">▶ 点击全屏播放</div>
+          </div>
+          <div class="wd-io">
+            <div class="io-b"><span class="io-k">输入</span><span class="v">日报总结能力 + <b>飞书应用</b></span></div>
+            <span class="io-arrow">→</span>
+            <div class="io-b out"><span class="io-k">输出</span><span class="v">可对话的飞书 Bot + <b>Runbook</b></span></div>
+          </div>
+          <div class="wd-stat"><b>能跑 · 能交</b><span>Agent 工作流，部署即交付</span></div>
+          <ul class="wd-pts">
+            <li>飞书 WebSocket 接收消息，AI 自动回复</li>
+            <li>支持乔布斯、马斯克、芒格三种预置思维</li>
+            <li>附完整 Runbook，可自行扩展新人格</li>
+          </ul>
+          <p class="wd-val">Bot 装好、Runbook 给到，你拿过去就能用。</p>
+        </article>
+
+        <!-- 03 小红书自动爬取工具 -->
+        <article class="wd-card">
+          <span class="wd-tag">数据 · 选题调研</span>
+          <h3 class="wd-h">小红书自动爬取工具</h3>
+          <div class="wd-video">
+            <video src="assets/videos/xhs-crawler-cut.mp4" muted playsinline loop autoplay preload="auto"
+              style="pointer-events:none"></video>
+          <div class="wd-video-hint" onclick="wdVideoOpen('assets/videos/xhs-crawler-cut.mp4')">▶ 点击全屏播放</div>
+          </div>
+          <div class="wd-io">
+            <div class="io-b"><span class="io-k">输入</span><span class="v">关键词 + <b>筛选条件</b></span></div>
+            <span class="io-arrow">→</span>
+            <div class="io-b out"><span class="io-k">输出</span><span class="v">爆款标题库 + <b>选题参考</b></span></div>
+          </div>
+          <div class="wd-stat"><b>数据驱动</b><span>内容选题，从"猜"变成有依据地选</span></div>
+          <ul class="wd-pts">
+            <li>围绕关键词采集公开笔记标题与数据</li>
+            <li>支持粉丝数筛选，过滤低质账号</li>
+            <li>启动三步：setup.bat → login.bat → start.bat</li>
+          </ul>
+          <p class="wd-note">当前采集标题数据；正文功能迭代中，不超额承诺。</p>
+        </article>
+
+        <!-- 04 公众号内容知识库 -->
+        <article class="wd-card">
+          <span class="wd-tag">知识库 · 内容沉淀</span>
+          <h3 class="wd-h">公众号内容知识库</h3>
+          <div class="wd-video">
+            <video src="assets/videos/wechat-kb.mp4" muted playsinline loop autoplay preload="auto"
+              style="pointer-events:none"></video>
+          <div class="wd-video-hint" onclick="wdVideoOpen('assets/videos/wechat-kb.mp4')">▶ 点击全屏播放</div>
+          </div>
+          <div class="wd-io">
+            <div class="io-b"><span class="io-k">输入</span><span class="v">历史文章 <b>108 篇</b> · 2020—2026</span></div>
+            <span class="io-arrow">→</span>
+            <div class="io-b out"><span class="io-k">输出</span><span class="v">分类知识库 + <b>检索入口</b></span></div>
+          </div>
+          <div class="wd-stat"><b>108 篇</b><span>零散内容，整理成可复用的组织资产</span></div>
+          <ul class="wd-pts">
+            <li>按 AI 与商业、写作表达、自我成长、认知哲学等主题分类</li>
+            <li>长文提炼摘要、金句与关键词</li>
+            <li>可搜索、可培训、可复用</li>
+          </ul>
+          <p class="wd-val">经验不再只装在某个人脑子里，知识开始属于团队。</p>
+        </article>
+
+        <!-- 05 AI 一键生成网页工具 -->
+        <article class="wd-card">
+          <span class="wd-tag">网页 · 一键生成</span>
+          <h3 class="wd-h">AI 一键生成网页工具</h3>
+          <div class="wd-video">
+            <video src="assets/videos/ai-webpage.mp4" muted playsinline loop autoplay preload="auto"
+              style="pointer-events:none"></video>
+          <div class="wd-video-hint" onclick="wdVideoOpen('assets/videos/ai-webpage.mp4')">▶ 点击全屏播放</div>
+          </div>
+          <div class="wd-io">
+            <div class="io-b"><span class="io-k">输入</span><span class="v">一段描述 / 主题方向</span></div>
+            <span class="io-arrow">→</span>
+            <div class="io-b out"><span class="io-k">输出</span><span class="v">可打开的 <b>HTML 网页</b></span></div>
+          </div>
+          <div class="wd-stat"><b>说完即得</b><span>不懂代码，照样能拿到成品网页</span></div>
+          <ul class="wd-pts">
+            <li>描述想要的页面，AI 自动生成完整 HTML</li>
+            <li>支持品牌色、排版风格、模块内容自定义</li>
+            <li>生成结果可直接预览并交付</li>
+          </ul>
+          <p class="wd-val">从想法到能打开的网页，不需要开发，不需要等。</p>
+        </article>
+      </div>
+      <nav class="cat-index" aria-label="五大能力目录">
+        <button class="cat-row on" data-i="0"><span class="ci-head"><b class="ci-n">01</b><span class="ci-t">日报总结</span></span><span class="ci-d">群聊乱流，变成一份真正能看的日报。</span><span class="ci-now">正在展示 · 01/05</span></button>
+        <button class="cat-row" data-i="1"><span class="ci-head"><b class="ci-n">02</b><span class="ci-t">Bot 部署</span></span><span class="ci-d">装好就能用的飞书机器人，附 Runbook。</span><span class="ci-now">正在展示 · 02/05</span></button>
+        <button class="cat-row" data-i="2"><span class="ci-head"><b class="ci-n">03</b><span class="ci-t">小红书</span></span><span class="ci-d">选题从"猜"变成有依据地选。</span><span class="ci-now">正在展示 · 03/05</span></button>
+        <button class="cat-row" data-i="3"><span class="ci-head"><b class="ci-n">04</b><span class="ci-t">公众号库</span></span><span class="ci-d">108 篇文章，变成可检索的组织资产。</span><span class="ci-now">正在展示 · 04/05</span></button>
+        <button class="cat-row" data-i="4"><span class="ci-head"><b class="ci-n">05</b><span class="ci-t">AI 生网页</span></span><span class="ci-d">说完即得，从想法到能打开的网页。</span><span class="ci-now">正在展示 · 05/05</span></button>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="cases" id="work">
+  <div class="cases-head">
+    <div class="rv in"><span class="tag">Real work</span><div class="h2">真实案例，<span class="acc">自己会说话</span></div></div>
+    <span class="cases-hint">悬停暂停 · 点击播放视频 / 运行网页</span>
+  </div>
+  <div class="crow"><div class="ctrack" id="rowA" style="--dur:74s"></div></div>
+  <div class="crow rev"><div class="ctrack" id="rowB" style="--dur:88s"></div></div>
+  <p class="cases-note">墙上滚动的，都是替真实客户做完、能点开验证的东西。</p>
+</div>
+
+
+
+<!-- daily report template (used by card preview + lightbox) -->
+<template id="tpl-daily">
+  <div class="wd-daily">
+    <div class="wd-daily-bar"><span class="wd-daily-dot"></span><span class="wd-daily-meta">AI 日报 · 2026-05-19 · 群聊 78 条 → 精华 38 条</span><span class="wd-daily-badge">已清洗</span></div>
+    <div class="wd-daily-body">
+      <div><div class="wd-daily-label">⚡ 生成器</div>
+        <ul class="wd-daily-list">
+          <li><b>斜率优先于起点</b> — 迭代速度够快，起点差也能跑出好结果</li>
+          <li><b>给权限+时间盒，不要问</b> — 派任务 = 全权 2 小时，不打断</li>
+          <li><b>激励先付，再谈交付</b> — 动起来再补协议，信任前置</li>
+          <li><b>退到能成的颗粒度</b> — 100 人 → 30 人，能办才办</li>
+        </ul></div>
+      <div><div class="wd-daily-label">💬 金句</div>
+        <div class="wd-daily-quote">斜率够大，屎也能跑成好。</div>
+        <div class="wd-daily-quote">不要怕，我的兄弟，有我在。</div></div>
+      <div><div class="wd-daily-label">🔲 概念骨架</div>
+        <div class="wd-daily-concept">终点 = 起点 + <b>斜率 × 时间</b><br>可控变量是斜率，不是起点</div></div>
+      <div class="wd-daily-noise">🔇 已剥离噪音约 40 行（红包 / 时间确认 / 打卡罗列）</div>
+    </div>
+  </div>
+</template>
+
+<!-- PROMISE -->
+<section id="promise" class="svc">
+  <div class="w">
+    <div class="rv"><span class="tag">Our promise · 服务标准</span><div class="h2">交给我们，你能<span class="acc">放心</span></div><p class="lead">能力之外，这是我们做每一件事的方式。</p></div>
+    <div class="prs">
+      <div class="pr rv"><div class="pn">01</div><div><h4>听懂了才动手</h4><p>先弄清你要解决什么、在意什么，再开干。不做你不需要的东西。</p></div></div>
+      <div class="pr rv"><div class="pn">02</div><div><h4>全程透明</h4><p>专人对接、节点汇报，进度和问题随时同步，你心里始终有底。</p></div></div>
+      <div class="pr rv"><div class="pn">03</div><div><h4>为结果负责</h4><p>盯的不只是"做出来"，而是能不能帮你省钱、省事、多挣。</p></div></div>
+      <div class="pr rv"><div class="pn">04</div><div><h4>看到就是真做得出</h4><p>所有能力当面可演示、可复现。不夸海口，眼见为实。</p></div></div>
+    </div>
+    <div class="sign rv">
+      <div><div class="k">AUTHOR · 页面制作者</div><span class="nameslot">影落明湖 &amp; 萩</span><div class="org">树成林 · 2026 百天 IP 训练营 第一期</div></div>
+      <div class="vl">Shu Cheng Lin · AI Service Standard · v1.0 · 2026.06</div>
+    </div>
+  </div>
+</section>
+
+<!-- BRAND FOOTER -->
+<div class="bfooter" id="bfooter">
+  <div class="bf-blob" data-par="0.35"></div>
+  <div class="bfs">
+    <div class="bfi" id="bfi">
+      <span class="bfsub">用 AI · 给你的生意赋能</span>
+      <span class="bfw">树成林</span>
+      
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="w">
+    <div class="logo" style="display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--cn);font-weight:900;font-size:17px">
+      <span class="mk" style="display:flex;width:28px;height:28px;border-radius:7px;background:var(--moss);align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px"><path d="M12 21V11M12 11C12 8 9.5 6 6.5 6.5M12 11C12 7.5 14.5 4 18 4.5M12 14C12 11.5 9 10 6.5 10.5M12 14C12 12 15 10.5 17.5 11" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+      树成林
+    </div>
+    <p class="fn">用 AI 给你的生意赋能 · 2026 百天 IP 训练营 · 树晨林教育</p>
+  </div>
+</footer>
+
+<script>
+/* ── INTRO ── */
+document.addEventListener('DOMContentLoaded',()=>{document.body.classList.add('loaded');});
+
+/* ── CASES DATA (13 items) ── */
+const CASES=[
+  /* row A — 精品 5 + 实拍 2 */
+  {type:'daily',  src:'',                                         tag:'日报 · 飞书卡片',   title:'日报和总结',        desc:'群聊 78 条 → 精华 38 条 · 压缩 51%', hint:'点击查看'},
+  {type:'video',  src:'assets/videos/bot-install.mp4',            tag:'Bot · 飞书部署',    title:'Bot 安装与交付',    desc:'可对话飞书 Bot + Runbook，部署即交付', hint:'▶ 播放'},
+  {type:'video',  src:'assets/videos/xhs-crawler-cut.mp4',        tag:'数据 · 选题调研',   title:'小红书自动爬取',    desc:'关键词进 → 爆款标题库 + 选题参考',   hint:'▶ 播放'},
+  {type:'video',  src:'assets/videos/wechat-kb.mp4',              tag:'知识库 · 内容沉淀', title:'公众号内容知识库',  desc:'108 篇文章 → 分类知识库 + 检索',      hint:'▶ 播放'},
+  {type:'video',  src:'assets/videos/ai-webpage.mp4',             tag:'网页 · 一键生成',   title:'AI 一键生成网页',   desc:'一段描述 → 可打开的 HTML 网页',       hint:'▶ 播放'},
+  {type:'video',  src:'assets/videos/web_showreel.mp4',           tag:'实拍 · 集锦',       title:'网页 · 系统演示',   desc:'真实交付页面与系统截图',              hint:'▶ 播放'},
+  {type:'video',  src:'assets/videos/ai_gallery_showreel.mp4',    tag:'实拍 · 集锦',       title:'AI 生图候选结果',   desc:'AI 生成的海报候选图墙',               hint:'▶ 播放'},
+  /* row B — 网页作品 5 + 文档 1 */
+  {type:'webpage',src:'assets/webpages/structure_optimized.html', tag:'观点页',            title:'结构遗产',          desc:'思维框架可视化网页',                  hint:'🖥 运行'},
+  {type:'webpage',src:'assets/webpages/zuida-liliang.html',       tag:'动态网页',          title:'最大力量',          desc:'动态视频网页作品',                    hint:'🖥 运行'},
+  {type:'webpage',src:'assets/webpages/four-laws.html',           tag:'IP 落地页',         title:'四条法则',          desc:'THE FOUR LAWS · 观点网页',            hint:'🖥 运行'},
+  {type:'video',  src:'assets/videos/workflow_showreel.mp4',      tag:'文档 · 工作流',     title:'工作流文档片段',    desc:'部署方案与执行手册文档',              hint:'▶ 播放'},
+  {type:'webpage',src:'assets/webpages/nuelian-peifang.html',     tag:'互动网页',          title:'虐恋的完美配方',    desc:'创意互动网页',                        hint:'🖥 运行'},
+  {type:'webpage',src:'assets/webpages/manifesto-v2.html',        tag:'宣言页',            title:'粗野宣言',          desc:'Manifesto · 强视觉观点页',            hint:'🖥 运行'},
+];
+
+function casePreview(it){
+  if(it.type==='video')
+    return `<video src="${it.src}" muted playsinline loop autoplay preload="metadata" style="pointer-events:none"></video>`;
+  if(it.type==='webpage'){
+    const uid='ia'+Math.random().toString(36).slice(2,7);
+    return `<iframe src="${it.src}" id="${uid}" scrolling="no" tabindex="-1" loading="lazy" onload="iframeAutoScroll('${uid}')"></iframe>`;
+  }
+  /* daily */
+  return `<div class="cdaily">
+    <div class="db"><i></i>AI 日报 · 群聊 78 条 → 精华 38 条</div>
+    <ul>
+      <li><b>斜率优先于起点</b> — 快迭代跑赢好起点</li>
+      <li><b>给权限+时间盒</b> — 全权 2 小时不打断</li>
+      <li><b>退到能成的颗粒度</b> — 100 人 → 30 人</li>
+    </ul>
+    <div class="dq">斜率够大，屎也能跑成好。</div>
+  </div>`;
+}
+function caseCard(it,idx){
+  return `<div class="ccard" data-i="${idx}" onclick="caseOpen(${idx})">
+    <span class="ctag">${it.tag}</span>
+    <div class="cprev">${casePreview(it)}</div>
+    <div class="cfoot">
+      <div class="cf-l"><div class="cf-t">${it.title}</div><div class="cf-d">${it.desc}</div></div>
+      <span class="cf-h">${it.hint}</span>
+    </div>
+  </div>`;
+}
+(function buildRows(){
+  const A=CASES.slice(0,7), B=CASES.slice(7);
+  const fill=(el,list,offset)=>{
+    let h='';
+    for(let r=0;r<2;r++) list.forEach((it,i)=>h+=caseCard(it,offset+i));
+    el.innerHTML=h;
+  };
+  fill(document.getElementById('rowA'),A,0);
+  fill(document.getElementById('rowB'),B,7);
+})();
+
+/* ── LIGHTBOX ── */
+function caseOpen(i){
+  const it=CASES[i];
+  const lb=document.getElementById('wlb'), body=document.getElementById('wlb-body'), title=document.getElementById('wlb-title');
+  title.textContent=it.tag+' · '+it.title;
+  if(it.type==='video'){
+    body.innerHTML=`<video src="${it.src}" controls autoplay playsinline style="background:#000"></video>`;
+  }else if(it.type==='webpage'){
+    body.innerHTML=`<iframe src="${it.src}"></iframe>`;
+  }else{
+    const t=document.getElementById('tpl-daily').content.cloneNode(true);
+    const wrap=document.createElement('div');wrap.className='lb-daily';wrap.appendChild(t);
+    body.innerHTML='';body.appendChild(wrap);
+  }
+  lb.classList.add('on');document.body.style.overflow='hidden';
+}
+function wallClose(){
+  const lb=document.getElementById('wlb');
+  lb.classList.remove('on');document.getElementById('wlb-body').innerHTML='';
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')wallClose()});
+
+/* iframe thumbnails: slow auto-scroll then loop */
+function iframeAutoScroll(id){
+  const f=document.getElementById(id);if(!f)return;
+  try{
+    const win=f.contentWindow;let y=0;
+    setInterval(()=>{
+      try{
+        const max=win.document.body.scrollHeight-win.innerHeight;
+        if(max<=0)return;
+        y=(y+0.45)%max;win.scrollTo(0,y);
+      }catch(e){}
+    },50);
+  }catch(e){}
+}
+
+/* ── SCROLL ENGINE: brand footer + parallax ── */
+const parEls=[...document.querySelectorAll('[data-par]')];
+function frame(){
+  const vh=window.innerHeight;
+  for(const el of parEls){
+    const r=el.getBoundingClientRect();
+    const off=(r.top+r.height/2-vh/2)/vh;
+    el.style.transform=`translate3d(0,${(off*parseFloat(el.dataset.par)*-130).toFixed(1)}px,0)`;
+  }
+}
+
+/* ── native scroll (Lenis disabled per request) ── */
+let ticking=false;
+function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(()=>{ frame(); ticking=false; }); } }
+window.addEventListener('scroll',onScroll,{passive:true});
+window.addEventListener('resize',onScroll);
+frame();
+
+/* ── REVEAL ── */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){
+  const g=[...e.target.parentElement.children].filter(c=>c.classList.contains('rv'));
+  const idx=g.indexOf(e.target);
+  e.target.style.transitionDelay=(idx>0?Math.min(idx,5)*0.065:0)+'s';
+  e.target.classList.add('in');io.unobserve(e.target);
+}}),{threshold:.14});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+/* ── 目录式展示区 ── */
+(function(){
+  const sec=document.getElementById('wheel');
+  if(!sec)return;
+  const rows=[...sec.querySelectorAll('.cat-row')];
+  const cards=[...sec.querySelectorAll('.cat-panel .wd-card')];
+  function show(i){
+    rows.forEach((r,j)=>r.classList.toggle('on',j===i));
+    cards.forEach((c,j)=>{
+      c.classList.toggle('on',j===i);
+      const v=c.querySelector('video');
+      if(v){ if(j===i){v.play().catch(()=>{});} else {v.pause();} }
+    });
+  }
+  rows.forEach(r=>r.addEventListener('click',()=>show(+r.dataset.i)));
+  window.__goCase=function(i){
+    if(i!==''&&i!=null&&!isNaN(+i))show(+i);
+    sec.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  show(0);
+})();
+/* 能做什么 → 跳到展示区 */
+document.querySelectorAll('.cap[data-case]').forEach(el=>{
+  const go=()=>{
+    if(el.dataset.case==='wall'){const w=document.getElementById('work');if(w)w.scrollIntoView({behavior:'smooth',block:'start'});return;}
+    window.__goCase&&window.__goCase(el.dataset.case);
+  };
+  el.addEventListener('click',go);
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+});
+function wdVideoOpen(src){
+  const lb=document.getElementById('wlb'),body=document.getElementById('wlb-body'),title=document.getElementById('wlb-title');
+  title.textContent='演示视频';
+  body.innerHTML='<video src="'+src+'" controls autoplay playsinline style="background:#000"></video>';
+  lb.classList.add('on');document.body.style.overflow='hidden';
+}
+</script>
+</body>
+</html>

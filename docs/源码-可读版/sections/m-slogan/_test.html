@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>m-slogan 独立验收页(窗口 A 自测用,不进总装)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000'/%3E%3C/svg%3E">
+<script>document.documentElement.className += ' fx-js';</script>
+<link rel="stylesheet" href="../../base/base.css">
+<link rel="stylesheet" href="m-slogan.css">
+<style>
+.t-spacer{height:120vh;background:var(--fx-k);color:var(--fx-g);display:flex;align-items:flex-end;padding:24px;}
+</style>
+</head>
+<body class="fx-body">
+<div class="t-spacer"><p class="fx-label">↓ 滚动触发(模拟写真章收尾)</p></div>
+
+<section class="m-slogan" id="sec-slogan" data-title="标准化">
+  <div class="m-slogan__inner">
+    <h2 class="m-slogan__title fx-hide">
+      <span class="m-slogan__title-line">标准化生产。</span>
+      <span class="m-slogan__title-line">顶级交付。</span>
+    </h2>
+    <p class="m-slogan__sub fx-hide">网站、视频、写真、歌。每一件,都是用 AI 当场做出来的。</p>
+  </div>
+  <div class="m-slogan__tape">
+    <span class="m-slogan__tape-item">"把这份母亲节祝福做成一个会动、配轻音乐的网页"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把我这段口播音频做成能录屏发抖音的视频"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把我的写真做成一整本不同风格的合辑海报"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"用婚恋法律去小红书把爆款笔记扒出来整理成选题库"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把这段微信聊天整理成需求单和下一步行动"</span><span class="m-slogan__tape-sep">✦</span>
+  </div>
+</section>
+
+<div class="t-spacer"><p class="fx-label">(模拟 02 作品章)</p></div>
+
+<script src="../../base/vendor/gsap.min.js"></script>
+<script src="../../base/vendor/ScrollTrigger.min.js"></script>
+<script src="../../base/vendor/lenis.min.js"></script>
+<script src="../../base/fx.js"></script>
+<script src="m-slogan.js"></script>
+</body>
+</html>

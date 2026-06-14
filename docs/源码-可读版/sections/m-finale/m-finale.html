@@ -1,0 +1,48 @@
+<!-- ============================================================
+  m-finale.html — 06 终幕「未完待续」(窗口 D 产出)
+  用本 <section> 整体替换 index.html 里 .v2-slot[data-slot="m-finale"];
+  <head> 加 sections/m-finale/m-finale.css;fx.js 之后加 m-finale.js。
+  时序:残流图块飞散 → 字符汇聚成口号 → mono 落款 →「未完待续」
+  逐字落位 → 红球蹦跳收官,落成省略号第一个点,呼吸不灭。
+  版权带 = 照片球页尾同款极简带(一行 Space Mono + ♪)。
+  ============================================================ -->
+<section class="m-finale" id="chap-06" data-chapter="06">
+
+  <div class="m-finale__stage">
+    <!-- 残流图块(汇聚时飞散退场) -->
+    <div class="m-finale__ghosts" aria-hidden="true">
+      <img class="m-finale__ghost m-finale__ghost--1" src="../../showcase-assets/sites/photo-orbit/assets/thumbs/f-024.jpg" alt="" loading="lazy" decoding="async">
+      <img class="m-finale__ghost m-finale__ghost--2" src="sections/m-river/assets/cube-01-wangjiemin.jpg" alt="" loading="lazy" decoding="async">
+      <img class="m-finale__ghost m-finale__ghost--3" src="../../showcase-assets/sites/photo-orbit/assets/thumbs/m-012.jpg" alt="" loading="lazy" decoding="async">
+      <img class="m-finale__ghost m-finale__ghost--4" src="sections/m-river/assets/cube-02-25ip-live.jpg" alt="" loading="lazy" decoding="async">
+    </div>
+
+    <p class="m-finale__kicker fx-label fx-hide"><span class="fx-chapnum">06</span> — 终幕 · TO BE CONTINUED</p>
+
+    <h2 class="m-finale__slogan fx-display" id="finSlogan">标准化生产,顶级交付。</h2>
+
+    <p class="m-finale__sign fx-label fx-label--dim fx-hide" id="finSign">精选 · 还在涨</p>
+
+    <div class="m-finale__tbc" id="finTbc" aria-label="未完待续……">
+      <span class="m-finale__tbc-word" id="finTbcWord" aria-hidden="true"><span
+        class="m-finale__tbc-char">未</span><span
+        class="m-finale__tbc-char">完</span><span
+        class="m-finale__tbc-char">待</span><span
+        class="m-finale__tbc-char">续</span></span><span
+        class="m-finale__dots" id="finDots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="m-finale__ball" id="finBall" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <!-- 照片球页尾同款极简版权带 -->
+  <footer class="m-finale__strip">
+    <p class="m-finale__copy fx-label">树成林 — 全国最大的大学生AI社群 · FIRST EDUCATION © 2026</p>
+    <div class="m-finale__actions">
+      <button class="m-finale__btn fx-label" id="finSong" type="button" aria-pressed="false" title="点播《Orbiting the Unknown》(AI 词曲)">♪ ORBITING THE UNKNOWN</button>
+      <button class="m-finale__btn fx-label" id="finTop" type="button">BACK TO TOP ↑</button>
+    </div>
+  </footer>
+
+  <audio id="finAudio" preload="none" loop src="../../showcase-assets/a-手册源码包/大学生AI能力使用手册/assets/song.mp3"></audio>
+
+</section>

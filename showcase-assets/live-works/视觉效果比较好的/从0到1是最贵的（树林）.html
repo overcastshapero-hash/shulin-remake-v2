@@ -1,0 +1,2896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从0到1，是最贵的 · HOPER VOL.002</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@300;400;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   BASE
+══════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --black: #000000;
+  --off: #0A0A0A;
+  --white: #F2F2F2;
+  --dim: rgba(242,242,242,0.38);
+  --red: #FF2D20;
+  --gold: #F5C518;
+  --ease: cubic-bezier(0.76, 0, 0.24, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+html { scroll-behavior: auto; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  cursor: none;
+}
+::selection { background: var(--red); color: #fff; }
+a { text-decoration: none; color: inherit; cursor: none; }
+
+/* ══════════════════════════════════════════════════════
+   GRAIN OVERLAY
+══════════════════════════════════════════════════════ */
+#grain {
+  position: fixed; inset: -50%; z-index: 9999;
+  width: 200%; height: 200%;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  /* static grain — no animation, prevents peripheral flicker */
+}
+@keyframes grainShift {
+  0%  { transform: translate(0,0); }
+  20% { transform: translate(-3%,-4%); }
+  40% { transform: translate(-5%, 2%); }
+  60% { transform: translate(3%, 4%); }
+  80% { transform: translate(4%,-1%); }
+  100%{ transform: translate(-2%, 3%); }
+}
+
+/* ══════════════════════════════════════════════════════
+   PROGRESS
+══════════════════════════════════════════════════════ */
+#progress { position:fixed; top:0; left:0; height:2px; background:var(--red); z-index:998; width:0; transition:width .1s linear; }
+
+/* ══════════════════════════════════════════════════════
+   CUSTOM CURSOR
+══════════════════════════════════════════════════════ */
+#cOuter {
+  position: fixed; top:0; left:0; z-index: 9998;
+  width: 36px; height: 36px;
+  border: 1.5px solid rgba(242,242,242,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  transition: width .35s var(--ease), height .35s var(--ease),
+              border-color .3s, background .3s;
+}
+#cInner {
+  position: fixed; top:0; left:0; z-index: 9999;
+  width: 5px; height: 5px;
+  background: var(--white);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  transition: transform .05s;
+}
+body.cursor-hover #cOuter {
+  width: 60px; height: 60px;
+  background: rgba(255,45,32,0.12);
+  border-color: var(--red);
+}
+body.cursor-text #cOuter { width: 80px; height: 4px; border-radius: 2px; }
+
+/* ══════════════════════════════════════════════════════
+   LOADER
+══════════════════════════════════════════════════════ */
+#loader {
+  position: fixed; inset:0; z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.loader-half {
+  position: absolute; top:0; bottom:0; width:50%;
+  background: var(--black);
+  transition: transform 1s var(--ease);
+}
+.loader-half.left  { left:0; }
+.loader-half.right { right:0; }
+#loader.split .loader-half.left  { transform: translateX(-100%); }
+#loader.split .loader-half.right { transform: translateX(100%); }
+
+.loader-content {
+  position: relative; z-index: 1;
+  text-align: center; pointer-events: none;
+  transition: opacity .4s;
+}
+#loader.split .loader-content { opacity: 0; }
+
+.loader-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(5rem, 18vw, 14rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--white);
+}
+.loader-bar {
+  width: 200px; height: 1px;
+  background: rgba(255,255,255,0.12);
+  margin: 1.5rem auto 0;
+  overflow: hidden;
+}
+.loader-fill {
+  height: 100%;
+  background: var(--red);
+  width: 0%;
+  transition: width .05s linear;
+}
+.loader-label {
+  margin-top: 1.5rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+/* ══════════════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════════════ */
+#nav {
+  position: fixed; top:0; left:0; right:0; z-index: 500;
+  height: 56px;
+  padding: 0 3rem;
+  display: flex; align-items: center; justify-content: space-between;
+  transform: translateY(-100%);
+  transition: transform .6s var(--ease);
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+#nav.show { transform: translateY(0); }
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.15em;
+  color: var(--white);
+}
+.nav-links { display: flex; gap: 3rem; list-style: none; }
+.nav-links a {
+  font-size: 0.72rem; letter-spacing: 0.08em;
+  color: var(--dim);
+  transition: color .2s;
+  display: inline-block;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute; bottom:-2px; left:0; right:0;
+  height: 1px; background: var(--red);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .3s var(--ease);
+}
+.nav-links a:hover { color: var(--white); }
+.nav-links a:hover::after { transform: scaleX(1); }
+
+/* ══════════════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════════════ */
+#hero {
+  position: relative; min-height: 100svh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-start;
+  padding: 0 8vw;
+  overflow: hidden;
+}
+#heroCanvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.hero-inner { position: relative; z-index: 1; }
+.hero-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .8s, transform .8s;
+}
+.hero-eyebrow.in { opacity:1; transform:none; }
+
+#heroTitle {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(4rem, 12vw, 11rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 2.5rem;
+}
+.hchar {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(60px) rotateX(40deg);
+  transform-origin: bottom center;
+  transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+.hchar.in { opacity:1; transform:none; }
+
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 300;
+  color: var(--dim);
+  line-height: 2;
+  max-width: 500px;
+  margin-bottom: 4rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1s var(--ease) .1s, transform 1s var(--ease) .1s;
+}
+.hero-sub.in { opacity:1; transform:none; }
+.hero-cta {
+  display: inline-flex; align-items: center; gap: 1rem;
+  font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--white); border: 1px solid rgba(255,255,255,0.2);
+  padding: .9rem 2rem; border-radius: 2px;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .8s var(--ease) .2s, transform .8s var(--ease) .2s,
+              border-color .3s, background .3s;
+}
+.hero-cta:hover { border-color: var(--red); background: rgba(255,45,32,0.08); }
+.hero-cta.in { opacity:1; transform:none; }
+.hero-cta-arrow { transition: transform .3s var(--spring); }
+.hero-cta:hover .hero-cta-arrow { transform: translateX(4px); }
+
+/* Hero scroll line */
+.hero-scroll {
+  position: absolute; bottom: 3rem; left: 8vw;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  opacity: 0; animation: fadeInScroll 1s var(--ease) 2.5s forwards;
+}
+@keyframes fadeInScroll {
+  to { opacity: 1; }
+}
+.hero-scroll-line {
+  width: 1px; height: 60px;
+  background: rgba(255,255,255,0.12);
+  position: relative; overflow: hidden;
+}
+.hero-scroll-line::after {
+  content: ''; position: absolute; top:-100%; left:0;
+  width:100%; height:100%; background: var(--red);
+  animation: scrollFall 2s var(--ease) infinite 2.8s;
+}
+@keyframes scrollFall { 0%{top:-100%} 100%{top:100%} }
+.hero-scroll-label {
+  font-size: .62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
+  writing-mode: vertical-rl;
+}
+
+/* ══════════════════════════════════════════════════════
+   TICKER
+══════════════════════════════════════════════════════ */
+.ticker-wrap {
+  overflow: hidden;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 1rem 0;
+  background: rgba(255,255,255,0.02);
+}
+.ticker-track {
+  display: flex; gap: 0;
+  width: max-content;
+  animation: ticker 30s linear infinite;
+}
+.ticker-track:hover { animation-play-state: paused; }
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.ticker-item {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem; letter-spacing: 0.12em;
+  color: var(--dim); padding: 0 3rem;
+  white-space: nowrap;
+  transition: color .2s;
+}
+.ticker-item:hover { color: var(--red); }
+.ticker-sep {
+  color: var(--red); padding: 0;
+  font-family: 'Bebas Neue', sans-serif; font-size: 1rem;
+}
+
+/* ══════════════════════════════════════════════════════
+   CHAPTER SECTIONS
+══════════════════════════════════════════════════════ */
+.ch {
+  min-height: 100svh; padding: 10rem 8vw;
+  position: relative; display: flex; flex-direction: column;
+  justify-content: center; overflow: hidden;
+}
+.ch.on-red  { background: var(--red); color: #000; }
+.ch.on-white{ background: var(--white); color: #000; }
+
+/* Big background chapter number */
+.ch-bg-num {
+  position: absolute;
+  right: -2vw; top: 50%;
+  transform: translateY(-50%) translateX(30px);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(16rem, 40vw, 38rem);
+  line-height: 1;
+  color: rgba(255,255,255,0.025);
+  pointer-events: none; user-select: none;
+  transition: transform 1.2s var(--ease), opacity 1.2s var(--ease);
+  opacity: 0;
+  letter-spacing: -0.06em;
+}
+.ch.on-red .ch-bg-num, .ch.on-white .ch-bg-num {
+  color: rgba(0,0,0,0.06);
+}
+.ch.visible .ch-bg-num { transform: translateY(-50%) translateX(0); opacity: 1; }
+
+.ch-eyebrow {
+  font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 1.2rem;
+}
+.ch.on-red .ch-eyebrow, .ch.on-white .ch-eyebrow { color: rgba(0,0,0,0.45); }
+.ch-eyebrow::before {
+  content: ''; display: block; width: 30px; height: 1.5px;
+  background: var(--red); flex-shrink: 0;
+}
+.ch.on-red .ch-eyebrow::before { background: rgba(0,0,0,0.35); }
+.ch.on-white .ch-eyebrow::before { background: var(--red); }
+
+/* Clip-path line reveal */
+.line-wrap { overflow: hidden; line-height: 1.15; }
+.ch-title .line-wrap { margin-bottom: 0.05em; }
+.line-inner {
+  display: block;
+  transform: translateY(110%);
+  transition: transform .9s var(--ease);
+}
+.ch.visible .line-inner { transform: translateY(0); }
+.ch.visible .line-wrap:nth-child(2) .line-inner { transition-delay: .08s; }
+.ch.visible .line-wrap:nth-child(3) .line-inner { transition-delay: .16s; }
+
+.ch-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(2.8rem, 7vw, 7rem);
+  font-weight: 700; line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 2.5rem;
+}
+
+.ch-body {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 5rem; max-width: 1000px;
+  margin-top: 1rem;
+}
+.ch-body.one { grid-template-columns: 1fr; max-width: 600px; }
+
+.block-title {
+  font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 1.2rem;
+  padding-bottom: .8rem; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.ch.on-red .block-title, .ch.on-white .block-title {
+  color: rgba(0,0,0,0.4); border-bottom-color: rgba(0,0,0,0.1);
+}
+.body-p {
+  font-size: .95rem; line-height: 2.1; color: var(--dim);
+  margin-bottom: .8rem;
+  opacity: 0; transform: translateY(24px);
+  transition: opacity .8s var(--ease), transform .8s var(--ease);
+}
+.ch.on-red .body-p, .ch.on-white .body-p { color: rgba(0,0,0,0.6); }
+.ch.visible .body-p { opacity: 1; transform: none; }
+.ch.visible .body-p:nth-child(2) { transition-delay: .1s; }
+.ch.visible .body-p:nth-child(3) { transition-delay: .2s; }
+.ch.visible .body-p:nth-child(4) { transition-delay: .3s; }
+.body-p strong { font-weight: 600; color: var(--white); }
+.ch.on-red .body-p strong, .ch.on-white .body-p strong { color: #000; }
+
+/* Num list */
+.num-list { list-style:none; display:flex; flex-direction:column; gap:1.8rem; }
+.num-list li {
+  display:flex; gap:2rem; align-items:flex-start;
+  opacity:0; transform:translateX(-20px);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+}
+.ch.visible .num-list li { opacity:1; transform:none; }
+.ch.visible .num-list li:nth-child(1){ transition-delay:.1s; }
+.ch.visible .num-list li:nth-child(2){ transition-delay:.22s; }
+.ch.visible .num-list li:nth-child(3){ transition-delay:.34s; }
+.num-n {
+  font-family:'Bebas Neue',sans-serif; font-size:2rem;
+  color: var(--red); line-height:1; flex-shrink:0; width:1.5rem; text-align:right;
+}
+.ch.on-red .num-n { color: rgba(0,0,0,0.5); }
+.ch.on-white .num-n { color: var(--red); }
+.num-t { font-size:.9rem; line-height:2; color:var(--dim); }
+.ch.on-red .num-t, .ch.on-white .num-t { color: rgba(0,0,0,0.6); }
+.num-t strong { color: var(--white); font-weight:500; }
+.ch.on-red .num-t strong, .ch.on-white .num-t strong { color: #000; }
+
+/* ══════════════════════════════════════════════════════
+   SCRAMBLE QUOTE SECTIONS
+══════════════════════════════════════════════════════ */
+.qsec {
+  min-height: 80svh; display:flex; align-items:center; justify-content:center;
+  text-align:center; padding: 8rem 8vw; position:relative; overflow:hidden;
+}
+.qsec.q-dark { background: var(--black); }
+.qsec.q-red  { background: var(--red); }
+.qsec.q-white{ background: var(--white); }
+
+.qsec-inner { max-width: 900px; position:relative; z-index:1; }
+
+.scramble-text {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(1.6rem, 4.5vw, 3.5rem);
+  font-weight: 600; line-height: 1.6;
+  letter-spacing: -0.02em;
+}
+.qsec.q-dark .scramble-text  { color: var(--white); }
+.qsec.q-red  .scramble-text  { color: #000; }
+.qsec.q-white .scramble-text { color: #000; }
+.scramble-text .schar { display:inline-block; }
+
+.q-attr {
+  margin-top: 2.5rem;
+  font-size: .7rem; letter-spacing:.25em; text-transform:uppercase;
+  opacity: 0;
+  transition: opacity 1s var(--ease) .5s;
+}
+.qsec.q-dark  .q-attr { color: var(--dim); }
+.qsec.q-red   .q-attr { color: rgba(0,0,0,0.4); }
+.qsec.q-white .q-attr { color: rgba(0,0,0,0.4); }
+.qsec.visible .q-attr { opacity:1; }
+
+/* Large ambient text behind quote */
+.q-ambient {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(8rem, 22vw, 20rem);
+  letter-spacing: -0.06em;
+  pointer-events:none; user-select:none; line-height:1;
+  white-space:nowrap;
+}
+.qsec.q-dark  .q-ambient { color:rgba(255,255,255,0.025); }
+.qsec.q-red   .q-ambient { color:rgba(0,0,0,0.06); }
+.qsec.q-white .q-ambient { color:rgba(0,0,0,0.04); }
+
+/* ══════════════════════════════════════════════════════
+   STATS SECTION
+══════════════════════════════════════════════════════ */
+#stats {
+  background: var(--off); padding: 8rem 8vw;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.stats-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:0;
+  max-width:1000px; margin:0 auto;
+}
+.stat-col {
+  padding: 3rem; border-right: 1px solid rgba(255,255,255,0.06);
+  text-align:center;
+  opacity:0; transform:translateY(30px);
+  transition:opacity .8s var(--ease), transform .8s var(--ease);
+}
+.stat-col:last-child { border-right:none; }
+#stats.visible .stat-col { opacity:1; transform:none; }
+#stats.visible .stat-col:nth-child(1) { transition-delay:0s; }
+#stats.visible .stat-col:nth-child(2) { transition-delay:.15s; }
+#stats.visible .stat-col:nth-child(3) { transition-delay:.3s; }
+.stat-num {
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(4rem, 9vw, 8rem);
+  letter-spacing: -0.04em; line-height:1;
+  color: var(--white); display:block; margin-bottom:.5rem;
+}
+.stat-unit { color: var(--red); font-size:.75em; }
+.stat-desc { font-size:.8rem; color:var(--dim); line-height:1.9; }
+
+/* ══════════════════════════════════════════════════════
+   FLOW SECTION (Ch5)
+══════════════════════════════════════════════════════ */
+.flow-table {
+  margin-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.flow-row {
+  display:grid; grid-template-columns:100px 1fr;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 2rem 0;
+  opacity:0; transform:translateX(-20px);
+  transition: opacity .8s var(--ease), transform .8s var(--ease);
+}
+.ch.visible .flow-row { opacity:1; transform:none; }
+.ch.visible .flow-row:nth-child(1){ transition-delay:.1s; }
+.ch.visible .flow-row:nth-child(2){ transition-delay:.25s; }
+.ch.visible .flow-row:nth-child(3){ transition-delay:.4s; }
+.flow-key {
+  font-family:'Noto Serif SC',serif; font-size:1.1rem; font-weight:600;
+  color:var(--white); padding-top:.2rem;
+}
+.flow-vt { font-size:.9rem; font-weight:500; color:var(--white); margin-bottom:.4rem; }
+.flow-vd { font-size:.82rem; line-height:1.9; color:var(--dim); }
+
+/* ══════════════════════════════════════════════════════
+   COMPARE (Ch6)
+══════════════════════════════════════════════════════ */
+.compare {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:2px; margin-top:2.5rem; overflow:hidden;
+}
+.compare-col { padding:0; }
+.compare-col.dark { background: rgba(255,255,255,0.04); }
+.compare-col.light-col { background: var(--white); }
+.compare-head {
+  padding:1.2rem 1.8rem;
+  font-size:.68rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.compare-col.dark  .compare-head { color: var(--dim); border-bottom-color:rgba(255,255,255,0.06); }
+.compare-col.light-col .compare-head { color: rgba(0,0,0,0.4); border-bottom-color:rgba(0,0,0,0.08); background:rgba(0,0,0,0.04); }
+.compare-row {
+  padding:.9rem 1.8rem; font-size:.88rem; font-weight:300;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  opacity:0; transform:translateX(10px);
+  transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+.compare-col.dark  .compare-row { color:var(--dim); border-bottom-color:rgba(255,255,255,0.04); }
+.compare-col.light-col .compare-row { color:rgba(0,0,0,0.65); border-bottom-color:rgba(0,0,0,0.06); }
+.ch.visible .compare-row { opacity:1; transform:none; }
+.ch.visible .compare-row:nth-child(2){ transition-delay:.05s; }
+.ch.visible .compare-row:nth-child(3){ transition-delay:.12s; }
+.ch.visible .compare-row:nth-child(4){ transition-delay:.19s; }
+.ch.visible .compare-row:nth-child(5){ transition-delay:.26s; }
+
+/* ══════════════════════════════════════════════════════
+   3D QUOTE CARDS (Appendix)
+══════════════════════════════════════════════════════ */
+#appendix {
+  background: var(--off);
+  padding: 10rem 8vw;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.appendix-head {
+  margin-bottom: 5rem; text-align:center;
+}
+.appendix-eyebrow {
+  font-size:.68rem; letter-spacing:.3em; text-transform:uppercase; color:var(--dim); margin-bottom:1rem;
+}
+.appendix-title {
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(3rem,7vw,6rem);
+  font-weight:700; letter-spacing:-0.03em; color:var(--white);
+  opacity:0; transform:translateY(30px);
+  transition: opacity .9s var(--ease), transform .9s var(--ease);
+}
+#appendix.visible .appendix-title { opacity:1; transform:none; }
+
+.cards-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:1.5rem;
+}
+.qcard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 2.5rem 2rem;
+  border-radius: 4px;
+  transform-style: preserve-3d;
+  transition: transform .1s, box-shadow .3s, border-color .3s;
+  will-change: transform;
+  opacity:0; transform:translateY(40px);
+  cursor: default;
+}
+#appendix.visible .qcard { opacity:1; transform:translateY(0); }
+#appendix.visible .qcard:nth-child(1){ transition: opacity .7s, transform .7s; transition-delay:.0s; }
+#appendix.visible .qcard:nth-child(2){ transition: opacity .7s, transform .7s; transition-delay:.1s; }
+#appendix.visible .qcard:nth-child(3){ transition: opacity .7s, transform .7s; transition-delay:.2s; }
+#appendix.visible .qcard:nth-child(4){ transition: opacity .7s, transform .7s; transition-delay:.3s; }
+#appendix.visible .qcard:nth-child(5){ transition: opacity .7s, transform .7s; transition-delay:.4s; }
+#appendix.visible .qcard:nth-child(6){ transition: opacity .7s, transform .7s; transition-delay:.5s; }
+.qcard:hover { border-color: rgba(255,45,32,0.3); box-shadow: 0 30px 80px rgba(255,45,32,0.08); }
+.qcard-label {
+  font-size:.62rem; letter-spacing:.2em; text-transform:uppercase;
+  color: var(--red); margin-bottom:1.2rem;
+}
+.qcard-list { list-style:none; display:flex; flex-direction:column; gap:.8rem; }
+.qcard-list li {
+  font-size:.82rem; color:var(--dim); line-height:1.8;
+  display:flex; gap:.8rem; align-items:baseline;
+}
+.qcard-list li::before { content:'—'; color:rgba(255,45,32,0.5); flex-shrink:0; font-size:.7rem; }
+
+/* ══════════════════════════════════════════════════════
+   FINALE
+══════════════════════════════════════════════════════ */
+#finale {
+  min-height:100svh; background:var(--black);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center; padding:6rem 4rem;
+  position:relative; overflow:hidden;
+}
+.finale-done {
+  font-size:.7rem; letter-spacing:.3em; text-transform:uppercase; color:var(--dim);
+  margin-bottom:3rem;
+  opacity:0; transform:translateY(20px);
+  transition: opacity .8s var(--ease), transform .8s var(--ease);
+}
+#finale.visible .finale-done { opacity:1; transform:none; }
+.finale-title {
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(5rem,16vw,15rem);
+  font-weight:700; line-height:1.05;
+  letter-spacing:-0.04em; color:var(--white);
+  opacity:0; transform:scale(.92) translateY(30px);
+  transition: opacity 1.2s var(--ease) .2s, transform 1.2s var(--ease) .2s;
+}
+#finale.visible .finale-title { opacity:1; transform:none; }
+.finale-rule {
+  width:50px; height:1px; background:var(--red); margin:3rem auto;
+  transform:scaleX(0);
+  transition: transform .8s var(--ease) .8s;
+}
+#finale.visible .finale-rule { transform:scaleX(1); }
+.finale-sub {
+  font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
+  line-height:3;
+  opacity:0; transition:opacity 1s var(--ease) 1s;
+}
+#finale.visible .finale-sub { opacity:1; }
+
+/* Finale particle canvas */
+#finaleCanvas { position:absolute; inset:0; pointer-events:none; }
+
+/* ══════════════════════════════════════════════════════
+   CONCLUSION BARS
+══════════════════════════════════════════════════════ */
+.concl {
+  margin-top:4rem; padding-top:2rem;
+  border-top:1px solid rgba(255,255,255,0.08);
+  display:flex; gap:3rem; align-items:baseline;
+  opacity:0; transform:translateY(20px);
+  transition: opacity .8s var(--ease) .4s, transform .8s var(--ease) .4s;
+}
+.ch.on-red .concl, .ch.on-white .concl { border-top-color:rgba(0,0,0,0.1); }
+.ch.visible .concl { opacity:1; transform:none; }
+.concl-lbl {
+  font-size:.62rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--dim); white-space:nowrap; flex-shrink:0;
+}
+.ch.on-red .concl-lbl, .ch.on-white .concl-lbl { color:rgba(0,0,0,0.35); }
+.concl-txt {
+  font-family:'Noto Serif SC',serif; font-size:1rem;
+  font-weight:400; line-height:1.9; color:var(--white);
+}
+.ch.on-red .concl-txt, .ch.on-white .concl-txt { color:#000; }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════ */
+@media(max-width:768px){
+  .ch-body { grid-template-columns:1fr; gap:3rem; }
+  .stats-grid { grid-template-columns:1fr; }
+  .stat-col { border-right:none; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .compare { grid-template-columns:1fr; }
+  .cards-grid { grid-template-columns:1fr; }
+  #nav { padding:0 1.5rem; }
+  .nav-links { display:none; }
+  .ch { padding: 7rem 6vw; }
+  #hero, #appendix { padding-left:6vw; padding-right:6vw; }
+  #cOuter, #cInner { display:none; }
+  body { cursor:auto; }
+  a { cursor:pointer; }
+  #dotNav { display:none; }
+}
+
+/* ══════════════════════════════════════════════════════
+   +01  AMBIENT CURSOR GLOW
+        A soft radial heat-map that breathes behind the cursor.
+        Almost invisible — you feel it more than see it.
+══════════════════════════════════════════════════════ */
+#ambientGlow {
+  position: fixed; pointer-events: none; z-index: 2;
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  background: radial-gradient(circle, rgba(255,45,32,0.028) 0%, transparent 65%);
+  transition: opacity 1.2s ease;
+  opacity: 0;
+  /* no mix-blend-mode — blend modes compound with other effects causing color shifts */
+}
+
+/* ══════════════════════════════════════════════════════
+   +02  CHAPTER DOT NAVIGATION (right-side)
+        6 silent dots — tooltip label slides in on hover.
+══════════════════════════════════════════════════════ */
+#dotNav {
+  position: fixed; right: 2.2rem; top: 50%;
+  transform: translateY(-50%);
+  z-index: 500;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.dot-item {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  cursor: pointer;
+  transition: background .4s, transform .4s var(--spring);
+  position: relative;
+}
+.dot-item:hover { background: rgba(255,255,255,0.6); transform: scale(1.6); }
+.dot-item.active { background: var(--red); transform: scale(1.4); }
+.dot-item.active::before {
+  content: ''; position: absolute;
+  inset: -4px; border-radius: 50%;
+  border: 1px solid rgba(255,45,32,0.3);
+  animation: dotPulse 2s ease-out infinite;
+}
+@keyframes dotPulse {
+  0%   { transform: scale(1);   opacity: .6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.dot-item::after {
+  content: attr(data-label);
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  font-size: .62rem; letter-spacing: .15em;
+  color: var(--dim); white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s, transform .25s var(--ease);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.dot-item:hover::after { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+/* ══════════════════════════════════════════════════════
+   +03  BLUR-IN TEXT REVEAL
+        Text starts softly blurred and sharpens on enter —
+        feels like focus pulling in from bokeh.
+══════════════════════════════════════════════════════ */
+/* blur-in removed — translateY alone is cleaner and less GPU-intensive */
+
+/* ══════════════════════════════════════════════════════
+   +04  TITLE LETTER-SPACING HOVER
+        Headings breathe open on hover — typographic luxury.
+══════════════════════════════════════════════════════ */
+.ch-title { cursor: default; }
+.ch-title .line-inner {
+  transition: transform .9s var(--ease), filter 1.1s var(--ease), letter-spacing .6s ease;
+  letter-spacing: -0.03em;
+  display: block;
+}
+.ch-title:hover .line-inner { letter-spacing: 0.02em; }
+
+/* ══════════════════════════════════════════════════════
+   +05  CARD SHIMMER SWEEP
+        A single photon sweeps through each card on hover.
+══════════════════════════════════════════════════════ */
+.qcard { overflow: hidden; }
+.qcard::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 25%,
+    rgba(255,255,255,0.045) 50%,
+    transparent 75%
+  );
+  transform: translateX(-200%) skewX(-12deg);
+  pointer-events: none;
+}
+.qcard:hover::after { transform: translateX(250%) skewX(-12deg); transition: transform .75s ease; }
+
+/* ══════════════════════════════════════════════════════
+   +06  QCARD LIST ITEM CASCADE
+        List items slide right in sequence on card hover.
+══════════════════════════════════════════════════════ */
+.qcard-list li {
+  transition: transform .3s ease, color .3s;
+  will-change: transform;
+}
+.qcard:hover .qcard-list li               { transform: translateX(5px); color: rgba(242,242,242,0.72); }
+.qcard:hover .qcard-list li:nth-child(1)  { transition-delay: .00s; }
+.qcard:hover .qcard-list li:nth-child(2)  { transition-delay: .05s; }
+.qcard:hover .qcard-list li:nth-child(3)  { transition-delay: .10s; }
+.qcard:hover .qcard-list li:nth-child(4)  { transition-delay: .15s; }
+
+/* ══════════════════════════════════════════════════════
+   +07  STRONG TEXT UNDERLINE DRAW
+        A red underline draws itself under bold text
+        when you hover the paragraph.
+══════════════════════════════════════════════════════ */
+.body-p strong { position: relative; }
+.body-p strong::after {
+  content: ''; position: absolute;
+  left: 0; bottom: -2px; right: 0;
+  height: 1px; background: var(--red);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .5s var(--ease);
+}
+.body-p:hover strong::after { transform: scaleX(1); }
+.ch.on-red .body-p strong::after, .ch.on-white .body-p strong::after { background: rgba(0,0,0,0.5); }
+
+/* ══════════════════════════════════════════════════════
+   +08  SVG DECORATIVE RULE DRAW
+        Thin separator lines that draw left→right on scroll.
+══════════════════════════════════════════════════════ */
+.draw-rule {
+  display: block; width: 100%; height: 1px; overflow: visible;
+  margin: 3rem 0;
+  opacity: 0; transform: scaleX(0); transform-origin: left;
+  transition: opacity .1s, transform 1.4s var(--ease);
+}
+.ch.visible .draw-rule { opacity: 1; transform: scaleX(1); transition-delay: .5s; }
+.draw-rule line { stroke: rgba(255,255,255,0.08); stroke-width: 1; }
+.ch.on-red .draw-rule line, .ch.on-white .draw-rule line { stroke: rgba(0,0,0,0.1); }
+
+/* ══════════════════════════════════════════════════════
+   +09  SVG STAT ARCS
+        Circular progress rings behind each stat number.
+══════════════════════════════════════════════════════ */
+/* arcs removed — cleaner without the red circles */
+
+/* ══════════════════════════════════════════════════════
+   +10  SECTION EXIT DIM
+        Sections that have been fully read fade back slightly —
+        like turning a page. Keeps focus on what's ahead.
+══════════════════════════════════════════════════════ */
+.ch { transition: opacity .6s ease; }
+.ch.exited { opacity: 0.45; }
+
+/* ══════════════════════════════════════════════════════
+   +11  HERO IDLE BREATH
+        After 5s of inactivity, the hero title very gently
+        pulses. A living page, not a dead poster.
+══════════════════════════════════════════════════════ */
+/* idle breath removed — static titles feel more confident */
+
+/* ══════════════════════════════════════════════════════
+   +12  RED EYEBROW GLOW
+        The chapter label has a barely-there crimson halo.
+══════════════════════════════════════════════════════ */
+.ch-eyebrow::before {
+  box-shadow: 4px 0 12px 1px rgba(255,45,32,0.25);
+}
+
+/* ══════════════════════════════════════════════════════
+   +13  PER-CHAPTER AMBIENT BACKGROUND TINT
+        Each section carries a whisper of unique color.
+        Applied via JS --ch-tint variable.
+══════════════════════════════════════════════════════ */
+.ch { background: rgb(var(--ch-tint, 0,0,0)); }
+.ch.on-red  { background: var(--red)  !important; }
+.ch.on-white{ background: var(--white)!important; }
+
+/* ══════════════════════════════════════════════════════
+   +14  SCROLL VELOCITY BLUR
+        At high scroll velocity, a subtle translucent
+        overlay appears — a hint of motion.
+══════════════════════════════════════════════════════ */
+/* velocity overlay removed — the flashing edge was worse than fast scroll */
+
+/* ══════════════════════════════════════════════════════
+   +15  HERO CONTENT PARALLAX LAYERS
+        Mouse movement creates subtle depth — title,
+        subtitle and cta float at different z speeds.
+══════════════════════════════════════════════════════ */
+#heroTitle  { will-change: transform; transition: transform .08s linear; }
+.hero-sub   { will-change: transform; transition: transform .12s linear; }
+.hero-cta   { will-change: transform; transition: transform .16s linear; }
+
+/* ── INTRO TRANSITION (blade sweep) ── */
+#intro {
+  position: fixed; inset: 0; z-index: 8999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: var(--black); pointer-events: none;
+  opacity: 1; transition: opacity 1s var(--ease);
+}
+#intro.gone { opacity: 0; }
+.intro-line {
+  width: 0; height: 1px; background: var(--red);
+  transition: width 1s cubic-bezier(0.77,0,0.175,1);
+}
+.intro-line.full { width: min(300px, 40vw); }
+.intro-vol {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: .75rem; letter-spacing: .45em;
+  color: rgba(255,255,255,0.22); margin-top: 1.4rem;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .5s, transform .5s;
+}
+.intro-vol.in { opacity: 1; transform: none; }
+.intro-phrase {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(2.8rem, 10vw, 8rem);
+  font-weight: 700; letter-spacing: -0.04em; line-height: 1;
+  color: var(--white); margin-top: .5rem;
+  opacity: 0; transform: translateY(28px) scale(.96);
+  transition: opacity .9s var(--ease), transform .9s var(--ease);
+}
+.intro-phrase.in { opacity: 1; transform: none; }
+.intro-phrase .r { color: var(--red); }
+
+/* ── CH1 FEAR CURVE VISUALIZATION ── */
+.fear-viz {
+  margin-top: 3rem;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .8s var(--ease) .3s, transform .8s var(--ease) .3s;
+}
+.ch.visible .fear-viz { opacity: 1; transform: none; }
+.fear-viz-title {
+  font-size: .68rem; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 1rem;
+}
+#fearSvg { display: block; width: 100%; max-width: 480px; }
+.fear-legend {
+  display: flex; gap: 2rem; margin-top: .8rem;
+  font-size: .75rem; color: var(--dim);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.fear-legend span { display: flex; align-items: center; gap: .5rem; }
+.legend-dot { width: 20px; height: 2px; flex-shrink: 0; }
+
+/* ── CH4 BRAIN CHAIN ── */
+.brain-chain {
+  margin-top: 3rem; display: flex; align-items: center;
+  gap: 0; flex-wrap: nowrap; overflow: hidden;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .8s var(--ease) .2s, transform .8s var(--ease) .2s;
+}
+.ch.visible .brain-chain { opacity: 1; transform: none; }
+.chain-node {
+  flex: 1; text-align: center; padding: 1rem .5rem;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  position: relative; min-width: 0;
+  opacity: 0; transform: scale(.9);
+  transition: opacity .5s var(--ease), transform .5s var(--ease);
+}
+.ch.visible .chain-node { opacity: 1; transform: scale(1); }
+.ch.visible .chain-node:nth-child(1) { transition-delay: .1s; }
+.ch.visible .chain-node:nth-child(3) { transition-delay: .3s; }
+.ch.visible .chain-node:nth-child(5) { transition-delay: .5s; }
+.ch.visible .chain-node:nth-child(7) { transition-delay: .7s; }
+.chain-icon {
+  font-family: 'Noto Serif SC', serif; font-size: 1.4rem;
+  margin-bottom: .4rem; display: block;
+  color: var(--white);
+}
+.chain-node.hot .chain-icon { color: var(--red); }
+.chain-lbl {
+  font-size: .72rem; color: var(--dim); line-height: 1.5;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.chain-arrow {
+  font-size: 1rem; color: rgba(255,255,255,0.15);
+  padding: 0 .2rem; flex-shrink: 0;
+  opacity: 0; transition: opacity .4s var(--ease);
+}
+.ch.visible .chain-arrow { opacity: 1; }
+.ch.visible .chain-arrow:nth-child(2) { transition-delay: .2s; }
+.ch.visible .chain-arrow:nth-child(4) { transition-delay: .4s; }
+.ch.visible .chain-arrow:nth-child(6) { transition-delay: .6s; }
+
+/* ── CINEMATIC LAST QUOTE (replace red bg) ── */
+.qsec.q-cinematic {
+  background: #0A0403;
+  min-height: 100svh;
+}
+.cinematic-lines {
+  text-align: left; max-width: 800px; margin: 0 auto;
+}
+.cin-line {
+  display: block; font-family: 'Noto Serif SC', serif;
+  line-height: 1.6; color: rgba(242,242,242,0.65);
+  opacity: 0; transform: translateY(24px);
+  transition: opacity .8s var(--ease), transform .8s var(--ease);
+}
+.cin-line.small { font-size: clamp(1rem, 2.5vw, 1.4rem); font-weight: 300; }
+.cin-line.large { font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 600; color: rgba(242,242,242,0.9); }
+.cin-line.gold  { font-size: clamp(2rem, 6vw, 4rem); font-weight: 700; color: #F5C518; letter-spacing: -0.02em; }
+.cin-line.dim   { font-size: clamp(.85rem, 2vw, 1.1rem); font-weight: 300; margin-top: .5rem; }
+.qsec.visible .cin-line { opacity: 1; transform: none; }
+.qsec.visible .cin-line:nth-child(1) { transition-delay: .1s; }
+.qsec.visible .cin-line:nth-child(2) { transition-delay: .5s; }
+.qsec.visible .cin-line:nth-child(3) { transition-delay: .9s; }
+.qsec.visible .cin-line:nth-child(4) { transition-delay: 1.3s; }
+.qsec.visible .cin-line:nth-child(5) { transition-delay: 1.7s; }
+.qsec.q-cinematic .q-attr { color: rgba(245,196,24,0.35); }
+
+/* ── WARM FINALE ── */
+#finale {
+  min-height:100svh;
+  background: linear-gradient(to top, #0E0905 0%, #080604 45%, #020101 100%);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center; padding:6rem 4rem;
+  position:relative; overflow:hidden;
+}
+#finaleCanvas { position:absolute; inset:0; pointer-events:none; }
+.finale-done {
+  font-size:.7rem; letter-spacing:.3em; text-transform:uppercase;
+  color:rgba(245,196,24,0.35);
+  margin-bottom:3rem;
+  opacity:0; transform:translateY(20px);
+  transition: opacity .8s var(--ease), transform .8s var(--ease);
+}
+#finale.visible .finale-done { opacity:1; transform:none; }
+.finale-title {
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(5rem,16vw,15rem);
+  font-weight:700; line-height:1.05;
+  letter-spacing:-0.04em;
+  color: #F5F0E0;
+  text-shadow: 0 0 140px rgba(245,196,24,0.1), 0 0 40px rgba(245,196,24,0.05);
+  opacity:0; transform:scale(.92) translateY(30px);
+  transition: opacity 1.2s var(--ease) .2s, transform 1.2s var(--ease) .2s;
+}
+#finale.visible .finale-title { opacity:1; transform:none; }
+.finale-rule {
+  width:50px; height:1px; background:#F5C518; margin:3rem auto;
+  transform:scaleX(0);
+  transition: transform .8s var(--ease) .8s;
+}
+#finale.visible .finale-rule { transform:scaleX(1); }
+.finale-sub {
+  font-size:.72rem; letter-spacing:.2em; text-transform:uppercase;
+  color:rgba(245,196,24,0.28); line-height:3;
+  opacity:0; transition:opacity 1s var(--ease) 1s;
+}
+#finale.visible .finale-sub { opacity:1; }
+
+/* ── 最贵 BURST ANIMATION ── */
+@keyframes zuiguiBurst {
+  0%   { color: var(--white); transform: none;
+         text-shadow: none; }
+  6%   { color: #F5C518;
+         transform: scale(1.55) translateY(-14px);
+         text-shadow: 0 0 50px rgba(245,196,24,1),
+                      0 0 20px rgba(255,255,255,0.6); }
+  18%  { color: #fff8c0;
+         transform: scale(1.22) translateY(-7px);
+         text-shadow: 0 0 30px rgba(245,196,24,0.5); }
+  45%  { color: var(--white);
+         transform: scale(1.05) translateY(-2px); }
+  100% { color: var(--white); transform: none; text-shadow: none; }
+}
+.hchar.burst {
+  animation: zuiguiBurst 2s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  position: relative; z-index: 10;
+}
+
+/* ── FEAR CURVE SVG TRANSITIONS ── */
+#thinkCurve, #doCurve {
+  transition: stroke-dashoffset 0s linear;
+}
+#thinkCurve.animate {
+  transition: stroke-dashoffset 2s cubic-bezier(0.25,1,0.5,1) !important;
+}
+#doCurve.animate {
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.25,1,0.5,1) !important;
+}
+
+/* ── FINALE BOUNCE ── */
+@keyframes titleBounce {
+  0%, 100% { transform: none; }
+  35%       { transform: translateY(-14px) scale(1.018); }
+  65%       { transform: translateY(-6px) scale(1.006); }
+}
+.finale-title.bouncing {
+  animation: titleBounce 2.6s cubic-bezier(0.34, 1.3, 0.64, 1) infinite !important;
+  transform-origin: center bottom;
+}
+
+/* ── AI REVEAL BUTTON ── */
+#aiBtn {
+  position: relative; z-index: 1;
+  margin-top: 4rem; padding: 1rem 3.5rem;
+  background: none; border: 1px solid rgba(245,196,24,0.3);
+  color: rgba(245,196,24,0.6);
+  font-family: 'Noto Serif SC', serif; font-size: .92rem;
+  letter-spacing: .2em; cursor: pointer;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .8s var(--ease) 2s,
+              transform .8s var(--ease) 2s,
+              border-color .3s, color .3s, background .3s;
+}
+#finale.visible #aiBtn { opacity: 1; transform: none; }
+#aiBtn:hover {
+  border-color: #F5C518; color: #F5C518;
+  background: rgba(245,196,24,0.06);
+}
+
+/* ── AI REVEAL OVERLAY ── */
+#aiReveal {
+  position: fixed; inset: 0; z-index: 9990;
+  background: #000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .7s ease;
+}
+#aiReveal.active { opacity: 1; pointer-events: auto; }
+#aiReveal .ai-line1 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(3rem, 11vw, 10rem);
+  font-weight: 700; line-height: 1;
+  letter-spacing: -0.03em;
+  color: white;
+  opacity: 0; transform: translateY(40px) scale(.92);
+  transition: opacity 1s var(--ease) .4s, transform 1s var(--ease) .4s;
+}
+#aiReveal .ai-line2 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(3rem, 11vw, 10rem);
+  font-weight: 700; line-height: 1;
+  letter-spacing: -0.03em;
+  color: white;
+  opacity: 0; transform: translateY(40px) scale(.92);
+  transition: opacity 1s var(--ease) .9s, transform 1s var(--ease) .9s;
+}
+#aiReveal.active .ai-line1,
+#aiReveal.active .ai-line2 { opacity: 1; transform: none; }
+#aiReveal .ai-close {
+  position: absolute; bottom: 3rem;
+  font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  opacity: 0; transition: opacity 1s ease 2s;
+  cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
+}
+#aiReveal.active .ai-close { opacity: 1; }
+#aiReveal .ai-close:hover { color: rgba(255,255,255,0.5); }
+
+</style>
+</head>
+<body>
+
+<div id="grain" aria-hidden="true"></div>
+<div id="progress"></div>
+<div id="cOuter" aria-hidden="true"></div>
+<div id="cInner" aria-hidden="true"></div>
+
+<!-- Intro transition (plays between loader and hero) -->
+<div id="intro" aria-hidden="true">
+  <div class="intro-line" id="introLine"></div>
+  <p class="intro-vol" id="introVol">HOPER · 希望者文库 · VOL.002</p>
+  <h2 class="intro-phrase" id="introPhrase">从 0 到 <span class="r">1</span></h2>
+</div>
+<div id="ambientGlow" aria-hidden="true"></div>
+<div id="velOverlay" aria-hidden="true"></div>
+<nav id="dotNav" aria-label="章节导航">
+  <div class="dot-item" data-href="#ch1" data-label="壹 · 从0到1" data-preview="先做，再想。不需要先想清楚——因为你也想不清楚。"></div>
+  <div class="dot-item" data-href="#ch2" data-label="贰 · 充分表达" data-preview="你是个黑箱。世界只能通过你的输出看到你。"></div>
+  <div class="dot-item" data-href="#ch3" data-label="叁 · 既往开来" data-preview="不知道自己怎么好的，下次掉下来就守不住。"></div>
+  <div class="dot-item" data-href="#ch4" data-label="肆 · 血糖睾酮" data-preview="情绪不是性格——是血糖。勇气不是天赋——是睾酮。"></div>
+  <div class="dot-item" data-href="#ch5" data-label="伍 · IP本质" data-preview="信息、能量、情绪——自高向低流动。"></div>
+  <div class="dot-item" data-href="#ch6" data-label="陆 · AI斜率" data-preview="不是基于当下的结果，是基于你们的斜率。"></div>
+</nav>
+<div id="dotPreview" style="
+  position:fixed; right:3.5rem; z-index:499;
+  background:rgba(15,15,15,0.95); border:1px solid rgba(255,255,255,0.08);
+  padding:1rem 1.2rem; max-width:200px; pointer-events:none;
+  opacity:0; transform:translateX(8px);
+  transition:opacity .2s ease, transform .2s ease;
+  backdrop-filter:blur(12px);
+">
+  <p id="dotPreviewTitle" style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:.5rem;font-family:'Noto Sans SC',sans-serif;"></p>
+  <p id="dotPreviewText"  style="font-size:.8rem;line-height:1.7;color:rgba(242,242,242,0.55);font-family:'Noto Serif SC',serif;font-weight:300;"></p>
+</div>
+
+<!-- ── LOADER ── -->
+<div id="loader" aria-hidden="true">
+  <div class="loader-half left"></div>
+  <div class="loader-half right"></div>
+  <div class="loader-content">
+    <div class="loader-num" id="loaderNum">0</div>
+    <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+    <div class="loader-label">HOPER · 希望者文库 · VOL.002</div>
+  </div>
+</div>
+
+<!-- ── NAV ── -->
+<nav id="nav">
+  <div class="nav-logo">HOPER · VOL.002</div>
+  <ul class="nav-links">
+    <li><a href="#ch1" class="magnetic">壹</a></li>
+    <li><a href="#ch2" class="magnetic">贰</a></li>
+    <li><a href="#ch3" class="magnetic">叁</a></li>
+    <li><a href="#ch4" class="magnetic">肆</a></li>
+    <li><a href="#ch5" class="magnetic">伍</a></li>
+    <li><a href="#ch6" class="magnetic">陆</a></li>
+    <li><a href="#appendix" class="magnetic">金句</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-inner">
+    <p class="hero-eyebrow">HOPER · 希望者文库 · VOL.002 · 2026.04.26</p>
+    <h1 id="heroTitle" aria-label="从0到1，是最贵的。"></h1>
+    <p class="hero-sub">想是没有结果的——<br>想就是大脑里的语言演绎，<br>零基于你对世界一概不知。</p>
+  </div>
+  <!-- Only keep the scroll line, no label/button -->
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── TICKER ── -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- ── CH1 ── -->
+<section class="ch" id="ch1">
+  <div class="ch-bg-num">壹</div>
+  <div class="ch-eyebrow">壹 · Chapter One</div>
+  <h2 class="ch-title">
+    <div class="line-wrap"><span class="line-inner">从 0 到 1，</span></div>
+    <div class="line-wrap"><span class="line-inner">是最贵的</span></div>
+  </h2>
+  <div class="ch-body">
+    <div>
+      <div class="block-title">恐惧的来源</div>
+      <p class="body-p">你以为最贵的是从 1 到 100 的成长。其实最贵的是从 0 到 1 那个起点——你需要把"我从来没做过"翻译成"我做过"。</p>
+      <p class="body-p">恐惧不来自事情本身——所有的"不过如此"，在你做完之后都不过如此。恐惧来自于你站在第零次的位置上对第一次的无限想象。你想得越多越偏，想得越久越恐惧。</p>
+    </div>
+    <div>
+      <div class="block-title">想是没有用的</div>
+      <p class="body-p"><strong>先有 1，思考才有意义；没有 1，所有思考都是内耗。</strong></p>
+      <p class="body-p">从 0 到 1 不是知识问题，是动作问题。你不需要先想清楚——因为你也想不清楚。你需要先做，做完之后用语言、用别人的经验把这次经验放大。</p>
+    </div>
+  </div>
+  <svg class="draw-rule" viewBox="0 0 1000 1" preserveAspectRatio="none"><line x1="0" y1="0" x2="1000" y2="0"/></svg>
+  <div class="concl">
+    <span class="concl-lbl">本章收束</span>
+    <p class="concl-txt">从 0 到 1 不是知识问题，是动作问题。先做，再用语言把这次经验放大。</p>
+  </div>
+
+  <!-- Fear Curve: thinking vs doing -->
+  <div class="fear-viz">
+    <p class="fear-viz-title">想得越久，越不敢动 — 恐惧随时间的变化</p>
+    <svg id="fearSvg" viewBox="0 0 480 180">
+      <!-- Grid -->
+      <line x1="50" y1="10" x2="50" y2="150" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      <line x1="50" y1="150" x2="460" y2="150" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      <!-- Axis labels -->
+      <text x="255" y="168" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="10" fill="rgba(255,255,255,0.2)">时间</text>
+      <text x="22" y="80" text-anchor="middle" font-family="'Noto Sans SC',sans-serif" font-size="10" fill="rgba(255,255,255,0.2)" transform="rotate(-90,22,80)">恐惧</text>
+      <!-- "Keep thinking" curve: rises steadily -->
+      <path id="thinkCurve"
+        d="M50,140 C100,135 160,120 220,100 C280,80 340,55 410,30"
+        fill="none" stroke="rgba(255,45,32,0.7)" stroke-width="2"
+        stroke-dasharray="500" stroke-dashoffset="500" stroke-linecap="round"/>
+      <!-- "Just do it" curve: drops sharply then flattens -->
+      <path id="doCurve"
+        d="M50,140 C70,120 90,85 120,65 C150,45 200,40 460,38"
+        fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2"
+        stroke-dasharray="500" stroke-dashoffset="500" stroke-linecap="round"/>
+      <!-- Labels that appear after draw -->
+      <text id="lbl1" x="415" y="26" font-family="'Noto Sans SC',sans-serif" font-size="10" fill="rgba(255,45,32,0.7)" opacity="0">一直想象</text>
+      <text id="lbl2" x="415" y="34" font-family="'Noto Sans SC',sans-serif" font-size="10" fill="rgba(255,255,255,0.5)" opacity="0" dy="18">先做了再说</text>
+      <!-- "做了！" marker -->
+      <circle id="doMarker" cx="120" cy="65" r="3" fill="white" opacity="0"/>
+      <text id="doLabel" x="125" y="60" font-family="'Noto Sans SC',sans-serif" font-size="9" fill="rgba(255,255,255,0.4)" opacity="0">做了！</text>
+    </svg>
+  </div>
+
+</section>
+
+<!-- ── QUOTE 1 (RED) ── -->
+<div class="qsec q-red" data-qsec>
+  <div class="q-ambient">想</div>
+  <div class="qsec-inner">
+    <p class="scramble-text" data-scramble="想就是大脑里的语言演绎。基于你对世界一概不知。你要去想到一个完美的路径——你不觉得不可能吗？">
+      想就是大脑里的语言演绎。基于你对世界一概不知。你要去想到一个完美的路径——你不觉得不可能吗？
+    </p>
+    <p class="q-attr">树林 · 论想与做</p>
+  </div>
+</div>
+
+<!-- ── CH2 ── -->
+<section class="ch" id="ch2">
+  <div class="ch-bg-num">贰</div>
+  <div class="ch-eyebrow">贰 · Chapter Two</div>
+  <h2 class="ch-title">
+    <div class="line-wrap"><span class="line-inner">充分表达</span></div>
+    <div class="line-wrap"><span class="line-inner">= 你被看到的样子</span></div>
+  </h2>
+  <div class="ch-body">
+    <div>
+      <div class="block-title">人与人的黑箱</div>
+      <p class="body-p">你是个黑箱。所有人都是黑箱。世界对你的判断不基于你"真实"是什么样——而基于你输出了什么样的 token。你不发声就等于不存在。</p>
+      <p class="body-p"><strong>AI 完全替代写作的那一刻——你就消失了。</strong>世界看到的是 AI，不是你。写作是把自己大脑里的想法传达给他人的过程——一旦外包，你的黑箱再也没有翻译出来过。</p>
+    </div>
+    <div>
+      <div class="block-title">充分表达三条件</div>
+      <ul class="num-list">
+        <li><span class="num-n">01</span><span class="num-t"><strong>频率够高</strong> — everyday 在输出，不是偶尔说一句。</span></li>
+        <li><span class="num-n">02</span><span class="num-t"><strong>内容够多够深</strong> — 不是几个字，而是足够展开。</span></li>
+        <li><span class="num-n">03</span><span class="num-t"><strong>领域够广</strong> — 喜欢恋爱讲恋爱，对 AI 感兴趣讲 AI。</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="concl">
+    <span class="concl-lbl">本章收束</span>
+    <p class="concl-txt">你不发声就等于不存在。AI 替你写的那一刻——你就消失了。</p>
+  </div>
+</section>
+
+<!-- ── CH3 ── -->
+<section class="ch" id="ch3">
+  <div class="ch-bg-num">叁</div>
+  <div class="ch-eyebrow">叁 · Chapter Three</div>
+  <h2 class="ch-title">
+    <div class="line-wrap"><span class="line-inner">既往</span></div>
+    <div class="line-wrap"><span class="line-inner">才能开来</span></div>
+  </h2>
+  <div class="ch-body">
+    <div>
+      <div class="block-title">偶然成功最危险</div>
+      <p class="body-p">一个人最危险的不是失败——是偶然成功。因为偶然成功的人，不知道自己是怎么好的，下一次掉下来的时候就守不住。</p>
+      <p class="body-p">下一个阶段，钱多了、社交圈变了、可选择的事情变多了——所有不良诱惑会一起涌上来。你知不知道自己好在哪，直接决定你能不能对它们说 No。</p>
+    </div>
+    <div>
+      <div class="block-title">结构化一切可结构的</div>
+      <p class="body-p">有些事是真的神秘——好运、贵人、时机。这些归神秘就好，不要硬解。</p>
+      <p class="body-p">但大部分事情不是神秘，是你没有做结构化分析。<strong>对世界最大的偷懒，是模糊。</strong>你今天有了好结果，能说出"因为第一……第二……第三……"吗？说不出来，就是偶然成功的人。</p>
+    </div>
+  </div>
+  <div class="concl">
+    <span class="concl-lbl">本章收束</span>
+    <p class="concl-txt">"好运来财"是神秘——可以接受。"我为什么好"是结构——不能偷懒。</p>
+  </div>
+</section>
+
+<!-- ── STATS ── -->
+<div id="stats">
+  <div class="stats-grid">
+    <div class="stat-col">
+      <span class="stat-num"><span data-count="19">0</span><span class="stat-unit">分钟</span></span>
+      <p class="stat-desc">原始直播时长<br>密度极高的内部分享</p>
+    </div>
+    <div class="stat-col">
+      <span class="stat-num"><span data-count="6149">0</span><span class="stat-unit">字</span></span>
+      <p class="stat-desc">逐字稿原文<br>六个命题，每个都能写一本书</p>
+    </div>
+    <div class="stat-col">
+      <span class="stat-num"><span data-count="60">0</span><span class="stat-unit">°</span></span>
+      <p class="stat-desc">AI 时代的成长斜率<br>IP 时代只有 15°</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── CH4 (DARK SECTION) ── -->
+<section class="ch" id="ch4">
+  <div class="ch-bg-num">肆</div>
+  <div class="ch-eyebrow">肆 · Chapter Four</div>
+  <h2 class="ch-title">
+    <div class="line-wrap"><span class="line-inner">血糖与睾酮——</span></div>
+    <div class="line-wrap"><span class="line-inner">身体决定一切</span></div>
+  </h2>
+  <div class="ch-body">
+    <div>
+      <div class="block-title">血糖决定情绪决定认知</div>
+      <p class="body-p">血糖一波动，前额叶忽上忽下。前额叶失控，杏仁核就上线，边缘系统频繁被激活——你情绪波动大，对世界的认识就是不连续的。</p>
+      <p class="body-p"><strong>你对世界的恐惧跟你的睾酮有关。</strong>睾酮高的人天然不怕——"几千万我怕你？"</p>
+    </div>
+    <div>
+      <div class="block-title">三件事的运动配方</div>
+      <ul class="num-list">
+        <li><span class="num-n">01</span><span class="num-t"><strong>无氧练腿</strong> — 增肌肉量，提升睾酮，让你不恐惧世界。</span></li>
+        <li><span class="num-n">02</span><span class="num-t"><strong>有氧跑步</strong> — 调节多巴胺，稳定情绪。</span></li>
+        <li><span class="num-n">03</span><span class="num-t"><strong>控糖</strong> — 先蔬菜再蛋白质最后碳水。保持前额叶持续在线。</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="concl">
+    <span class="concl-lbl">本章收束</span>
+    <p class="concl-txt">情绪不是性格——是血糖。勇气不是天赋——是睾酮。</p>
+  </div>
+
+  <!-- Brain reaction chain -->
+  <div class="brain-chain">
+    <div class="chain-node hot">
+      <span class="chain-icon">↑</span>
+      <div class="chain-lbl">血糖波动</div>
+    </div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-node">
+      <span class="chain-icon">⤵</span>
+      <div class="chain-lbl">前额叶<br>失控</div>
+    </div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-node hot">
+      <span class="chain-icon">!</span>
+      <div class="chain-lbl">杏仁核<br>激活</div>
+    </div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-node">
+      <span class="chain-icon">～</span>
+      <div class="chain-lbl">边缘系统<br>激活</div>
+    </div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-node hot">
+      <span class="chain-icon">↯</span>
+      <div class="chain-lbl">情绪<br>失稳</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── QUOTE 2 (WHITE) ── -->
+<div class="qsec q-white" data-qsec>
+  <div class="q-ambient">黑箱</div>
+  <div class="qsec-inner">
+    <p class="scramble-text" data-scramble="其实我对大家而言也是一个黑箱。你怎么去理解我？通过我输出的 token。">
+      其实我对大家而言也是一个黑箱。你怎么去理解我？通过我输出的 token。
+    </p>
+    <p class="q-attr">树林 · 论黑箱</p>
+  </div>
+</div>
+
+<!-- ── CH5 ── -->
+<section class="ch" id="ch5">
+  <div class="ch-bg-num">伍</div>
+  <div class="ch-eyebrow">伍 · Chapter Five</div>
+  <h2 class="ch-title">
+    <div class="line-wrap"><span class="line-inner">IP 的本质——</span></div>
+    <div class="line-wrap"><span class="line-inner">三种流动</span></div>
+  </h2>
+  <div class="ch-body">
+    <div class="flow-table">
+      <div class="flow-row">
+        <div class="flow-key">信息</div>
+        <div>
+          <div class="flow-vt">知识差 → 你的存量变对方的增量</div>
+          <div class="flow-vd">你知道的事情别人不知道——形成信息差。你的常识在别人那里是新知。"分享"本身就是一次信息从高处到低处的流动。</div>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-key">能量</div>
+        <div>
+          <div class="flow-vt">笃定感 → 确定性本身就是价值</div>
+          <div class="flow-vd">很多时候人需要的不是新信息，是别人的笃定。这就是为什么有些大 IP 讲的内容并不新，但人依然愿意花钱听——他们买的是确定感。</div>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-key">情绪</div>
+        <div>
+          <div class="flow-vt">建设性情绪 → 看完能量上升</div>
+          <div class="flow-vd">好的 IP 输出的情绪是建设性的——你看完之后能量是上升的。你输出什么样的情绪，决定了你最终会聚集什么样的人。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="concl">
+    <span class="concl-lbl">本章收束</span>
+    <p class="concl-txt">IP 不是流量——是三股流的高低差。没有高低差，就没有 IP。</p>
+  </div>
+</section>
+
+<!-- ── CH6 ── -->
+<section class="ch" id="ch6">
+  <div class="ch-bg-num">陆</div>
+  <div class="ch-eyebrow">陆 · Chapter Six</div>
+  <h2 class="ch-title">
+    <div class="line-wrap"><span class="line-inner">AI 时代的</span></div>
+    <div class="line-wrap"><span class="line-inner">陡峭斜率</span></div>
+  </h2>
+  <div class="ch-body">
+    <div>
+      <div class="block-title">最烂的一届 → 最好的一届</div>
+      <p class="body-p">前几届有结果的人是该漏的都漏了——但关键词在<strong>斜率</strong>。你今天有多少结果不重要，你每周每天能进步多少才重要。</p>
+      <p class="body-p"><strong>AI 时代最特殊的一件事是：斜率被 AI 拉得无限陡峭。</strong>在 IP 时代，能拿到结果的人是漏网之鱼。在 AI 时代，所有人都有可能成为漏网之鱼。</p>
+    </div>
+    <div>
+      <div class="block-title">两个时代的斜率对比</div>
+      <!-- Interactive slope chart — click to toggle eras -->
+      <div id="slopeChart" style="margin-top:1.5rem;">
+        <svg id="slopeSvg" viewBox="0 0 420 240" width="100%" style="display:block;max-width:420px;">
+          <!-- Grid lines -->
+          <line x1="50" y1="20" x2="50" y2="200" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <line x1="50" y1="200" x2="400" y2="200" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <!-- IP era line (15°) -->
+          <line id="lineIP" x1="50" y1="200" x2="400" y2="107"
+            stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"
+            stroke-dasharray="400" stroke-dashoffset="400"/>
+          <!-- AI era line (60°) -->
+          <line id="lineAI" x1="50" y1="200" x2="243" y2="20"
+            stroke="#FF2D20" stroke-width="2.5" stroke-linecap="round"
+            stroke-dasharray="400" stroke-dashoffset="400"/>
+          <!-- Labels (appear after draw) -->
+          <text id="labelIP" x="370" y="100" font-family="'Noto Sans SC',sans-serif"
+            font-size="11" fill="rgba(255,255,255,0.4)" text-anchor="start" opacity="0">IP时代 15°</text>
+          <text id="labelAI" x="250" y="16" font-family="'Noto Sans SC',sans-serif"
+            font-size="11" fill="#FF2D20" text-anchor="start" opacity="0">AI时代 60°</text>
+          <!-- Angle arcs -->
+          <path id="arcIP" d="M 90 200 A 40 40 0 0 0 88.7 173.6" fill="none"
+            stroke="rgba(255,255,255,0.2)" stroke-width="1" opacity="0"/>
+          <path id="arcAI" d="M 90 200 A 40 40 0 0 0 70 165.4" fill="none"
+            stroke="rgba(255,45,32,0.5)" stroke-width="1" opacity="0"/>
+          <text id="deg15" x="100" y="185" font-family="'Bebas Neue',sans-serif"
+            font-size="13" fill="rgba(255,255,255,0.3)" opacity="0">15°</text>
+          <text id="deg60" x="96" y="172" font-family="'Bebas Neue',sans-serif"
+            font-size="13" fill="rgba(255,45,32,0.7)" opacity="0">60°</text>
+          <!-- X axis label -->
+          <text x="220" y="218" font-family="'Noto Sans SC',sans-serif"
+            font-size="10" fill="rgba(255,255,255,0.2)" text-anchor="middle">时间</text>
+          <text x="34" y="112" font-family="'Noto Sans SC',sans-serif"
+            font-size="10" fill="rgba(255,255,255,0.2)" text-anchor="middle"
+            transform="rotate(-90,34,112)">成长</text>
+        </svg>
+        <p style="font-size:.75rem;color:rgba(255,255,255,0.25);margin-top:.5rem;letter-spacing:.05em;">
+          图表在进入视窗时动态绘制
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="concl">
+    <span class="concl-lbl">全书收束</span>
+    <p class="concl-txt">你能不能成为漏网之鱼，取决于你今天是不是还站在 0 的位置上。</p>
+  </div>
+</section>
+
+<!-- ── CINEMATIC QUOTE 3 (warm, not red) ── -->
+<div class="qsec q-cinematic" data-qsec id="q3">
+  <div class="q-ambient" style="color:rgba(245,196,24,0.04);">斜率</div>
+  <div class="qsec-inner" style="text-align:left;">
+    <div class="cinematic-lines">
+      <span class="cin-line small">你们这一届，</span>
+      <span class="cin-line large">严格意义上应该是最烂的一届。</span>
+      <span class="cin-line dim" style="color:rgba(245,196,24,0.4);margin:1.5rem 0 1rem;">——但——</span>
+      <span class="cin-line gold">你们应该会成为<br>最好的一届。</span>
+      <span class="cin-line small" style="margin-top:1.5rem;color:rgba(242,242,242,0.4);">不是基于当下的结果，是基于我看到的你们的斜率。</span>
+    </div>
+    <p class="q-attr" style="text-align:left;margin-top:3rem;">树林</p>
+  </div>
+</div>
+
+<!-- ── APPENDIX ── -->
+<section id="appendix">
+  <div class="appendix-head">
+    <p class="appendix-eyebrow">附录 · 金句索引</p>
+    <h2 class="appendix-title">35 条原话</h2>
+  </div>
+  <div class="cards-grid">
+    <div class="qcard" data-tilt>
+      <div class="qcard-label">从 0 到 1</div>
+      <ul class="qcard-list">
+        <li>从 0 到 1 是最贵的。</li>
+        <li>想是没有结果的——想就是大脑里的语言演绎，基于你对世界一概不知。</li>
+        <li>你要去想到一个完美的路径——你不觉得不可能吗？</li>
+        <li>没有 0 到 1 就是 0，无限堆叠思考，本质是内耗。</li>
+      </ul>
+    </div>
+    <div class="qcard" data-tilt>
+      <div class="qcard-label">充分表达</div>
+      <ul class="qcard-list">
+        <li>其实我对大家而言也是一个黑箱。你怎么去理解我？通过我输出的 token。</li>
+        <li>IP 营本质上是一个把黑箱往外翻译的过程。</li>
+        <li>充分表达三条件：频率够高、内容够多够深、领域够广。</li>
+        <li>AI 完全替代写作的那一刻——你就消失了。</li>
+      </ul>
+    </div>
+    <div class="qcard" data-tilt>
+      <div class="qcard-label">既往才能开来</div>
+      <ul class="qcard-list">
+        <li>既往才能开来——不知道自己怎么好的，下次掉下来就守不住。</li>
+        <li>一切神秘之外的，我们都结构化——找到最细、最小、最清晰的点。</li>
+        <li>对世界最大的偷懒是模糊。</li>
+      </ul>
+    </div>
+    <div class="qcard" data-tilt>
+      <div class="qcard-label">血糖与睾酮</div>
+      <ul class="qcard-list">
+        <li>血糖稳定了，你的情绪就稳定。</li>
+        <li>你对世界的恐惧跟你的睾酮有关。</li>
+        <li>血糖一波动，前额叶忽上忽下，杏仁核高度敏感，边缘系统频繁激活。</li>
+        <li>无氧（练腿）+ 有氧（跑步）+ 控糖——基本上你情绪就平稳。</li>
+      </ul>
+    </div>
+    <div class="qcard" data-tilt>
+      <div class="qcard-label">IP 的本质</div>
+      <ul class="qcard-list">
+        <li>陌生人就是你交易的最高频人群。做 IP 就是跟陌生人建立联系的方式。</li>
+        <li>IP 的本质：信息、能量、情绪——自高向低流动。</li>
+        <li>很多时候人需要的不是新信息，是别人的笃定。</li>
+      </ul>
+    </div>
+    <div class="qcard" data-tilt>
+      <div class="qcard-label">AI 时代的斜率</div>
+      <ul class="qcard-list">
+        <li>你们这一届应该是最烂的——但你们应该会成为最好的一届。</li>
+        <li>不是基于当下的结果，是基于我看到的你们的斜率。</li>
+        <li>AI 时代你们的成长斜率非常陡峭——1-2 天就能看到。</li>
+        <li>找到擅长的事——前提是充分接触和真实碰撞。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Card expand overlay -->
+<div id="cardOverlay" style="
+  position:fixed; inset:0; z-index:800;
+  background:rgba(0,0,0,0); pointer-events:none;
+  transition:background .35s ease;
+  display:flex; align-items:center; justify-content:center;
+">
+  <div id="cardExpanded" style="
+    background:#111; border:1px solid rgba(255,255,255,0.1);
+    padding:3rem; max-width:600px; width:90%;
+    opacity:0; transform:scale(.94) translateY(20px);
+    transition:opacity .35s ease, transform .35s ease;
+    position:relative; border-radius:4px;
+  ">
+    <button id="cardClose" style="
+      position:absolute; top:1rem; right:1rem;
+      background:none; border:none; color:var(--dim);
+      font-size:1.2rem; cursor:pointer; transition:color .2s;
+      font-family:'Noto Sans SC',sans-serif;
+    ">✕</button>
+    <p id="cardExpLabel" style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:1.2rem;font-family:'Noto Sans SC',sans-serif;"></p>
+    <ul id="cardExpList" style="list-style:none;display:flex;flex-direction:column;gap:.9rem;"></ul>
+  </div>
+</div>
+
+<!-- ── FINALE ── -->
+<section id="finale">
+  <canvas id="finaleCanvas"></canvas>
+  <p class="finale-done">— 完 —</p>
+  <h2 class="finale-title" id="finaleTitle">先做，<br>再想。</h2>
+  <div class="finale-rule"></div>
+  <p class="finale-sub">
+    HOPER · 希望者文库 · VOL.002<br>
+    树林 · 四月二十六日直播实录 · 2026
+  </p>
+  <button id="aiBtn">AI 时代来了 →</button>
+</section>
+
+<!-- AI Reveal Overlay -->
+<div id="aiReveal">
+  <p class="ai-line1">AI 时代</p>
+  <p class="ai-line2">来了。</p>
+  <p class="ai-close" id="aiClose">点击任意处继续</p>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   1. LOADER → INTRO TRANSITION → HERO
+══════════════════════════════════════════════════════ */
+(function(){
+  const numEl  = document.getElementById('loaderNum');
+  const fillEl = document.getElementById('loaderFill');
+  const loader = document.getElementById('loader');
+  const DURATION = 1800;
+  const start = performance.now();
+
+  function tick(now) {
+    const p = Math.min((now - start) / DURATION, 1);
+    const eased = p < 0.5 ? 2*p*p : -1+(4-2*p)*p;
+    const count = Math.floor(eased * 100);
+    numEl.textContent = count;
+    fillEl.style.width = count + '%';
+    if (p < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      numEl.textContent = '100';
+      fillEl.style.width = '100%';
+      setTimeout(() => {
+        loader.classList.add('split');
+        showIntro();
+        setTimeout(() => { loader.style.pointerEvents = 'none'; loader.style.display = 'none'; }, 1200);
+      }, 200);
+    }
+  }
+  requestAnimationFrame(tick);
+
+  function showIntro() {
+    const intro    = document.getElementById('intro');
+    const line     = document.getElementById('introLine');
+    const vol      = document.getElementById('introVol');
+    const phrase   = document.getElementById('introPhrase');
+    if (!intro) return;
+
+    // Red line draws across
+    requestAnimationFrame(() => {
+      setTimeout(() => line.classList.add('full'), 80);
+    });
+    // Vol label fades in
+    setTimeout(() => vol.classList.add('in'), 900);
+    // Main phrase drops in
+    setTimeout(() => phrase.classList.add('in'), 1200);
+    // Whole intro fades out → trigger hero
+    setTimeout(() => {
+      intro.classList.add('gone');
+      initHero();
+      setTimeout(() => { intro.style.display = 'none'; }, 1000);
+    }, 2600);
+  }
+})();
+
+/* ══════════════════════════════════════════════════════
+   2. CUSTOM CURSOR
+══════════════════════════════════════════════════════ */
+(function(){
+  const outer = document.getElementById('cOuter');
+  const inner = document.getElementById('cInner');
+  let ox = window.innerWidth/2, oy = window.innerHeight/2;
+  let tx = ox, ty = oy;
+
+  document.addEventListener('mousemove', e => {
+    tx = e.clientX; ty = e.clientY;
+    inner.style.left = tx + 'px';
+    inner.style.top  = ty + 'px';
+  });
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  (function loop(){
+    ox = lerp(ox, tx, 0.12);
+    oy = lerp(oy, ty, 0.12);
+    outer.style.left = ox + 'px';
+    outer.style.top  = oy + 'px';
+    requestAnimationFrame(loop);
+  })();
+
+  // Magnetic elements
+  document.querySelectorAll('.magnetic').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    el.addEventListener('mousemove', e => {
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width/2, cy = r.top + r.height/2;
+      const dx = (e.clientX - cx) * 0.3, dy = (e.clientY - cy) * 0.3;
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+    el.addEventListener('mouseleave', () => {
+      el.style.transform = '';
+    });
+  });
+
+  // Text cursor on paragraphs
+  document.querySelectorAll('p, .body-p').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-text'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-text'));
+  });
+})();
+
+/* ══════════════════════════════════════════════════════
+   3. HERO CANVAS (animated gradient blobs)
+══════════════════════════════════════════════════════ */
+function initHeroCanvas() {
+  const canvas = document.getElementById('heroCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const blobs = [
+    { x:0.15, y:0.3,  r:0.55, h:0,   s:0.00008 },
+    { x:0.75, y:0.65, r:0.6,  h:120, s:0.00006 },
+    { x:0.5,  y:0.15, r:0.4,  h:240, s:0.0001 },
+    { x:0.85, y:0.2,  r:0.3,  h:20,  s:0.00012 },
+  ];
+
+  let t = 0;
+  function frame() {
+    t++;
+    ctx.clearRect(0, 0, W, H);
+
+    blobs.forEach(b => {
+      b.x += Math.sin(t * b.s) * 0.0008;
+      b.y += Math.cos(t * b.s * 1.3) * 0.0006;
+      const x = b.x * W, y = b.y * H;
+      const r = b.r * Math.max(W, H);
+      const hue = (b.h + t * 0.03) % 360;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, `hsla(${hue}, 60%, 10%, 0.35)`);
+      grad.addColorStop(1, `hsla(${hue}, 60%, 5%, 0)`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+    });
+
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+/* ══════════════════════════════════════════════════════
+   4. HERO INIT (called after loader)
+══════════════════════════════════════════════════════ */
+function initHero() {
+  initHeroCanvas();
+
+  // Character-by-character title drop-in
+  const chars = ['从','0','到','1','，','是','最','贵','的','。'];
+  const titleEl = document.getElementById('heroTitle');
+  chars.forEach((ch, i) => {
+    const span = document.createElement('span');
+    span.className = 'hchar';
+    span.textContent = ch;
+    span.style.transitionDelay = (0.05 + i * 0.06) + 's';
+    titleEl.appendChild(span);
+  });
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.hchar').forEach(el => el.classList.add('in'));
+    document.querySelector('.hero-eyebrow').classList.add('in');
+    setTimeout(() => document.querySelector('.hero-sub')?.classList.add('in'), 800);
+  });
+
+  // ── 最贵 BURST ──────────────────────────────────────
+  // After all chars land (~1.1s), pause 1s, then "最贵" explodes
+  setTimeout(() => {
+    const hchars = [...document.querySelectorAll('.hchar')];
+    // index 6 = 最, 7 = 贵
+    const zui = hchars[6], gui = hchars[7];
+    if (!zui || !gui) return;
+
+    // Stage 1: Underline draws beneath "最贵"
+    const underline = document.createElement('span');
+    underline.id = 'zuiguiLine';
+    titleEl.parentNode.insertBefore(underline, titleEl.nextSibling);
+
+    // Stage 2: After 200ms, burst both chars
+    setTimeout(() => {
+      zui.classList.add('burst');
+      setTimeout(() => gui.classList.add('burst'), 70);
+
+      // Stage 3: brief ambient flash from that region
+      const flash = document.createElement('div');
+      flash.style.cssText = `
+        position:fixed;inset:0;pointer-events:none;z-index:4000;
+        background:radial-gradient(ellipse 50% 30% at 28% 42%,
+          rgba(245,196,24,0.22), transparent 65%);
+        opacity:0;transition:opacity .18s ease;
+      `;
+      document.body.appendChild(flash);
+      requestAnimationFrame(() => {
+        flash.style.opacity = '1';
+        setTimeout(() => {
+          flash.style.opacity = '0';
+          setTimeout(() => flash.remove(), 400);
+        }, 280);
+      });
+    }, 200);
+
+  }, 2100);
+}
+
+/* ══════════════════════════════════════════════════════
+   5. TICKER TAPE
+══════════════════════════════════════════════════════ */
+(function(){
+  const items = [
+    '从0到1是最贵的','想是没有结果的','充分表达决定你被看到','既往才能开来',
+    '血糖决定情绪','IP的本质是三种流动','AI时代的陡峭斜率','先做再想',
+    '你是个黑箱','对世界最大的偷懒是模糊','不是基于结果，是基于斜率',
+  ];
+  const track = document.getElementById('tickerTrack');
+  const doubled = [...items, ...items];
+  doubled.forEach(text => {
+    const span = document.createElement('span');
+    span.className = 'ticker-item';
+    span.textContent = text;
+    track.appendChild(span);
+    const sep = document.createElement('span');
+    sep.className = 'ticker-sep';
+    sep.textContent = ' · ';
+    track.appendChild(sep);
+  });
+})();
+
+/* ══════════════════════════════════════════════════════
+   6. PROGRESS BAR
+══════════════════════════════════════════════════════ */
+window.addEventListener('scroll', () => {
+  const p = window.scrollY / (document.documentElement.scrollHeight - innerHeight);
+  document.getElementById('progress').style.width = (p * 100) + '%';
+}, { passive:true });
+
+/* ══════════════════════════════════════════════════════
+   7. NAV
+══════════════════════════════════════════════════════ */
+const navEl = document.getElementById('nav');
+new IntersectionObserver(([e]) => navEl.classList.toggle('show', !e.isIntersecting))
+  .observe(document.getElementById('hero'));
+
+/* ══════════════════════════════════════════════════════
+   8. SCROLL REVEALS (chapters, stats, appendix)
+══════════════════════════════════════════════════════ */
+const revealIO = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealIO.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin:'0px 0px -80px 0px' });
+
+document.querySelectorAll('.ch, #stats, #appendix, #finale').forEach(el => revealIO.observe(el));
+
+/* ══════════════════════════════════════════════════════
+   9. SCRAMBLE TEXT
+══════════════════════════════════════════════════════ */
+const scrambleChars = '零一二三四五六七八九十百千万亿ABCDEFGHIJKLMNOPQRSTabcdefghijklmnopqrst!@#$%^&*+=<>?/|~';
+
+function doScramble(el, final) {
+  const chars = final.split('');
+  let progress = 0;
+  const SPEED = 0.4; // chars per frame to reveal
+  const SHUFFLE_ROUNDS = 12; // randomize each char this many times before settling
+
+  // Create letter spans
+  el.innerHTML = '';
+  chars.forEach(() => {
+    const s = document.createElement('span');
+    s.className = 'schar';
+    el.appendChild(s);
+  });
+  const spans = el.querySelectorAll('.schar');
+
+  let frame = 0;
+  function tick() {
+    frame++;
+    progress = Math.min(progress + SPEED, chars.length);
+    spans.forEach((s, i) => {
+      if (i < Math.floor(progress)) {
+        s.textContent = chars[i];
+        s.style.opacity = '1';
+      } else {
+        s.textContent = scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+        s.style.opacity = String(0.15 + Math.random() * 0.3);
+      }
+    });
+    if (Math.floor(progress) < chars.length) requestAnimationFrame(tick);
+    else spans.forEach((s,i) => { s.textContent = chars[i]; s.style.opacity='1'; });
+  }
+  tick();
+}
+
+const qIO = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const st = e.target.querySelector('.scramble-text');
+      if (st) {
+        const finalText = st.dataset.scramble;
+        setTimeout(() => doScramble(st, finalText), 200);
+      }
+      qIO.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('[data-qsec]').forEach(el => qIO.observe(el));
+
+/* ══════════════════════════════════════════════════════
+   10. COUNT-UP
+══════════════════════════════════════════════════════ */
+function countUp(el, target, duration) {
+  const start = performance.now();
+  const tick = now => {
+    const p = Math.min((now - start) / duration, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(e * target).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+const countIO = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('[data-count]').forEach(el => {
+        countUp(el, parseInt(el.dataset.count), 2200);
+      });
+      countIO.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.4 });
+countIO.observe(document.getElementById('stats'));
+
+/* ══════════════════════════════════════════════════════
+   11. 3D CARD TILT
+══════════════════════════════════════════════════════ */
+document.querySelectorAll('[data-tilt]').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const dx = (e.clientX - cx) / (r.width / 2);
+    const dy = (e.clientY - cy) / (r.height / 2);
+    card.style.transform = `perspective(600px) rotateY(${dx * 10}deg) rotateX(${-dy * 10}deg) scale(1.02)`;
+    card.style.boxShadow = `${-dx * 20}px ${dy * 20}px 60px rgba(255,45,32,0.1)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.boxShadow = '';
+  });
+});
+
+/* ══════════════════════════════════════════════════════
+   12. PARALLAX (chapter bg numbers)
+══════════════════════════════════════════════════════ */
+window.addEventListener('scroll', () => {
+  document.querySelectorAll('.ch-bg-num').forEach(el => {
+    const section = el.closest('.ch');
+    const r = section.getBoundingClientRect();
+    const progress = -r.top / r.height;
+    el.style.transform = `translateY(calc(-50% + ${progress * 60}px)) translateX(0)`;
+  });
+}, { passive:true });
+
+/* ══════════════════════════════════════════════════════
+   13. FINALE PARTICLE BURST
+══════════════════════════════════════════════════════ */
+(function(){
+  const canvas = document.getElementById('finaleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, embers = [], triggered = false;
+
+  function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Warm ember: drifts upward slowly, flickers
+  function makeEmber() {
+    return {
+      x: W * (0.1 + Math.random() * 0.8),
+      y: H + 10,
+      vy: -(0.25 + Math.random() * 0.55), // slow upward
+      vx: (Math.random() - 0.5) * 0.25,
+      life: 0.6 + Math.random() * 0.4,
+      decay: 0.0018 + Math.random() * 0.0012,
+      r: 0.8 + Math.random() * 2,
+      hue: 28 + Math.random() * 24,       // amber to gold
+      phase: Math.random() * Math.PI * 2, // flicker offset
+    };
+  }
+
+  // Spawn continuously when triggered
+  let spawnRate = 0;
+  function loop(t) {
+    ctx.clearRect(0, 0, W, H);
+
+    // Spawn new embers
+    if (triggered) {
+      spawnRate += 0.4;
+      while (spawnRate >= 1) { embers.push(makeEmber()); spawnRate--; }
+    }
+
+    embers = embers.filter(e => e.life > 0);
+    embers.forEach(e => {
+      e.x  += e.vx + Math.sin(t * 0.001 + e.phase) * 0.15;
+      e.y  += e.vy;
+      e.life -= e.decay;
+      const flicker = 0.6 + 0.4 * Math.sin(t * 0.008 + e.phase);
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${e.hue}, 88%, 62%, ${e.life * flicker * 0.7})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // Also add a slow warm radial glow from center
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !triggered) {
+        triggered = true;
+        // Slowly build up ember count
+        setTimeout(() => spawnRate = 0.2, 400);
+        setTimeout(() => spawnRate = 0.6, 1500);
+        setTimeout(() => spawnRate = 0.3, 4000); // settle into gentle drift
+      }
+    });
+  }, { threshold: 0.4 }).observe(document.getElementById('finale'));
+})();
+
+/* ══════════════════════════════════════════════════════
+   14. SMOOTH SCROLL
+══════════════════════════════════════════════════════ */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+/* ══════════════════════════════════════════════════════
+   15. HOVER SOUND EFFECT (subtle click-feel via haptic-like visual pulse)
+══════════════════════════════════════════════════════ */
+document.querySelectorAll('.nav-links a, .hero-cta').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    const o = document.getElementById('cOuter');
+    o.style.transition = 'width .15s, height .15s, border-color .15s, background .15s, transform .1s';
+    o.style.transform = 'translate(-50%,-50%) scale(1.3)';
+    setTimeout(() => {
+      o.style.transform = 'translate(-50%,-50%) scale(1)';
+      o.style.transition = '';
+    }, 150);
+  });
+});
+/* ══════════════════════════════════════════════════════
+   +01  AMBIENT CURSOR GLOW
+══════════════════════════════════════════════════════ */
+(function(){
+  const glow = document.getElementById('ambientGlow');
+  let glowX = 0, glowY = 0, targetX = 0, targetY = 0;
+  document.addEventListener('mousemove', e => { targetX = e.clientX; targetY = e.clientY; glow.style.opacity = '1'; });
+  document.addEventListener('mouseleave', () => glow.style.opacity = '0');
+  (function loop(){
+    glowX += (targetX - glowX) * 0.06;
+    glowY += (targetY - glowY) * 0.06;
+    glow.style.left = glowX + 'px';
+    glow.style.top  = glowY + 'px';
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ══════════════════════════════════════════════════════
+   +02  HERO MOUSE PARALLAX (3 depth layers)
+══════════════════════════════════════════════════════ */
+(function(){
+  const hero = document.getElementById('hero');
+  const title = document.getElementById('heroTitle');
+  const sub   = document.querySelector('.hero-sub');
+  const cta   = document.querySelector('.hero-cta');
+  hero.addEventListener('mousemove', e => {
+    const r = hero.getBoundingClientRect();
+    const dx = (e.clientX - r.left) / r.width  - 0.5;
+    const dy = (e.clientY - r.top)  / r.height - 0.5;
+    // Only title moves — sub and cta stay fixed to avoid motion sickness
+    if (title) title.style.transform = `translate(${dx * -8}px, ${dy * -5}px)`;
+  });
+  hero.addEventListener('mouseleave', () => {
+    if (title) title.style.transform = '';
+  });
+})();
+
+/* ══════════════════════════════════════════════════════
+   +03  CHAPTER DOT NAVIGATION — click + active tracking
+══════════════════════════════════════════════════════ */
+(function(){
+  const dots = document.querySelectorAll('.dot-item');
+  const sections = ['ch1','ch2','ch3','ch4','ch5','ch6'].map(id => document.getElementById(id));
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const t = document.querySelector(dot.dataset.href);
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  const dotIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const id = e.target.id;
+      const idx = ['ch1','ch2','ch3','ch4','ch5','ch6'].indexOf(id);
+      if (idx < 0) return;
+      dots.forEach((d,i) => d.classList.toggle('active', i === idx));
+    });
+  }, { threshold: 0.4 });
+  sections.forEach(s => s && dotIO.observe(s));
+})();
+
+/* ══════════════════════════════════════════════════════
+   +04  ACTIVE CHAPTER IN NAV LINKS
+══════════════════════════════════════════════════════ */
+(function(){
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const sections = document.querySelectorAll('.ch[id]');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      navLinks.forEach(l => {
+        l.style.color = l.getAttribute('href') === '#' + e.target.id
+          ? 'var(--white)' : '';
+      });
+    });
+  }, { threshold: 0.5 });
+  sections.forEach(s => io.observe(s));
+})();
+
+/* ══════════════════════════════════════════════════════
+   +05  SECTION EXIT DIM
+        A section that has been fully scrolled past dims
+        out, keeping visual weight on the current section.
+══════════════════════════════════════════════════════ */
+(function(){
+  const chapters = document.querySelectorAll('.ch');
+  const exitIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.boundingClientRect.bottom < 0) {
+        e.target.classList.add('exited');
+      } else {
+        e.target.classList.remove('exited');
+      }
+    });
+  }, { threshold: 0 });
+  chapters.forEach(c => exitIO.observe(c));
+})();
+
+/* +06 idle breath removed */
+
+/* ══════════════════════════════════════════════════════
+   +07  PER-CHAPTER AMBIENT BACKGROUND TINT
+        Each chapter carries a whisper of unique colour:
+        barely 3-6 units from pure black.
+══════════════════════════════════════════════════════ */
+(function(){
+  const tints = {
+    ch1: '0,0,0',     // pure black
+    ch2: '4,2,0',     // a trace of warmth
+    ch3: '0,3,3',     // a ghost of teal
+    ch4: '0,0,6',     // midnight blue
+    ch5: '3,0,5',     // faint purple
+    ch6: '2,0,8',     // deep space
+  };
+  Object.entries(tints).forEach(([id, tint]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.setProperty('--ch-tint', tint);
+  });
+})();
+
+/* +08 scroll velocity overlay removed */
+
+/* +09 arc JS removed */
+
+/* ══════════════════════════════════════════════════════
+   +10  DRAW-RULE ANIMATE VIA CHAPTER VISIBLE CLASS
+        Already CSS-driven; JS adds a delay token so rules
+        draw AFTER the text has revealed.
+══════════════════════════════════════════════════════ */
+document.querySelectorAll('.draw-rule').forEach(r => {
+  r.style.transitionDelay = '0.6s';
+});
+
+/* ══════════════════════════════════════════════════════
+   +11  HERO CANVAS MOUSE INTERACTION
+        Mouse proximity to the canvas shifts blob colours.
+══════════════════════════════════════════════════════ */
+// (The canvas blobs already animate. We add a subtle mouse
+//  colour tint by writing to a shared variable read by the loop.)
+(function(){
+  let mouseInfluence = { x: 0.5, y: 0.5 };
+  document.getElementById('hero').addEventListener('mousemove', e => {
+    const r = document.getElementById('hero').getBoundingClientRect();
+    mouseInfluence.x = e.clientX / r.width;
+    mouseInfluence.y = e.clientY / r.height;
+  });
+  window._heroMouseInfluence = mouseInfluence;
+})();
+
+/* ══════════════════════════════════════════════════════
+   +12  QCARD MAGNETIC CURSOR REGISTRATION
+        Register newly revealed qcards as magnetic targets.
+══════════════════════════════════════════════════════ */
+(function(){
+  document.querySelectorAll('.qcard').forEach(card => {
+    card.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    card.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+})();
+
+/* ══════════════════════════════════════════════════════
+   +13  CONCL TEXT TYPEWRITER EFFECT
+        "本章收束" content types itself in on first view.
+══════════════════════════════════════════════════════ */
+(function(){
+  const conclTexts = document.querySelectorAll('.concl-txt');
+  const typedIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const original = el.textContent.trim();
+      el.textContent = '';
+      el.style.opacity = '1';
+      let i = 0;
+      const timer = setInterval(() => {
+        el.textContent = original.slice(0, ++i);
+        if (i >= original.length) clearInterval(timer);
+      }, 28);
+      typedIO.unobserve(el);
+    });
+  }, { threshold: 1.0 });
+  conclTexts.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transition = 'none';
+    typedIO.observe(el);
+  });
+})();
+
+/* ══════════════════════════════════════════════════════
+   +14  NAV LOGO HOVER SPIN
+        The HOPER logo does one elegant rotation on hover.
+══════════════════════════════════════════════════════ */
+(function(){
+  const logo = document.querySelector('.nav-logo');
+  if (!logo) return;
+  logo.style.transition = 'letter-spacing .4s ease, color .3s';
+  logo.addEventListener('mouseenter', () => {
+    logo.style.letterSpacing = '0.25em';
+    logo.style.color = 'var(--red)';
+  });
+  logo.addEventListener('mouseleave', () => {
+    logo.style.letterSpacing = '0.15em';
+    logo.style.color = '';
+  });
+})();
+
+/* ══════════════════════════════════════════════════════
+   +15  QUOTE SECTION AMBIENT HALO PULSE
+        The large ambient background word (like 想, 黑箱)
+        slowly scales on a 10s breath — atmospheric, not
+        animated. You won't notice it consciously.
+══════════════════════════════════════════════════════ */
+(function(){
+  document.querySelectorAll('.q-ambient').forEach(el => {
+    el.style.animation = 'qAmbientBreath 12s ease-in-out infinite';
+    const delay = Math.random() * 4;
+    el.style.animationDelay = `-${delay}s`;
+  });
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes qAmbientBreath {
+      0%, 100% { transform: translate(-50%,-50%) scale(1);    opacity: .7; }
+      50%       { transform: translate(-50%,-50%) scale(1.04); opacity: 1; }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
+/* ══════════════════════════════════════════════════════
+   NEW +A  SLOPE CHART DRAW ANIMATION
+   SVG lines draw themselves using stroke-dashoffset.
+   Both lines animate in sequence when ch6 enters view.
+══════════════════════════════════════════════════════ */
+(function(){
+  const svg = document.getElementById('slopeSvg');
+  if (!svg) return;
+  let drawn = false;
+
+  function drawChart() {
+    if (drawn) return;
+    drawn = true;
+
+    // Draw IP line first
+    const lineIP = document.getElementById('lineIP');
+    const lineAI = document.getElementById('lineAI');
+    lineIP.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(0.25,1,0.5,1)';
+    lineIP.style.strokeDashoffset = '0';
+
+    setTimeout(() => {
+      // Fade in IP label and angle
+      ['labelIP','arcIP','deg15'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.transition = 'opacity .5s'; el.style.opacity = '1'; }
+      });
+    }, 1200);
+
+    setTimeout(() => {
+      // Draw AI line
+      lineAI.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.25,1,0.5,1)';
+      lineAI.style.strokeDashoffset = '0';
+    }, 1600);
+
+    setTimeout(() => {
+      ['labelAI','arcAI','deg60'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.transition = 'opacity .5s'; el.style.opacity = '1'; }
+      });
+    }, 2400);
+  }
+
+  // Trigger when ch6 becomes visible
+  const slopeIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { setTimeout(drawChart, 400); slopeIO.unobserve(e.target); }
+    });
+  }, { threshold: 0.5 });
+  const ch6 = document.getElementById('ch6');
+  if (ch6) slopeIO.observe(ch6);
+})();
+
+/* ══════════════════════════════════════════════════════
+   NEW +B  QCARD CLICK-TO-EXPAND
+   Click any appendix card → it expands into a focused
+   overlay. Background dims. Other cards fade. ESC closes.
+══════════════════════════════════════════════════════ */
+(function(){
+  const overlay   = document.getElementById('cardOverlay');
+  const expanded  = document.getElementById('cardExpanded');
+  const closeBtn  = document.getElementById('cardClose');
+  const expLabel  = document.getElementById('cardExpLabel');
+  const expList   = document.getElementById('cardExpList');
+  if (!overlay) return;
+
+  function openCard(card) {
+    const label = card.querySelector('.qcard-label')?.textContent || '';
+    const items = [...card.querySelectorAll('.qcard-list li')].map(li => li.textContent.trim());
+
+    expLabel.textContent = label;
+    expList.innerHTML = items.map(t =>
+      `<li style="font-size:.9rem;color:rgba(242,242,242,0.7);line-height:1.9;
+        display:flex;gap:1rem;align-items:baseline;font-family:'Noto Serif SC',serif;font-weight:300;">
+        <span style="color:rgba(255,45,32,0.6);flex-shrink:0;font-size:.75rem;">—</span>${t}
+      </li>`
+    ).join('');
+
+    overlay.style.pointerEvents = 'auto';
+    overlay.style.background = 'rgba(0,0,0,0.82)';
+    expanded.style.opacity = '1';
+    expanded.style.transform = 'scale(1) translateY(0)';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCard() {
+    overlay.style.pointerEvents = 'none';
+    overlay.style.background = 'rgba(0,0,0,0)';
+    expanded.style.opacity = '0';
+    expanded.style.transform = 'scale(.94) translateY(20px)';
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.qcard').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => openCard(card));
+  });
+
+  closeBtn.addEventListener('click', closeCard);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeCard(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCard(); });
+})();
+
+/* ══════════════════════════════════════════════════════
+   NEW +C  DOT NAV HOVER PREVIEW CARD
+   Hovering a chapter dot shows a floating panel
+   with the chapter title and its key quote.
+══════════════════════════════════════════════════════ */
+(function(){
+  const preview = document.getElementById('dotPreview');
+  const pTitle  = document.getElementById('dotPreviewTitle');
+  const pText   = document.getElementById('dotPreviewText');
+  if (!preview) return;
+
+  document.querySelectorAll('.dot-item').forEach(dot => {
+    dot.addEventListener('mouseenter', () => {
+      const rect = dot.getBoundingClientRect();
+      pTitle.textContent = dot.dataset.label || '';
+      pText.textContent  = dot.dataset.preview || '';
+      preview.style.top  = (rect.top + rect.height/2 - 40) + 'px';
+      preview.style.opacity = '1';
+      preview.style.transform = 'translateX(0)';
+    });
+    dot.addEventListener('mouseleave', () => {
+      preview.style.opacity = '0';
+      preview.style.transform = 'translateX(8px)';
+    });
+  });
+})();
+
+/* ══════════════════════════════════════════════════════
+   NEW +D  SCROLL-LERPED BACKGROUND COLOR
+   The document background smoothly interpolates between
+   the per-chapter tints as you scroll. Imperceptible
+   moment-to-moment, but gives each chapter a "temperature."
+══════════════════════════════════════════════════════ */
+(function(){
+  const sections = [
+    { id:'ch1', r:0,  g:0,  b:0  },
+    { id:'ch2', r:4,  g:2,  b:0  },
+    { id:'ch3', r:0,  g:3,  b:3  },
+    { id:'ch4', r:0,  g:0,  b:6  },
+    { id:'ch5', r:3,  g:0,  b:5  },
+    { id:'ch6', r:2,  g:0,  b:8  },
+  ].map(s => ({ ...s, el: document.getElementById(s.id) })).filter(s => s.el);
+
+  let curR = 0, curG = 0, curB = 0;
+
+  function lerp(a, b, t) { return a + (b-a)*t; }
+
+  function getTargetColor() {
+    const mid = window.scrollY + window.innerHeight * 0.5;
+    for (let i = sections.length-1; i >= 0; i--) {
+      const top = sections[i].el.offsetTop;
+      if (mid >= top) {
+        const next = sections[i+1];
+        if (!next) return sections[i];
+        const bot = next.el.offsetTop;
+        const t   = Math.max(0, Math.min(1, (mid - top) / (bot - top)));
+        return {
+          r: lerp(sections[i].r, next.r, t),
+          g: lerp(sections[i].g, next.g, t),
+          b: lerp(sections[i].b, next.b, t),
+        };
+      }
+    }
+    return { r:0, g:0, b:0 };
+  }
+
+  (function loop(){
+    const target = getTargetColor();
+    curR = lerp(curR, target.r, 0.04);
+    curG = lerp(curG, target.g, 0.04);
+    curB = lerp(curB, target.b, 0.04);
+    document.body.style.backgroundColor = `rgb(${Math.round(curR)},${Math.round(curG)},${Math.round(curB)})`;
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ══════════════════════════════════════════════════════
+   NEW +E  QUOTE HOVER HIGHLIGHT ROWS
+   Hovering a scramble quote section makes each "line"
+   of the quote individually highlightable with a
+   soft red underline — invites re-reading.
+   Also: clicking any qsec copies the text to clipboard.
+══════════════════════════════════════════════════════ */
+(function(){
+  document.querySelectorAll('.qsec').forEach(section => {
+    // Add copy affordance
+    const hint = document.createElement('p');
+    hint.style.cssText = `
+      position:absolute; bottom:2rem; right:3rem;
+      font-size:.62rem; letter-spacing:.2em; text-transform:uppercase;
+      color:rgba(255,255,255,0.15); font-family:'Noto Sans SC',sans-serif;
+      pointer-events:none; transition:opacity .3s;
+    `;
+    hint.textContent = '点击复制';
+    section.style.position = 'relative';
+    section.appendChild(hint);
+
+    section.addEventListener('mouseenter', () => hint.style.opacity = '1');
+    section.addEventListener('mouseleave', () => hint.style.opacity = '0');
+
+    section.style.cursor = 'pointer';
+    section.addEventListener('click', () => {
+      const text = section.querySelector('.scramble-text')?.textContent?.trim() || '';
+      navigator.clipboard?.writeText(text).then(() => {
+        hint.textContent = '已复制 ✓';
+        hint.style.color = 'rgba(255,45,32,0.7)';
+        setTimeout(() => {
+          hint.textContent = '点击复制';
+          hint.style.color = 'rgba(255,255,255,0.15)';
+        }, 2000);
+      });
+    });
+  });
+})();
+
+/* ══════════════════════════════════════════════════════
+   FEAR CURVE ANIMATION (ch1)
+   Uses setAttribute for reliable SVG animation.
+══════════════════════════════════════════════════════ */
+(function(){
+  const think = document.getElementById('thinkCurve');
+  const doIt  = document.getElementById('doCurve');
+  if (!think || !doIt) return;
+
+  // Set initial state via JS (more reliable than HTML attributes)
+  const DASH = 800;
+  think.setAttribute('stroke-dasharray', DASH);
+  think.setAttribute('stroke-dashoffset', DASH);
+  doIt.setAttribute('stroke-dasharray', DASH);
+  doIt.setAttribute('stroke-dashoffset', DASH);
+
+  let drawn = false;
+
+  function animateCurves() {
+    if (drawn) return;
+    drawn = true;
+
+    // 1. Red "think" line rises — delayed 300ms
+    setTimeout(() => {
+      think.classList.add('animate');
+      think.setAttribute('stroke-dashoffset', '0');
+    }, 300);
+
+    // 2. Label "一直想象" appears
+    setTimeout(() => {
+      const el = document.getElementById('lbl1');
+      if (el) { el.style.transition = 'opacity .5s'; el.style.opacity = '1'; }
+    }, 2000);
+
+    // 3. White "do" line drops then flattens — starts 2.4s in
+    setTimeout(() => {
+      doIt.classList.add('animate');
+      doIt.setAttribute('stroke-dashoffset', '0');
+    }, 2400);
+
+    // 4. "做了！" marker + label 2
+    setTimeout(() => {
+      ['doMarker','doLabel','lbl2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.transition = 'opacity .6s'; el.style.opacity = '1'; }
+      });
+    }, 3600);
+  }
+
+  // Observe the fear-viz div itself (lower threshold so it triggers reliably)
+  const fearDiv = document.querySelector('.fear-viz');
+  if (fearDiv) {
+    new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) animateCurves(); });
+    }, { threshold: 0.25 }).observe(fearDiv);
+  }
+})();
+
+/* ══════════════════════════════════════════════════════
+   FINALE BOUNCE + AI REVEAL
+══════════════════════════════════════════════════════ */
+(function(){
+  const finaleTitle = document.getElementById('finaleTitle');
+  const aiBtn       = document.getElementById('aiBtn');
+  const aiReveal    = document.getElementById('aiReveal');
+  const aiClose     = document.getElementById('aiClose');
+
+  // Start bouncing 1.8s after finale becomes visible (after appear animation)
+  const bounceIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && finaleTitle) {
+        setTimeout(() => finaleTitle.classList.add('bouncing'), 1800);
+        bounceIO.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  const finale = document.getElementById('finale');
+  if (finale) bounceIO.observe(finale);
+
+  // AI button → overlay reveal
+  if (aiBtn) {
+    aiBtn.addEventListener('click', () => {
+      // Clear any inline styles that might block reopening
+      aiReveal.style.opacity = '';
+      aiReveal.style.transition = '';
+      aiReveal.style.pointerEvents = '';
+      aiReveal.classList.add('active');
+      finaleTitle?.classList.remove('bouncing');
+    });
+  }
+
+  // Close overlay on click — reliable every time
+  if (aiReveal) {
+    aiReveal.addEventListener('click', () => {
+      // Fade out via inline style, then reset cleanly
+      aiReveal.style.transition = 'opacity .6s ease';
+      aiReveal.style.opacity = '0';
+      setTimeout(() => {
+        // Remove active class AFTER fade, then clear ALL inline styles
+        // so CSS class system takes over cleanly next time
+        aiReveal.classList.remove('active');
+        aiReveal.style.opacity = '';
+        aiReveal.style.transition = '';
+        aiReveal.style.pointerEvents = '';  // let CSS handle it (none when not .active)
+        finaleTitle?.classList.add('bouncing');
+      }, 620);
+    });
+  }
+})();
+
+/* ══════════════════════════════════════════════════════
+   BGM — Web Audio Ambient Soundscape
+   A minor ambient: deep drones + evolving pad notes.
+   Mood: contemplative, forward-moving, slightly cinematic.
+   Auto-starts on first user interaction (browser policy).
+══════════════════════════════════════════════════════ */
+(function(){
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  let ctx, masterGain;
+  let muted = false;
+  let started = false;
+  const MASTER_VOL = 0.14;
+
+  /* ── Build a smooth convolution reverb ── */
+  function makeReverb(duration) {
+    const conv = ctx.createConvolver();
+    const len  = Math.floor(ctx.sampleRate * duration);
+    const buf  = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) {
+      const d = buf.getChannelData(c);
+      for (let i = 0; i < len; i++) {
+        d[i] = (Math.random() * 2 - 1) *
+               Math.pow(1 - i / len, 2.5);
+      }
+    }
+    conv.buffer = buf;
+    return conv;
+  }
+
+  /* ── One sustained sine drone with micro-vibrato ── */
+  function addDrone(freq, vol, out) {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+
+    // Very slow wobble
+    const lfo  = ctx.createOscillator();
+    lfo.frequency.value = 0.025 + Math.random() * 0.04;
+    const lfoG = ctx.createGain();
+    lfoG.gain.value = freq * 0.0025;
+    lfo.connect(lfoG);
+    lfoG.connect(osc.frequency);
+
+    const g = ctx.createGain();
+    g.gain.value = vol;
+    osc.connect(g);
+    g.connect(out);
+    osc.start(); lfo.start();
+  }
+
+  /* ── Soft pad note that fades in and out ── */
+  function playPad(freq, reverb, direct, delay) {
+    const t0 = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';           // softer than sine
+    osc.frequency.value = freq;
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(0.055, t0 + 2.2);
+    g.gain.setValueAtTime(0.055, t0 + 6.5);
+    g.gain.linearRampToValueAtTime(0, t0 + 10);
+
+    osc.connect(g);
+    g.connect(reverb);
+    g.connect(direct);
+    osc.start(t0);
+    osc.stop(t0 + 11);
+  }
+
+  /* ── Cycling pad melody (Am → G → C → Em) ── */
+  function schedulePads(reverb, direct) {
+    // Am pentatonic + color tones, two-octave spread
+    const sequence = [
+      220.0,   // A3
+      329.63,  // E4
+      261.63,  // C4
+      293.66,  // D4
+      392.0,   // G4
+      246.94,  // B3 (leading tone color)
+      329.63,  // E4
+      220.0,   // A3
+    ];
+    let i = 0;
+
+    function next() {
+      playPad(sequence[i % sequence.length], reverb, direct, 0);
+      i++;
+      const gap = 8 + Math.random() * 5;       // 8–13 s between notes
+      setTimeout(next, gap * 1000);
+    }
+    setTimeout(next, 2500);                     // first note at 2.5s
+  }
+
+  /* ── Start engine ── */
+  function start() {
+    if (started) return;
+    started = true;
+    ctx = new AudioCtx();
+
+    masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0, ctx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(MASTER_VOL, ctx.currentTime + 5);
+    masterGain.connect(ctx.destination);
+
+    const reverb     = makeReverb(5);
+    const reverbSend = ctx.createGain();
+    reverbSend.gain.value = 0.55;
+    reverb.connect(reverbSend);
+    reverbSend.connect(masterGain);
+
+    // Foundation drones (A minor)
+    addDrone(55.00,  0.30, reverbSend);   // A1  — sub bass
+    addDrone(82.41,  0.18, reverbSend);   // E2  — fifth
+    addDrone(110.00, 0.12, reverbSend);   // A2  — octave
+    addDrone(164.81, 0.07, reverbSend);   // E3  — upper fifth
+    addDrone(220.00, 0.04, masterGain);   // A3  — air
+
+    // Evolving melodic pads
+    schedulePads(reverbSend, masterGain);
+
+    // Update button state
+    updateBtn();
+  }
+
+  /* ── Mute / unmute ── */
+  function toggleMute() {
+    if (!started) { start(); return; }
+    muted = !muted;
+    masterGain.gain.cancelScheduledValues(ctx.currentTime);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, ctx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(
+      muted ? 0 : MASTER_VOL, ctx.currentTime + 1.2
+    );
+    updateBtn();
+  }
+
+  /* ── UI toggle button ── */
+  const btn = document.createElement('button');
+  btn.id = 'bgmToggle';
+  btn.setAttribute('aria-label', '背景音乐');
+  document.body.appendChild(btn);
+
+  // Inject button CSS
+  const s = document.createElement('style');
+  s.textContent = `
+    #bgmToggle {
+      position:fixed; bottom:1.6rem; left:1.8rem; z-index:600;
+      width:38px; height:38px; border-radius:50%;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.1);
+      color:rgba(255,255,255,0.28); font-size:.9rem;
+      cursor:pointer; display:flex; align-items:center;
+      justify-content:center; pointer-events:auto;
+      transition:border-color .3s, color .3s, background .3s;
+    }
+    #bgmToggle:hover {
+      border-color:rgba(255,255,255,0.35);
+      color:rgba(255,255,255,0.7);
+    }
+    #bgmToggle.muted {
+      border-color:rgba(255,45,32,0.25);
+      color:rgba(255,45,32,0.4);
+    }
+    #bgmToggle.playing {
+      border-color:rgba(245,196,24,0.3);
+      color:rgba(245,196,24,0.6);
+    }
+  `;
+  document.head.appendChild(s);
+
+  function updateBtn() {
+    if (!started)   { btn.textContent = '♪'; btn.className = ''; }
+    else if (muted) { btn.textContent = '♪'; btn.className = 'muted'; }
+    else            { btn.textContent = '♫'; btn.className = 'playing'; }
+  }
+  updateBtn();
+
+  btn.addEventListener('click', e => { e.stopPropagation(); toggleMute(); });
+
+  /* ── Auto-start on first interaction ── */
+  function onFirst(e) {
+    // Don't intercept the bgm button itself
+    if (e.target === btn) return;
+    start();
+    ['click','keydown','touchstart','scroll'].forEach(ev =>
+      document.removeEventListener(ev, onFirst)
+    );
+  }
+  ['click','keydown','touchstart','scroll'].forEach(ev =>
+    document.addEventListener(ev, onFirst, { passive: true })
+  );
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!-- ============================================================
+  m-video.html — 03 章「视频矩阵」(窗口 E 产出 · 修订单-02 重构版)
+  两组放映,布局刻意不同:
+    G1「AI 生视频」 = 主打大窗 + 右列三联(pin,行程已按铁律四砍半)
+    G2「AI 代码视频」= 横向错落带(不 pin,2 个 live 单文件 + 2 个录屏)
+  规则:作品彩色直出(无灰度);每个 mp4 自绘进度条;live 同屏 ≤2,
+  挡板防滚动劫持,点「进入互动」开演(片内有自己的播放键,带声);
+  小窗静音循环 ≤3MB,点击全屏带声;无数量统计;每位两行中文。
+  内容全部由 m-video.js 顶部 GEN / CODE 配置驱动。
+  接入:整段替换 index.html 占位;head 加 css;fx.js 之后加 js。
+  入口幕:data-curtain="hard" 自触发 02→03 黑幕;总装另挂幕则删该属性。
+  ============================================================ -->
+<section class="m-video" id="chap-03" data-chapter="03" data-curtain="hard">
+
+  <!-- 章头(一屏,不 pin) -->
+  <header class="m-video__head">
+    <p class="m-video__kicker fx-label fx-hide"><span class="fx-chapnum">03</span> — 视频 · VIDEO MATRIX</p>
+    <h2 class="m-video__title fx-display fx-hide">视频矩阵</h2>
+    <p class="m-video__sub fx-label fx-label--dim fx-hide">AI 生视频 / AI 代码视频 — 黑场放映室 · 网页即放映机</p>
+    <p class="m-video__hint fx-label fx-label--dim" aria-hidden="true">SCROLL — 两组放映 ▼</p>
+  </header>
+
+  <!-- G1 AI 生视频:主打大窗 + 右列三联(m-video.js 注入) -->
+  <div class="m-video__reel" data-reel="gen" aria-label="AI 生视频放映组"></div>
+
+  <!-- G2 AI 代码视频:横向错落带(m-video.js 注入) -->
+  <div class="m-video__band" data-reel="code" aria-label="AI 代码视频放映组"></div>
+
+  <!-- 收尾跑马灯 -->
+  <footer class="m-video__tail">
+    <div class="m-video__marquee fx-display" id="mvMarquee" aria-hidden="true">
+      <span class="m-video__marquee-chunk">VIDEO MATRIX — AI 生视频 · AI 代码视频 —&nbsp;</span>
+    </div>
+    <p class="m-video__tail-meta fx-label fx-label--dim fx-hide" id="mvTailMeta">两种做片法,同一条标准产线 — 还在加片</p>
+  </footer>
+
+  <!-- 全屏放映层(点击小窗后由 JS 填充 <video>,带声) -->
+  <div class="m-video__lb" id="mvLightbox" aria-hidden="true">
+    <p class="m-video__lb-tag fx-label" id="mvLbTag"></p>
+    <button class="m-video__lb-close fx-label" id="mvLbClose" type="button">✕ 关闭 CLOSE</button>
+    <div class="m-video__lb-stage" id="mvLbStage"></div>
+  </div>
+
+</section>

@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "source": "25IP训练营优秀网站选拔表 v2 (共264件分享, 此处只取入选的前两档38件)",
+    "note": "展示层只用 name/author/url 字段。group 仅作内部策展优先级(S=优先放主站, A=放子站/网格), 不在页面上出现任何评分、红包、个人评价。",
+    "fields": {
+      "type": "url=有在线地址可直接iframe/截图; file=单文件HTML需从群里收集",
+      "local": "已在本机找到的文件或疑似同源文件路径, null=未找到"
+    }
+  },
+  "works": [
+    { "group": "S", "name": "zero_to_one_full_visual_v12_kinetic_motion_pass", "author": "赤の破滅", "type": "file", "url": null, "local": "E:/Workspaces/02-design/zero-to-one (疑似同系列, 待确认版本)" },
+    { "group": "S", "name": "wangjiemin.com 个人站", "author": "王杰民", "type": "url", "url": "https://wangjiemin.com", "local": null },
+    { "group": "S", "name": "hoper_wow", "author": "树林", "type": "file", "url": null, "local": "E:/Workspaces/02-design/hoper-vol002 (疑似同系列, 待确认)" },
+    { "group": "S", "name": "25IP Live Exhibition", "author": "东渐西被", "type": "url", "url": "https://25ip-live-exhibition.pages.dev/", "local": null },
+    { "group": "S", "name": "fancy-fenglisu", "author": "不忧白", "type": "url", "url": "https://fancy-fenglisu-a719ae.netlify.app", "local": null },
+    { "group": "S", "name": "把自己交给世界定价1", "author": "赤の破滅", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "ipreview", "author": "Rheos", "type": "url", "url": "https://ipreview.netlify.app/", "local": null },
+    { "group": "S", "name": "identity_wars", "author": "子堤", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "IP营成长心法-横屏动态短片", "author": "创创创飞飞毛腿", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "web-demos 合集", "author": "FATE", "type": "url", "url": "https://samson-i.github.io/web-demos/", "local": null },
+    { "group": "S", "name": "last_words", "author": "獭獭", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "last_page_for_humanity", "author": "獭獭", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "cognitive-leap-v13", "author": "浔墨", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "strangers-v6 (背景视频版)", "author": "三七二十二", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "dice_fate_table_v2_6_7", "author": "李柏", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "climb", "author": "白骐溶", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "表白网站", "author": "昕", "type": "url", "url": "https://glittering-syrniki-42ae77.netlify.app/", "local": null },
+    { "group": "S", "name": "structure", "author": "亮作", "type": "file", "url": null, "local": "E:/Workspaces/社群资料库/structure_optimized.html (疑似优化版, 待确认)" },
+    { "group": "S", "name": "婚礼祝福网站", "author": "dawn", "type": "url", "url": "https://rlhak3ccxmgbk.ok.kimi.link", "local": null },
+    { "group": "S", "name": "bodyfirst", "author": "林宇", "type": "url", "url": "https://bodyfirst1.netlify.app/", "local": null },
+    { "group": "S", "name": "reverse_levelup_v3 (游戏化)", "author": "李柏", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "codex-last-page", "author": "mio_1", "type": "file", "url": null, "local": null },
+    { "group": "S", "name": "AI时代到来 rap说唱", "author": "水猫", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "lucky-sprite", "author": "半杯箫暮", "type": "url", "url": "https://lucky-sprite-e31c57.netlify.app/", "local": null },
+    { "group": "A", "name": "ai_video_workflow", "author": "Bright", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "母亲节贺卡", "author": "万象榕", "type": "url", "url": "https://mothers-day-love-2026.netlify.app/", "local": null },
+    { "group": "A", "name": "ip-journey (小人动画)", "author": "不上中大不改名", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "pixel_mountain_story_v8", "author": "白骐溶", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "问题共处动画", "author": "启诺", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "strand-ai-survival (风格化美术)", "author": "长风破小浪", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "rainwater-apartment", "author": ".·.", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "kaijie 个人站", "author": "凯杰", "type": "url", "url": "https://kaijie.netlify.app/", "local": null },
+    { "group": "A", "name": "觉_v4", "author": "家齐潜渡", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "mirror (互动工具)", "author": "FATE", "type": "url", "url": "https://samson-i.github.io/web-demos/Tools/mirror.html", "local": null },
+    { "group": "A", "name": "语言的力量", "author": "雪糕wo", "type": "file", "url": null, "local": "E:/Workspaces/社群资料库/视觉效果比较好的.zip 内含" },
+    { "group": "A", "name": "AI短剧工作流", "author": "泽央", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "520信件", "author": "时木夏", "type": "file", "url": null, "local": null },
+    { "group": "A", "name": "野针AI识别应用", "author": "王杰民", "type": "url", "url": "https://wangjiemin888-yezhen-app.hf.space", "local": null }
+  ],
+  "extras_notable": [
+    { "name": "树林AI生图杯", "author": "王杰民", "type": "url", "url": "https://shulin-ai-image-cup.pages.dev/", "local": "E:/Workspaces/网站/shulin-ai-image-cup-website (完整源码+works.json)", "why": "图片类作品的现成数据源" },
+    { "name": "portrait-archive-v2 (NFC名片写真档案)", "author": "汕尾-多线调度", "type": "url", "url": "https://portrait-archive-v2.pages.dev", "local": null, "why": "写真+实物交互, 形式独特" },
+    { "name": "euphonious-choux (3D)", "author": "小黄", "type": "url", "url": "https://euphonious-choux-976662.netlify.app/", "local": null, "why": "3D 效果参考" }
+  ],
+  "local_standalone_works": [
+    "E:/Workspaces/社群资料库/output-video-morph.html (视频形变, 8MB)",
+    "E:/Workspaces/社群资料库/最大力量-动态视频-微信独立版.html (11.7MB)",
+    "E:/Workspaces/社群资料库/虐恋的完美配方-v4.html (19.4MB)",
+    "E:/Workspaces/社群资料库/manifesto-v2-粗野版.html (6.4MB)",
+    "E:/Workspaces/社群资料库/maoxuan-share.html (3MB)",
+    "E:/Workspaces/社群资料库/Porsche Cayman.html (汽车级展示)",
+    "E:/Workspaces/社群资料库/four-laws.html",
+    "E:/Workspaces/社群资料库/nutrition-iq.html",
+    "E:/Workspaces/社群资料库/visual-iterate.html",
+    "E:/Workspaces/社群资料库/视觉效果比较好的.zip (5件: 从0到1是最贵的/语言的力量/像素版/看不见的墙/AI残酷真相)"
+  ]
+}

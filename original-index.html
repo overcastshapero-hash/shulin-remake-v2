@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<script>
+/* 即时守卫:file 直开(含压缩包内直点)第一毫秒接管——不放加载动画,直接整页引导并停止下载 */
+(function () {
+  if (location.protocol !== 'file:') return;
+  document.documentElement.style.visibility = 'hidden';
+  document.addEventListener('DOMContentLoaded', function () {
+    try { window.stop(); } catch (e) {}
+    document.body.innerHTML = '<div style="font-family:sans-serif;max-width:600px;margin:14vh auto;padding:0 24px;line-height:2;font-size:17px;color:#111;"><h2 style="font-size:26px;margin-bottom:18px;">两步打开完整网站 🎬</h2><p><b>1.</b> 确认压缩包已<b>全部解压</b>(不要在压缩包里直接点开)</p><p><b>2.</b> 回到文件夹,双击列表最上面的 <b>「①双击我-打开网站.bat」</b> —— 浏览器会自动打开,效果与在线版完全一致</p><hr style="margin:22px 0;border:none;border-top:1px solid #ddd;"><p style="color:#666;">没装 Python 的话,启动器会给出指引;或直接访问在线版:<br><a href="https://shuchenglin-handbook.pages.dev" style="color:#000;font-weight:bold;">shuchenglin-handbook.pages.dev</a></p></div>';
+    document.body.style.cssText = 'background:#fff;visibility:visible;';
+    document.documentElement.style.visibility = 'visible';
+  });
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>树成林 — 全国最大的大学生AI社群</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000'/%3E%3Crect x='12' y='12' width='40' height='40' fill='none' stroke='%23fff' stroke-width='6'/%3E%3C/svg%3E">
+<script>document.documentElement.className += ' fx-js';</script>
+<link rel="preload" href="base/fonts/noto-sans-sc-900-gb.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="base/fonts/archivo-latin-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="base/fonts/space-mono-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="base/base.css">
+<link rel="stylesheet" href="sections/m-intro/m-intro.css">
+<link rel="stylesheet" href="sections/m-skill/m-skill.css">
+<link rel="stylesheet" href="sections/m-web/m-web.css">
+<link rel="stylesheet" href="sections/m-river/m-river.css">
+<link rel="stylesheet" href="sections/m-finale/m-finale.css">
+<link rel="stylesheet" href="sections/v2-brand/v2-brand.css">
+<link rel="stylesheet" href="sections/m-video/m-video.css">
+<link rel="stylesheet" href="sections/m-guide/m-guide.css">
+<link rel="stylesheet" href="sections/m-slogan/m-slogan.css">
+<link rel="stylesheet" href="base/nav/v2-nav.css">
+<script>
+/* m-skill(窗口 C):幕二关键图进开场真实预载(须先于 m-intro.js 执行) */
+(window.FX_PRELOAD = window.FX_PRELOAD || []).push(
+  'sections/m-skill/assets/shot-work-zero2one.jpg',
+  'sections/m-skill/assets/shot-work-language.jpg',
+  'sections/m-skill/assets/shot-work-wall.jpg',
+  'sections/m-skill/assets/poster-demo-clip.jpg',
+  'sections/m-skill/assets/collage-shulin.jpg'
+);
+</script>
+<style>
+/* ============================================================
+   v2 装配壳样式(总装窗口所有,前缀 v2-)
+   各章窗口的样式写在自己的 sections/m-xxx/m-xxx.css,勿写在这。
+   ============================================================ */
+.v2-chrome{opacity:0;transition:opacity .6s var(--fx-ease);}
+.v2-chrome.is-on{opacity:1;}
+.v2-header{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px var(--fx-pad);
+  pointer-events:none;
+}
+.v2-header__brand{
+  margin:0;font-family:var(--fx-sans);font-weight:900;
+  letter-spacing:-.02em;font-size:15px;white-space:nowrap;
+}
+.v2-header__brand i{font-style:italic;font-weight:400;}
+.v2-progress{
+  position:fixed;right:var(--fx-pad);bottom:18px;z-index:1000;
+  pointer-events:none;
+}
+/* 章节占位(被各窗口的 section 整体替换) */
+.v2-slot{position:relative;}
+.v2-slot--dark{background:var(--fx-k);color:var(--fx-w);}
+.v2-slot--light{background:var(--fx-w);color:var(--fx-k);}
+.v2-slot__sticky{
+  position:sticky;top:0;height:100vh;
+  display:flex;align-items:center;justify-content:center;
+}
+.v2-slot__label{margin:0;}
+.v2-slot--h400{height:400vh;}
+.v2-slot--h1000{height:1000vh;}
+.v2-slot--h200{height:200vh;}
+.v2-slot--h600{height:600vh;}
+.v2-slot--h150{height:150vh;}
+/* 扫码入口:红色小唱片(全站常驻,左下) + 弹码浮层 */
+
+@keyframes v2spin{to{transform:rotate(360deg);}}
+@media (prefers-reduced-motion:reduce){.v2-qrdisc{animation:none;}}
+.v2-qrmodal{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.62);}
+.v2-qrmodal.is-on{display:flex;}
+.v2-qrcard{background:#fff;color:#000;padding:26px 26px 20px;width:min(320px,82vw);text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.5);}
+.v2-qrcard h3{margin:0 0 14px;font-weight:900;font-size:17px;letter-spacing:.06em;}
+.v2-qrcard img{display:block;width:100%;height:auto;}
+.v2-qrcard p{margin:12px 0 0;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;color:#8A8A8A;}
+/* 第四轮:倒计时废除(FIRST EDUCATION scramble 即开场) */
+.m-intro__facts{display:none !important;}
+@keyframes v2drag{0%{transform:translate(-12px,12px);opacity:0}18%{opacity:1}55%{transform:translate(14px,-14px);opacity:1}75%{opacity:0}100%{transform:translate(-12px,12px);opacity:0}}
+</style>
+</head>
+<body class="fx-body">
+
+<header class="v2-chrome v2-header fx-blend" data-fx-chrome>
+  <p class="v2-header__brand">STUDENT AI ARCHIVE<i>®</i></p>
+  <p class="fx-label">标准化生产 · 顶级交付</p>
+  <button id="v2Bgm" type="button" class="fx-label" style="pointer-events:auto;background:none;border:1px solid currentColor;color:inherit;padding:6px 12px;cursor:pointer;margin-left:18px;" aria-pressed="false">♪ MUSIC</button>
+  <button id="v2QrBadge" type="button" class="fx-label" aria-haspopup="dialog" style="pointer-events:auto;background:none;border:1px solid currentColor;color:inherit;padding:6px 12px;cursor:pointer;margin-left:10px;display:inline-flex;align-items:center;gap:7px;"><svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="1.8" fill="currentColor"/></svg>扫码购买</button>
+</header>
+<div class="v2-chrome v2-progress fx-blend fx-label fx-num" data-fx-chrome><span id="v2ProgressNum">000</span></div>
+<div class="v2-qrmodal" id="v2QrModal" role="dialog" aria-modal="true" aria-label="扫码购买">
+  <div class="v2-qrcard">
+    <h3>树成林 · 欢迎加入我们</h3>
+    <img src="base/assets/qr-course.png" alt="课程购买二维码" loading="lazy">
+    <p>扫码购买 · WECHAT</p>
+  </div>
+</div>
+
+<main class="v2-main">
+
+
+<section class="m-intro" id="chap-00" data-chapter="00" data-title="00 序章">
+  <div class="m-intro__red">
+    <div class="m-intro__red-lid m-intro__red-lid--top"></div>
+    <div class="m-intro__red-lid m-intro__red-lid--bot"></div>
+    <p class="m-intro__word">FIRST EDUCATION</p>
+  </div>
+  <div class="m-intro__loader">
+    <p class="m-intro__loader-tag fx-label">FIRST EDUCATION — LOADING</p>
+    <div class="m-intro__facts fx-label">
+      <span class="m-intro__fact">38 件成品 · 13 个在线</span>
+      <span class="m-intro__fact">331 张写真 · 16 个 SKILL</span>
+      <span class="m-intro__fact">网站 · 视频 · 写真 · 歌</span>
+    </div>
+    <div class="m-intro__count fx-num">000</div>
+  </div>
+</section>
+
+
+
+<section class="v2-brand" id="chap-brand" data-title="树成林">
+  <div class="v2-brand__stage">
+    <div class="v2-brand__lockup">
+      <div class="v2-brand__row" aria-label="树成林"></div>
+      <div class="v2-brand__line" aria-hidden="true"></div>
+      <div class="v2-brand__subwrap"><p class="v2-brand__sub">全国最大的大学生AI社群</p></div>
+      <p class="v2-brand__mono">FIRST EDUCATION · STUDENT AI ARCHIVE</p>
+    </div>
+  </div>
+</section>
+
+<section class="m-guide" id="sec-guide" data-title="使用指南">
+  <div class="m-guide__pin">
+    <header class="m-guide__head">
+      <p class="m-guide__kicker fx-label fx-hide">GUIDE — 使用指南</p>
+      <h2 class="m-guide__title fx-hide">树成林 · 学生使用指南</h2>
+      <p class="m-guide__sub fx-hide">以下,全部标准化交付。</p>
+    </header>
+
+    <div class="m-guide__body">
+      <ol class="m-guide__list">
+        <li><a class="m-guide__row fx-hide" href="#chap-02" data-target="#chap-02" data-chapter="02"
+               data-img="sections/m-web/assets/shots/file-zero2one.jpg">
+          <span class="m-guide__num fx-num">01</span>
+          <span class="m-guide__name">顶级审美的网站</span>
+          <span class="m-guide__desc">任何一个学生,给你一个能上线的网站</span>
+          <span class="m-guide__tag fx-label">→ 02 作品</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#chap-01" data-target="#chap-01" data-chapter="01"
+               data-img="sections/m-web/assets/shots/cube-03-portrait-archive.jpg">
+          <span class="m-guide__num fx-num">02</span>
+          <span class="m-guide__name">个性写真</span>
+          <span class="m-guide__desc">没有摄影师,整本杂志级写真</span>
+          <span class="m-guide__tag fx-label">→ 01 写真</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#chap-03" data-target="#chap-03" data-chapter="03"
+               data-img="sections/m-video/assets/gen-01-poster.jpg">
+          <span class="m-guide__num fx-num">03</span>
+          <span class="m-guide__name">一键产出视频</span>
+          <span class="m-guide__desc">AI 生视频 / AI 代码视频,两条流水线</span>
+          <span class="m-guide__tag fx-label">→ 03 视频</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case2" data-target="#msk-case2" data-chapter="05"
+               data-img="sections/m-skill/assets/poster-bot.jpg">
+          <span class="m-guide__num fx-num">04</span>
+          <span class="m-guide__name">微信转录与需求分析</span>
+          <span class="m-guide__desc">零散聊天,变成需求单</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case4" data-target="#msk-case4" data-chapter="05"
+               data-img="sections/m-skill/assets/poster-clip-cut.jpg">
+          <span class="m-guide__num fx-num">05</span>
+          <span class="m-guide__name">剪辑工具与一键出片</span>
+          <span class="m-guide__desc">口播素材进,成片出</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case1" data-target="#msk-case1" data-chapter="05"
+               data-img="sections/m-skill/assets/poster-xhs.jpg">
+          <span class="m-guide__num fx-num">06</span>
+          <span class="m-guide__name">小红书采集与选题</span>
+          <span class="m-guide__desc">关键词进去,选题库出来</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case3" data-target="#msk-case3" data-chapter="05"
+               data-img="sections/m-skill/assets/poster-kb.jpg">
+          <span class="m-guide__num fx-num">07</span>
+          <span class="m-guide__name">知识库与内容沉淀</span>
+          <span class="m-guide__desc">一堆资料,长成分类好的案例库</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case6" data-target="#msk-case6" data-chapter="05"
+               data-img="sections/m-skill/assets/collage-shulin.jpg">
+          <span class="m-guide__num fx-num">08</span>
+          <span class="m-guide__name">整首成歌 / 海报 / 文案</span>
+          <span class="m-guide__desc">词曲、合辑海报、公众号长文,一句话起稿</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-list" data-target="#msk-list" data-chapter="05"
+               data-img="sections/m-skill/assets/kb-screenshot2.jpg">
+          <span class="m-guide__num fx-num">09</span>
+          <span class="m-guide__name">调研 · 访谈 · 再造新技能</span>
+          <span class="m-guide__desc">市场调研、访谈提纲、论文级长文;缺什么,造什么</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 详解</span>
+        </a></li>
+      </ol>
+
+      <figure class="m-guide__peek" aria-hidden="true">
+        <img alt="" decoding="async">
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<section class="v2-slot v2-slot--dark" data-slot="m-images" id="chap-01" data-chapter="01" data-title="01 写真" style="height:180vh;">
+  <div style="position:sticky;top:0;height:100vh;overflow:hidden;">
+    <iframe id="v2OrbitFrame" data-orbit="1" title="影像档案 · 331 张写真"
+            style="position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:auto;background:#000;"></iframe>
+    <p class="v2-slot__label fx-label" style="position:absolute;left:var(--fx-pad);top:28px;margin:0;color:#fff;mix-blend-mode:difference;"><span class="fx-chapnum">01</span> — 写真 · PORTRAITS</p>
+        <div id="v2OrbitHint" aria-hidden="true" style="position:absolute;left:50%;bottom:64px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;color:#fff;mix-blend-mode:difference;pointer-events:none;">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style="animation:v2drag 2.2s cubic-bezier(.16,1,.3,1) infinite;"><path d="M8 26 L26 8 M26 8 h-9 M26 8 v9" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span class="fx-label">拖拽 · 旋转影像球</span>
+    </div>
+    <a href="#" id="v2OrbitOpen" target="_blank" rel="noopener" class="fx-label"
+       style="position:absolute;right:var(--fx-pad);bottom:28px;color:#fff;mix-blend-mode:difference;text-decoration:none;border:1px solid currentColor;padding:10px 16px;">进入互动 ↗</a>
+  </div>
+</section>
+
+<section class="m-slogan" id="sec-slogan" data-title="标准化">
+  <div class="m-slogan__inner">
+    <h2 class="m-slogan__title fx-hide">
+      <span class="m-slogan__title-line">标准化生产。</span>
+      <span class="m-slogan__title-line">顶级交付。</span>
+    </h2>
+    <p class="m-slogan__sub fx-hide">网站、视频、写真、歌。每一件,都是用 AI 当场做出来的。</p>
+  </div>
+  <div class="m-slogan__tape">
+    <span class="m-slogan__tape-item">"把这份母亲节祝福做成一个会动、配轻音乐的网页"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把我这段口播音频做成能录屏发抖音的视频"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把我的写真做成一整本不同风格的合辑海报"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"用婚恋法律去小红书把爆款笔记扒出来整理成选题库"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把这段微信聊天整理成需求单和下一步行动"</span><span class="m-slogan__tape-sep">✦</span>
+  </div>
+</section>
+
+
+<section class="m-web" id="chap-02" data-chapter="02" data-title="02 作品">
+
+  
+  <div class="m-web__b1" data-mweb="b1">
+    <p class="m-web__kicker fx-label fx-hide"><span class="fx-chapnum">02</span> — 作品</p>
+    <div class="m-web__letters" role="img" aria-label="WORKS">
+      
+    </div>
+    <div class="m-web__b1-foot">
+      <div>
+        <h2 class="m-web__title fx-hide">我们对网站的顶级审美。</h2>
+        <p class="m-web__sub fx-hide">每件都挂着当时那句指令,点开就是正在运行的页面。</p>
+      </div>
+      <p class="m-web__b1-hint fx-label fx-label--dim fx-hide">HOVER · TYPE ANY LETTER</p>
+    </div>
+  </div>
+
+  
+  <div class="m-web__b6" data-mweb="b6">
+    <header class="m-web__b6-head">
+      <p class="fx-label fx-hide"><span class="fx-chapnum">02</span> — 作品 · INDEX</p>
+      <p class="fx-label fx-label--dim fx-hide">HOVER TO PREVIEW</p>
+    </header>
+    <div class="m-web__b6-body">
+      <ol class="m-web__index"></ol>
+      <div class="m-web__peek" aria-hidden="true">
+        <img alt="" decoding="async">
+        <p class="m-web__peek-cap fx-label"></p>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="m-web__slots" data-mweb="slots"></div>
+
+  
+  <div class="m-web__b2" data-mweb="b2">
+    <div class="m-web__b2-pin">
+      <figure class="m-web__deck">
+        <div class="m-web__deck-frame"></div>
+        <figcaption class="m-web__deck-meta">
+          <span class="m-web__deck-count fx-label fx-num">01 / 18</span>
+          <span class="m-web__deck-name fx-label fx-label--dim"></span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+
+  
+  <div class="m-web__b3" data-mweb="b3">
+    <div class="m-web__b3-pin">
+      <div class="m-web__b3-tilt">
+        <div class="m-web__b3-col" data-col="0"><div class="m-web__b3-track"></div></div>
+        <div class="m-web__b3-col" data-col="1"><div class="m-web__b3-track"></div></div>
+        <div class="m-web__b3-col" data-col="2"><div class="m-web__b3-track"></div></div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="m-web__b5" data-mweb="b5">
+    <div class="m-web__b5-pin">
+      <div class="m-web__b5-track"></div>
+    </div>
+  </div>
+
+  
+  <div class="m-web__b918" data-mweb="b918">
+    <div class="m-web__b918-pin">
+      <div class="m-web__b918-stage">
+        <canvas class="m-web__b918-canvas" aria-label="918 SPYDER — 滚动驱动的图序列"></canvas>
+      </div>
+      <p class="m-web__b918-note m-web__b918-note--1 fx-label">PCCB CERAMIC · FIVE DRIVE MODES</p>
+      <p class="m-web__b918-note m-web__b918-note--2 fx-label">887 PS · 2.6 S · 345 KM/H</p>
+      <p class="m-web__b918-mono fx-label">676 帧 · 单文件 · 滚轮往下,车会动</p>
+      <div class="m-web__b918-static" aria-hidden="true">
+        <img src="../../showcase-assets/918/seq_coming/frame_0110.webp" alt="" loading="lazy" decoding="async">
+        <img src="../../showcase-assets/918/seq_rotate/frame_0060.webp" alt="" loading="lazy" decoding="async">
+        <img src="../../showcase-assets/918/seq_oneshot/frame_0180.webp" alt="" loading="lazy" decoding="async">
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<section class="m-video" id="chap-03" data-chapter="03" data-title="03 视频" data-curtain="hard">
+
+  
+  <header class="m-video__head">
+    <p class="m-video__kicker fx-label fx-hide"><span class="fx-chapnum">03</span> — 视频 · VIDEO MATRIX</p>
+    <h2 class="m-video__title fx-display fx-hide">视频矩阵</h2>
+    <p class="m-video__sub fx-label fx-label--dim fx-hide">AI 生视频 / AI 代码视频 — 黑场放映室 · 网页即放映机</p>
+    <p class="m-video__hint fx-label fx-label--dim" aria-hidden="true">SCROLL — 两组放映 ▼</p>
+  </header>
+
+  
+  <div class="m-video__reel" data-reel="gen" aria-label="AI 生视频放映组"></div>
+
+  
+  <div class="m-video__band" data-reel="code" aria-label="AI 代码视频放映组"></div>
+
+  
+  <footer class="m-video__tail">
+    <div class="m-video__marquee fx-display" id="mvMarquee" aria-hidden="true">
+      <span class="m-video__marquee-chunk">VIDEO MATRIX — AI 生视频 · AI 代码视频 —&nbsp;</span>
+    </div>
+    <p class="m-video__tail-meta fx-label fx-label--dim fx-hide" id="mvTailMeta">两种做片法,同一条标准产线 — 还在加片</p>
+  </footer>
+
+  
+  <div class="m-video__lb" id="mvLightbox" aria-hidden="true">
+    <p class="m-video__lb-tag fx-label" id="mvLbTag"></p>
+    <button class="m-video__lb-close fx-label" id="mvLbClose" type="button">✕ 关闭 CLOSE</button>
+    <div class="m-video__lb-stage" id="mvLbStage"></div>
+  </div>
+
+</section>
+
+<section class="v2-cases" id="chap-04" data-chapter="04" data-title="04 局部作品库" style="background:var(--fx-w);color:var(--fx-k);padding:16vh var(--fx-pad) 14vh;">
+  <p class="fx-label" style="margin:0 0 7vh;"><span class="fx-chapnum">04</span> — 局部作品库 · SELECTED WORKS</p>
+  <h2 class="fx-display" style="margin:0 0 9vh;font-size:clamp(2.6rem,7vw,6rem);line-height:1.04;">局部作品库。</h2>
+  <ol style="list-style:none;margin:0;padding:0;border-top:1px solid var(--fx-k);max-width:1400px;">
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num" style="color:#E32B16;">01</span><h3 style="margin:0;font-family:var(--fx-sans);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">25IP 端到端复刻</h3><p class="fx-label fx-label--dim" style="margin:0;">IP 从策划到成片,全流程复刻 · 端到端交付</p></li>
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num" style="">02</span><h3 style="margin:0;font-family:var(--fx-sans);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">53 个案例参考库</h3><p class="fx-label fx-label--dim" style="margin:0;">案例逐条入库,分类可检索,随取随用</p></li>
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num" style="">03</span><h3 style="margin:0;font-family:var(--fx-sans);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">直播「AI时代」封面设计</h3><p class="fx-label fx-label--dim" style="margin:0;">直播主视觉,当晚上线</p></li>
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num" style="">04</span><h3 style="margin:0;font-family:var(--fx-sans);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">AI 智能剪辑口播视频</h3><p class="fx-label fx-label--dim" style="margin:0;">口播素材进,成片出 · 竖屏实录 1:21</p></li>
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num" style="">05</span><h3 style="margin:0;font-family:var(--fx-sans);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">IP 全平台知识库</h3><p class="fx-label fx-label--dim" style="margin:0;">全平台内容沉淀成一座可检索的库</p></li>
+  </ol>
+  <p class="fx-label fx-label--dim" style="margin:6vh 0 0;">每件:标准流程 + 素材 → 交付。流程文档,待补录。</p>
+</section>
+
+<section class="m-river" id="chap-05" data-chapter="05" data-title="05 素材河">
+  <header class="m-river__head">
+    <p class="m-river__kicker fx-label fx-hide"><span class="fx-chapnum">05</span> — 档案 · RAW ARCHIVE</p>
+    <h2 class="m-river__title fx-display fx-hide">素材河</h2>
+    <p class="m-river__sub fx-label fx-label--dim fx-hide">精选成品顺流而下 · 全部走同一条产线</p>
+  </header>
+  <div class="m-river__stream" id="riverStream">
+    <div class="m-river__pin">
+      <div class="m-river__mark fx-display" id="riverMark" aria-hidden="true">
+        <span class="m-river__mark-line">标准化</span>
+        <span class="m-river__mark-line m-river__mark-line--2">量产</span>
+        <span class="m-river__mark-line m-river__mark-line--3">顶级内容。</span>
+      </div>
+      <div class="m-river__meta">
+        <p class="m-river__meta-line fx-label" id="riverMeta"></p>
+        <p class="m-river__meta-note" id="riverMetaNote"></p>
+      </div>
+    </div>
+    
+  </div>
+  <div class="m-river__cursor fx-label" id="riverCursor" aria-hidden="true">查看 ↗</div>
+</section>
+
+
+<section class="m-skill" id="chap-06" data-chapter="06" data-title="06 技能">
+
+  
+  <div class="m-skill__drop">
+    <div class="m-skill__drop-stage">
+      <p class="m-skill__kicker fx-label fx-hide"><span class="fx-chapnum">06</span> — 技能 · SKILLS</p>
+      <p class="m-skill__drop-hint fx-label fx-label--dim fx-hide">悬停翻面 · 点击定位</p>
+      <div class="m-skill__pile" aria-label="Skill 卡片堆"></div>
+    </div>
+  </div>
+
+  
+  <div class="m-skill__act1" id="msk-act1">
+    <div class="m-skill__act1-stage">
+      <div class="m-skill__act1-head">
+        <p class="m-skill__act1-title fx-label fx-hide">SKILLS · 标准化调用</p>
+      </div>
+      <div class="m-skill__grid" role="list" aria-label="Skill 总览"></div>
+      <h2 class="m-skill__giant fx-display fx-hide" aria-label="技能">技能</h2>
+    </div>
+  </div>
+
+  
+  <div class="m-skill__act3">
+
+    
+    <div class="m-skill__case" id="msk-case1">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame">
+          <video class="m-skill__video" data-src="sections/m-skill/assets/xhs-crawler.mp4"
+                 poster="sections/m-skill/assets/poster-xhs.jpg"
+                 muted playsinline loop preload="none"></video>
+          <figcaption class="fx-label fx-label--dim">xhs-crawler · 实录 1:29</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">01</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">数据 · 选题调研</p>
+        <h3 class="m-skill__case-title fx-hide">关键词进去,<br>选题库出来。</h3>
+        <p class="m-skill__case-body fx-hide">从「婚恋法律」一个关键词开始,自动翻页、自动采集小红书爆款笔记,整理成能直接用的选题库。选题,从「猜」变成有依据地选。</p>
+        <p class="m-skill__case-data fx-hide">婚恋法律 → 爆款标题库 + 选题参考 一套</p>
+      </div>
+    </div>
+
+    
+    <div class="m-skill__case" id="msk-case2">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame">
+          <video class="m-skill__video" data-src="sections/m-skill/assets/bot-install.mp4"
+                 poster="sections/m-skill/assets/poster-bot.jpg"
+                 muted playsinline loop preload="none"></video>
+          <figcaption class="fx-label fx-label--dim">wechat → agent · 群聊导出与分析</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">02</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">微信 · 需求分析</p>
+        <h3 class="m-skill__case-title fx-hide">零散的聊天,<br>变成需求单。</h3>
+        <p class="m-skill__case-body fx-hide">把微信群聊导出给 Agent,去重、提炼、归并需求,产出飞书日报卡片和下一步行动。装好就能用:可对话的飞书 Bot,部署即交付。</p>
+        <p class="m-skill__case-data fx-hide">群聊 78 条 → 精华 38 条 · 压缩 51%</p>
+      </div>
+    </div>
+
+    
+    <div class="m-skill__case" id="msk-case3">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame m-skill__frame--kb">
+          <video class="m-skill__video" data-src="sections/m-skill/assets/wechat-kb.mp4"
+                 poster="sections/m-skill/assets/poster-kb.jpg"
+                 muted playsinline loop preload="none"></video>
+          <img class="m-skill__kb-shot" src="sections/m-skill/assets/kb-screenshot.png" alt="飞书知识库分类入口截图" loading="lazy" decoding="async">
+          <figcaption class="fx-label fx-label--dim">feishu kb · 公众号内容知识库</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">03</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">知识库 · 内容沉淀</p>
+        <h3 class="m-skill__case-title fx-hide">一堆资料,<br>长成分类好的案例库。</h3>
+        <p class="m-skill__case-body fx-hide">108 篇公众号文章逐篇读取、自动归档,长成分类好的飞书知识库,带检索入口和推荐阅读路径。每一类,点进去就是原文。</p>
+        <p class="m-skill__case-data fx-hide">公众号 108 篇 → 自动分成 9 类 + 检索入口</p>
+      </div>
+    </div>
+
+    
+    <div class="m-skill__case" id="msk-case4">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame m-skill__frame--duo">
+          <div class="m-skill__duo-videos">
+            <video class="m-skill__video" data-src="sections/m-skill/assets/clip-raw.mp4"
+                   poster="sections/m-skill/assets/poster-clip-raw.jpg"
+                   muted playsinline loop preload="none"></video>
+            <video class="m-skill__video" data-src="sections/m-skill/assets/clip-cut.mp4"
+                   poster="sections/m-skill/assets/poster-clip-cut.jpg"
+                   muted playsinline loop preload="none"></video>
+          </div>
+          <figcaption class="fx-label fx-label--dim">ffmpeg-video-editor · 左 原素材 / 右 成片</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">04</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">视频 · 智能剪辑</p>
+        <h3 class="m-skill__case-title fx-hide">一段口播,<br>剪辑前后两个样子。</h3>
+        <p class="m-skill__case-body fx-hide">同一段口播素材交给智能剪辑:字幕、花字、节奏一次到位。左边是拍完的原素材,右边是直接能发的成片。</p>
+        <p class="m-skill__case-data fx-hide">口播素材 1:22 → 成片 0:28</p>
+      </div>
+    </div>
+
+    
+    <div class="m-skill__case" id="msk-case5">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame">
+          <img class="m-skill__case-img" src="sections/m-skill/assets/skill-imagegen-workflow.png"
+               alt="做图工作流三列对比:原始照片、AI 多视图参考、最终杂志级成片" loading="lazy" decoding="async">
+          <figcaption class="fx-label fx-label--dim">ai-portrait-imagegen · 完整流程对比</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">05</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">做图 · 工作流</p>
+        <h3 class="m-skill__case-title fx-hide">人工只做两步。</h3>
+        <p class="m-skill__case-body fx-hide">把同一个人的照片放进一个文件夹,发一句固定指令。多视图生成、出图、存档,全部后台自动完成。全程不写提示词。</p>
+        <p class="m-skill__case-data fx-hide">照片一夹 + 指令一句 → 杂志级人像一组</p>
+      </div>
+    </div>
+
+    
+    <div class="m-skill__case m-skill__case--song" id="msk-case6">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame">
+          <div class="m-skill__songcard">
+            <p class="m-skill__songcard-tag fx-label fx-label--dim">SUNO-SONG-CREATOR · TRACK 01</p>
+            <p class="m-skill__songcard-title fx-display">Orbiting<br>the Unknown</p>
+            <p class="m-skill__songcard-credit fx-label">词 · 曲 · 编 · 唱 — 全部 AI 生成</p>
+            <button class="m-skill__songbtn" type="button" aria-label="播放歌曲 Orbiting the Unknown">
+              <span class="m-skill__songbtn-ico" aria-hidden="true">▶</span>
+              <span class="m-skill__songbtn-txt fx-label">PLAY</span>
+            </button>
+          </div>
+          <audio class="m-skill__song" src="sections/m-skill/assets/song.mp3" preload="none"></audio>
+          <figcaption class="fx-label fx-label--dim">suno-song-creator · 点击播放整首</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">06</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">音乐 · 整首成歌</p>
+        <h3 class="m-skill__case-title fx-hide">一个主题,<br>整首能听的歌。</h3>
+        <p class="m-skill__case-body fx-hide">词、曲、编、唱,全部 AI 生成。给一个主题,拿到一首能直接播放的原创歌。</p>
+        <p class="m-skill__case-data fx-hide">一个主题 → 《Orbiting the Unknown》· 词曲编唱全 AI</p>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="m-skill__list" id="msk-list">
+    <div class="m-skill__list-head">
+      <p class="m-skill__list-eyebrow fx-label fx-label--dim fx-hide">INDEX — 技能详解</p>
+      <h3 class="m-skill__list-title fx-hide">没上大屏的,一样按标准干活。</h3>
+    </div>
+    <div class="m-skill__list-grid">
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">00</i><b>一键建站</b><span>make-website</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>按固定流程,生成一个完整网页</dd></div>
+          <div><dt>给什么</dt><dd>可直接打开的 HTML,排版动效配好</dd></div>
+          <div><dt>价值</dt><dd>不养前端,当天也能上线一个页面</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">01</i><b>页面设计</b><span>frontend-design</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把「要好看」翻译成具体的设计决策</dd></div>
+          <div><dt>给什么</dt><dd>页面结构、配色、字距,一次给齐</dd></div>
+          <div><dt>价值</dt><dd>拿出去的页面,不用再请人返工</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">02</i><b>部署上线</b><span>cf-pages-deploy</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把做好的页面推上公网</dd></div>
+          <div><dt>给什么</dt><dd>一条能发给任何人的正式链接</dd></div>
+          <div><dt>价值</dt><dd>从「做完了」到「别人能打开」,几分钟</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">03</i><b>口播成片</b><span>audio-driven-video</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>一段口播音频,直接驱动成片</dd></div>
+          <div><dt>给什么</dt><dd>带字幕、能直接发布的竖屏视频</dd></div>
+          <div><dt>价值</dt><dd>口播内容不等剪辑师,录完就能发</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">07</i><b>落地文案</b><span>copywriting</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>对着一个产品写整页销售文案</dd></div>
+          <div><dt>给什么</dt><dd>卖点、结构、行动话术齐全的落地页文案</dd></div>
+          <div><dt>价值</dt><dd>新品上架当天,就有能转化的页面</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">08</i><b>观点成文</b><span>blog-writer</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把一个观点展开成完整长文</dd></div>
+          <div><dt>给什么</dt><dd>结构清晰、可直接发布的文章</dd></div>
+          <div><dt>价值</dt><dd>想法不过夜,当天变成对外内容</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">09</i><b>搜索文章</b><span>seo-content-writer</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>围绕一个关键词,写能被搜到的文章</dd></div>
+          <div><dt>给什么</dt><dd>标题、结构、关键词布局齐全的稿件</dd></div>
+          <div><dt>价值</dt><dd>不投广告,搜索也持续有人找进来</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">10</i><b>全网分发</b><span>social-content-generator</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>一条内容,改写成各平台的版本</dd></div>
+          <div><dt>给什么</dt><dd>小红书、公众号、微博,各一份帖子</dd></div>
+          <div><dt>价值</dt><dd>一次创作全渠道铺开,不逐个重写</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">11</i><b>规范论文</b><span>research-paper-writer</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>按学术规范组织一个题目</dd></div>
+          <div><dt>给什么</dt><dd>结构、引用、格式合规的初稿</dd></div>
+          <div><dt>价值</dt><dd>白皮书、行业报告,有了规范底稿</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">12</i><b>想法落定</b><span>brainstorming</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把一个模糊想法逼问成明确方案</dd></div>
+          <div><dt>给什么</dt><dd>目标、路径、取舍,一页清单</dd></div>
+          <div><dt>价值</dt><dd>会还没开,方案已经有草案</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">13</i><b>市场调研</b><span>market-research</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>摸清一个市场的盘子与缺口</dd></div>
+          <div><dt>给什么</dt><dd>规模、竞品、机会点的调研报告</dd></div>
+          <div><dt>价值</dt><dd>进不进场,用数据拍板</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">14</i><b>结构面试</b><span>interview-designer</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>对着一份简历,设计一场面试</dd></div>
+          <div><dt>给什么</dt><dd>结构化问题清单与评估维度</dd></div>
+          <div><dt>价值</dt><dd>招人不凭眼缘,每轮都问在点上</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">15</i><b>造新技能</b><span>skill-creator</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把重复流程封装成新的 skill</dd></div>
+          <div><dt>给什么</dt><dd>可安装、可复用的能力包</dd></div>
+          <div><dt>价值</dt><dd>今天缺的能力,明天是清单里的新条目</dd></div>
+        </dl>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+
+<section class="v2-standards" id="chap-standards" data-title="标准" style="background:var(--fx-w);color:var(--fx-k);padding:16vh var(--fx-pad) 14vh;">
+  <p class="fx-label" style="margin:0 0 7vh;"><span class="fx-chapnum">ST</span> — 标准 · STANDARDS</p>
+  <h2 class="fx-display" style="margin:0 0 4vh;font-size:clamp(2.6rem,7vw,6rem);line-height:1.04;">标准化生产。</h2>
+  <p class="fx-label fx-label--dim" style="margin:0 0 9vh;">四条产线标准,贯穿每一件交付。</p>
+  <ol style="list-style:none;margin:0;padding:0;border-top:1px solid var(--fx-k);max-width:1400px;">
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num" style="color:#E32B16;">01</span><h3 style="margin:0;font-family:var(--fx-zh,sans-serif);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">部署流程,标准化</h3><p class="fx-label fx-label--dim" style="margin:0;">从源码到上线,一条固定产线,谁来跑都一样</p></li>
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num">02</span><h3 style="margin:0;font-family:var(--fx-zh,sans-serif);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">能力输出,标准化</h3><p class="fx-label fx-label--dim" style="margin:0;">每个学生的交付,有明确的保底水准</p></li>
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num">03</span><h3 style="margin:0;font-family:var(--fx-zh,sans-serif);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">对接流程,标准化</h3><p class="fx-label fx-label--dim" style="margin:0;">从需求到交付,节点固定、流程可复制</p></li>
+    <li style="display:grid;grid-template-columns:80px 1.1fr 1fr;gap:24px;align-items:baseline;padding:32px 0;border-bottom:1px solid var(--fx-k);"><span class="fx-label fx-num">04</span><h3 style="margin:0;font-family:var(--fx-zh,sans-serif);font-weight:900;font-size:clamp(1.3rem,2.4vw,2rem);line-height:1.25;">企业落地,自动化</h3><p class="fx-label fx-label--dim" style="margin:0;">工作流装进企业,标准运转,不依赖个人</p></li>
+  </ol>
+</section>
+
+<section class="m-finale" id="chap-07" data-chapter="07" data-title="07 终幕">
+  <div class="m-finale__stage">
+    <div class="m-finale__ghosts" aria-hidden="true">
+      <img class="m-finale__ghost m-finale__ghost--1" src="../../showcase-assets/sites/photo-orbit/assets/thumbs/f-024.jpg" alt="" loading="lazy" decoding="async">
+      <img class="m-finale__ghost m-finale__ghost--2" src="sections/m-river/assets/cube-01-wangjiemin.jpg" alt="" loading="lazy" decoding="async">
+      <img class="m-finale__ghost m-finale__ghost--3" src="../../showcase-assets/sites/photo-orbit/assets/thumbs/m-012.jpg" alt="" loading="lazy" decoding="async">
+      <img class="m-finale__ghost m-finale__ghost--4" src="sections/m-river/assets/cube-02-25ip-live.jpg" alt="" loading="lazy" decoding="async">
+    </div>
+    <p class="m-finale__kicker fx-label fx-hide"><span class="fx-chapnum">07</span> — 终幕 · TO BE CONTINUED</p>
+    <h2 class="m-finale__slogan fx-display" id="finSlogan">标准化生产,顶级交付。</h2>
+    <p class="m-finale__sign fx-label fx-label--dim fx-hide" id="finSign">精选 · 还在涨</p>
+    <div class="m-finale__tbc" id="finTbc" aria-label="未完待续……">
+      <span class="m-finale__tbc-word" id="finTbcWord" aria-hidden="true"><span
+        class="m-finale__tbc-char">未</span><span
+        class="m-finale__tbc-char">完</span><span
+        class="m-finale__tbc-char">待</span><span
+        class="m-finale__tbc-char">续</span></span><span
+        class="m-finale__dots" id="finDots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="m-finale__ball" id="finBall" aria-hidden="true"></span>
+    </div>
+    <p class="m-finale__coop" style="margin:44px 0 0;font-weight:900;font-size:clamp(1.6rem,3.4vw,2.8rem);letter-spacing:.2em;text-indent:.2em;">树成林 · 欢迎加入我们</p>
+    <figure style="margin:30px auto 0;width:min(210px,52vw);background:#fff;padding:14px 14px 10px;">
+      <img src="base/assets/qr-course.png" alt="课程购买二维码" loading="lazy" style="display:block;width:100%;height:auto;">
+      <figcaption class="fx-label" style="margin-top:10px;color:#000;text-align:center;">扫码购买</figcaption>
+    </figure>
+  </div>
+  <footer class="m-finale__strip">
+    <p class="m-finale__copy fx-label">树成林 — 全国最大的大学生AI社群 · FIRST EDUCATION © 2026</p>
+    <div class="m-finale__actions">
+      <button class="m-finale__btn fx-label" id="finSong" type="button" aria-pressed="false" title="点播《Orbiting the Unknown》(AI 词曲)">♪ ORBITING THE UNKNOWN</button>
+      <button class="m-finale__btn fx-label" id="finTop" type="button">BACK TO TOP ↑</button>
+    </div>
+  </footer>
+  <audio id="finAudio" preload="none" loop src="../../showcase-assets/a-手册源码包/大学生AI能力使用手册/assets/song.mp3"></audio>
+</section>
+
+</main>
+
+
+<script src="base/vendor/gsap.min.js"></script>
+<script src="base/vendor/ScrollTrigger.min.js"></script>
+<script src="base/vendor/lenis.min.js"></script>
+<script src="base/fx.js"></script>
+<script src="sections/m-intro/m-intro.js"></script>
+<script src="sections/m-guide/m-guide.js"></script>
+<script src="sections/m-slogan/m-slogan.js"></script>
+<script src="sections/m-skill/vendor/matter.min.js"></script>
+<script src="sections/m-skill/m-skill.js"></script>
+<script src="sections/m-web/m-web.js"></script>
+<script src="sections/m-video/m-video.js"></script>
+<script src="sections/m-river/m-river.js"></script>
+<script src="sections/m-finale/m-finale.js"></script>
+<script src="sections/v2-brand/v2-brand.js"></script>
+<script src="base/nav/v2-nav.js"></script>
+<script src="base/prefetch.js"></script>
+<script>
+/* 总装胶水(亦作为组件库"外部调用"自检):进度数字 + 占位标签 roll 进场 */
+(function () {
+  'use strict';
+  FX.init(); // 幂等
+
+  var num = document.getElementById('v2ProgressNum');
+  ScrollTrigger.create({
+    start: 0, end: 'max',
+    onUpdate: function (self) {
+      num.textContent = String(Math.round(self.progress * 100)).padStart(3, '0');
+    }
+  });
+
+  FX.ready.then(function () {
+    document.querySelectorAll('.v2-slot__label').forEach(function (el) {
+      FX.revealText(el, { mode: 'roll' });
+    });
+  });
+})();
+</script>
+<script>
+// 总装:live iframe 懒挂载 + 看不见的墙挡板(修订单3)
+(function () {
+  'use strict';
+  function lazyFrame(id, margin) {
+    var fr = document.getElementById(id);
+    if (!fr || !('IntersectionObserver' in window)) { if (fr) fr.src = fr.getAttribute('data-src'); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting && !fr.src) { fr.src = fr.getAttribute('data-src'); io.disconnect(); }
+      });
+    }, { rootMargin: margin || '800px' });
+    io.observe(fr);
+  }
+  // 照相馆路径三环境自适应:本地开发(/showcase-site/v2/)用根绝对,线上根目录与 file:// 直开用相对
+  (function () {
+    var base = (location.pathname.indexOf('/showcase-site/') === 0 ? '/' : '') + 'showcase-assets/sites/photo-orbit/index.html';
+    var fr = document.getElementById('v2OrbitFrame');
+    var lk = document.getElementById('v2OrbitOpen');
+    if (fr) fr.setAttribute('data-src', base + '?embed=1');
+    if (lk) lk.href = base;
+  })();
+  lazyFrame('v2OrbitFrame', '2800px');
+  // 扫码入口:点唱片开,点卡片外任意处/Esc 关
+  (function () {
+    var badge = document.getElementById('v2QrBadge');
+    var modal = document.getElementById('v2QrModal');
+    if (!badge || !modal) return;
+    var card = modal.querySelector('.v2-qrcard');
+    badge.addEventListener('click', function (e) { e.stopPropagation(); modal.classList.add('is-on'); });
+    modal.addEventListener('click', function (e) { if (!card.contains(e.target)) modal.classList.remove('is-on'); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') modal.classList.remove('is-on'); });
+  })();
+  // 页头音乐开关:复用终幕 finAudio(浏览器要求手势,点击即播)
+  (function () {
+    var btn = document.getElementById('v2Bgm');
+    var au = document.getElementById('finAudio');
+    if (!btn || !au) return;
+    // 首次任意手势自动开播(浏览器手势规则下的最自动方案)
+    var kicked = false;
+    function kick() {
+      if (kicked || !au.paused) return; kicked = true;
+      au.volume = 0.45;
+      var p = au.play(); if (p && p.catch) p.catch(function () {});
+      btn.textContent = '♪ ON'; btn.setAttribute('aria-pressed', 'true');
+    }
+    ['pointerdown', 'keydown'].forEach(function (ev) {
+      window.addEventListener(ev, kick, { once: true, capture: true });
+    });
+    btn.addEventListener('click', function () {
+      if (au.paused) {
+        var p = au.play(); if (p && p.catch) p.catch(function () {});
+        btn.textContent = '♪ ON'; btn.setAttribute('aria-pressed', 'true');
+      } else {
+        au.pause();
+        btn.textContent = '♪ MUSIC'; btn.setAttribute('aria-pressed', 'false');
+      }
+    });
+  })();
+  // 照相馆真集成:父页滚动驱动 iframe 内部行程(找回入场扫摆+波浪页尾),滚轮经 embed 模式回传
+  window.__v2Scroll = function (dy) {
+    var y = window.scrollY + dy;
+    if (window.FX && window.FX.lenis) { window.FX.lenis.scrollTo(y, { duration: 0.4 }); }
+    else { window.scrollBy(0, dy); }
+  };
+  (function () {
+    var fr = document.getElementById('v2OrbitFrame');
+    if (!fr) return;
+    fr.addEventListener('load', function () {
+      try {
+        var cw = fr.contentWindow;
+        var sec = document.getElementById('chap-01');
+        // 手势提示:首次在球内按下即隐藏
+        try {
+          var hint = document.getElementById('v2OrbitHint');
+          cw.document.addEventListener('pointerdown', function () {
+            if (hint) { hint.style.transition = 'opacity .5s'; hint.style.opacity = '0'; }
+          }, { once: true });
+        } catch (e3) {}
+        ScrollTrigger.create({
+          trigger: sec, start: 'top top', end: 'bottom bottom', scrub: true,
+          onUpdate: function (self) {
+            try {
+              var max = cw.document.documentElement.scrollHeight - cw.innerHeight;
+              var startY = cw.innerHeight * 1.06;
+              cw.scrollTo(0, startY + self.progress * (max - startY));
+            } catch (e2) {}
+          }
+        });
+      } catch (err) {}
+    });
+  })();
+  /* v2Wall 独立专位已按修订单-02 挪入 02 章 m-web 大位区(窗口 B 执行) */
+})();
+</script>
+</body>
+</html>

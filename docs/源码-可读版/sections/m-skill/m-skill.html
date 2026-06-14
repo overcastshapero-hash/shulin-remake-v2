@@ -1,0 +1,294 @@
+<!-- ============================================================
+     m-skill.html — 技能(窗口 C 产出,已按 修订单-01 §2 + 修订单-02 §0/§3 整改)
+     结构:物理掉落开章 → 中文格阵(巨字一拍后退眉标位)
+          → 分屏案例 ×6(7:5,三段式+红编号)
+          → 其余技能文字详解 ×13(收章)
+     铁律落点(修订单-02 §0):彩色直出(无 grayscale)/全站统计数字不出现
+     (16/38 这类)/每个展示单元配中文讲解/pin·scrub 行程再砍。
+     章节编号:总装已重排,本章=chap-05「05 技能」(2026-06-10 晚)。
+     16 张卡与 4×4 格阵由 m-skill.js 按 DATA 注入。
+     依赖:base/fx.js + sections/m-skill/vendor/matter.min.js
+     ============================================================ -->
+<section class="m-skill" id="chap-05" data-chapter="05" data-title="05 技能">
+
+  <!-- ===== 开章:16 张卡物理掉落(保留,用户认可) ===== -->
+  <div class="m-skill__drop">
+    <div class="m-skill__drop-stage">
+      <p class="m-skill__kicker fx-label fx-hide"><span class="fx-chapnum">05</span> — 技能 · SKILLS</p>
+      <p class="m-skill__drop-hint fx-label fx-label--dim fx-hide">悬停翻面 · 点击定位</p>
+      <div class="m-skill__pile" aria-label="Skill 卡片堆"></div>
+    </div>
+  </div>
+
+  <!-- ===== 中文格阵:巨字「技能」开章一拍 → 缩小退眉标位 ===== -->
+  <div class="m-skill__act1" id="msk-act1">
+    <div class="m-skill__act1-stage">
+      <div class="m-skill__act1-head">
+        <p class="m-skill__act1-title fx-label fx-hide">SKILLS · 标准化调用</p>
+      </div>
+      <div class="m-skill__grid" role="list" aria-label="Skill 总览"></div>
+      <h2 class="m-skill__giant fx-display fx-hide" aria-label="技能">技能</h2>
+    </div>
+  </div>
+
+  <!-- ===== 分屏案例 ×6(7:5,右栏三段式:红编号/标题/一句话/数据行) ===== -->
+  <div class="m-skill__act3">
+
+    <!-- 案例 1 · 小红书爬取 -->
+    <div class="m-skill__case" id="msk-case1">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame">
+          <video class="m-skill__video" data-src="sections/m-skill/assets/xhs-crawler.mp4"
+                 poster="sections/m-skill/assets/poster-xhs.jpg"
+                 muted playsinline loop preload="none"></video>
+          <figcaption class="fx-label fx-label--dim">xhs-crawler · 实录 1:29</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">01</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">数据 · 选题调研</p>
+        <h3 class="m-skill__case-title fx-hide">关键词进去,<br>选题库出来。</h3>
+        <p class="m-skill__case-body fx-hide">从「婚恋法律」一个关键词开始,自动翻页、自动采集小红书爆款笔记,整理成能直接用的选题库。选题,从「猜」变成有依据地选。</p>
+        <p class="m-skill__case-data fx-hide">婚恋法律 → 爆款标题库 + 选题参考 一套</p>
+      </div>
+    </div>
+
+    <!-- 案例 2 · 微信需求分析 -->
+    <div class="m-skill__case" id="msk-case2">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame">
+          <video class="m-skill__video" data-src="sections/m-skill/assets/bot-install.mp4"
+                 poster="sections/m-skill/assets/poster-bot.jpg"
+                 muted playsinline loop preload="none"></video>
+          <figcaption class="fx-label fx-label--dim">wechat → agent · 群聊导出与分析</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">02</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">微信 · 需求分析</p>
+        <h3 class="m-skill__case-title fx-hide">零散的聊天,<br>变成需求单。</h3>
+        <p class="m-skill__case-body fx-hide">把微信群聊导出给 Agent,去重、提炼、归并需求,产出飞书日报卡片和下一步行动。装好就能用:可对话的飞书 Bot,部署即交付。</p>
+        <p class="m-skill__case-data fx-hide">群聊 78 条 → 精华 38 条 · 压缩 51%</p>
+      </div>
+    </div>
+
+    <!-- 案例 3 · 飞书知识库 -->
+    <div class="m-skill__case" id="msk-case3">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame m-skill__frame--kb">
+          <video class="m-skill__video" data-src="sections/m-skill/assets/wechat-kb.mp4"
+                 poster="sections/m-skill/assets/poster-kb.jpg"
+                 muted playsinline loop preload="none"></video>
+          <img class="m-skill__kb-shot" src="sections/m-skill/assets/kb-screenshot.png" alt="飞书知识库分类入口截图" loading="lazy" decoding="async">
+          <figcaption class="fx-label fx-label--dim">feishu kb · 公众号内容知识库</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">03</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">知识库 · 内容沉淀</p>
+        <h3 class="m-skill__case-title fx-hide">一堆资料,<br>长成分类好的案例库。</h3>
+        <p class="m-skill__case-body fx-hide">108 篇公众号文章逐篇读取、自动归档,长成分类好的飞书知识库,带检索入口和推荐阅读路径。每一类,点进去就是原文。</p>
+        <p class="m-skill__case-data fx-hide">公众号 108 篇 → 自动分成 9 类 + 检索入口</p>
+      </div>
+    </div>
+
+    <!-- 案例 4 · 智能剪辑 口播对比(修订单-02 §3 新增) -->
+    <div class="m-skill__case" id="msk-case4">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame m-skill__frame--duo">
+          <div class="m-skill__duo-videos">
+            <video class="m-skill__video" data-src="sections/m-skill/assets/clip-raw.mp4"
+                   poster="sections/m-skill/assets/poster-clip-raw.jpg"
+                   muted playsinline loop preload="none"></video>
+            <video class="m-skill__video" data-src="sections/m-skill/assets/clip-cut.mp4"
+                   poster="sections/m-skill/assets/poster-clip-cut.jpg"
+                   muted playsinline loop preload="none"></video>
+          </div>
+          <figcaption class="fx-label fx-label--dim">ffmpeg-video-editor · 左 原素材 / 右 成片</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">04</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">视频 · 智能剪辑</p>
+        <h3 class="m-skill__case-title fx-hide">一段口播,<br>剪辑前后两个样子。</h3>
+        <p class="m-skill__case-body fx-hide">同一段口播素材交给智能剪辑:字幕、花字、节奏一次到位。左边是拍完的原素材,右边是直接能发的成片。</p>
+        <p class="m-skill__case-data fx-hide">口播素材 1:22 → 成片 0:28</p>
+      </div>
+    </div>
+
+    <!-- 案例 5 · 做图工作流(修订单-02 §3 新增,文案=用户口述照用) -->
+    <div class="m-skill__case" id="msk-case5">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame">
+          <img class="m-skill__case-img" src="sections/m-skill/assets/skill-imagegen-workflow.png"
+               alt="做图工作流三列对比:原始照片、AI 多视图参考、最终杂志级成片" loading="lazy" decoding="async">
+          <figcaption class="fx-label fx-label--dim">ai-portrait-imagegen · 完整流程对比</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">05</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">做图 · 工作流</p>
+        <h3 class="m-skill__case-title fx-hide">人工只做两步。</h3>
+        <p class="m-skill__case-body fx-hide">把同一个人的照片放进一个文件夹,发一句固定指令。多视图生成、出图、存档,全部后台自动完成。全程不写提示词。</p>
+        <p class="m-skill__case-data fx-hide">照片一夹 + 指令一句 → 杂志级人像一组</p>
+      </div>
+    </div>
+
+    <!-- 案例 6 · 整首成歌(修订单-02 §3 新增,song.mp3 可点播) -->
+    <div class="m-skill__case m-skill__case--song" id="msk-case6">
+      <div class="m-skill__case-media">
+        <figure class="m-skill__frame">
+          <div class="m-skill__songcard">
+            <p class="m-skill__songcard-tag fx-label fx-label--dim">SUNO-SONG-CREATOR · TRACK 01</p>
+            <p class="m-skill__songcard-title fx-display">Orbiting<br>the Unknown</p>
+            <p class="m-skill__songcard-credit fx-label">词 · 曲 · 编 · 唱 — 全部 AI 生成</p>
+            <button class="m-skill__songbtn" type="button" aria-label="播放歌曲 Orbiting the Unknown">
+              <span class="m-skill__songbtn-ico" aria-hidden="true">▶</span>
+              <span class="m-skill__songbtn-txt fx-label">PLAY</span>
+            </button>
+          </div>
+          <audio class="m-skill__song" src="sections/m-skill/assets/song.mp3" preload="none"></audio>
+          <figcaption class="fx-label fx-label--dim">suno-song-creator · 点击播放整首</figcaption>
+        </figure>
+      </div>
+      <div class="m-skill__case-copy">
+        <p class="m-skill__case-num fx-num fx-hide"><span class="fx-chapnum">06</span></p>
+        <p class="m-skill__case-tag fx-label fx-label--dim fx-hide">音乐 · 整首成歌</p>
+        <h3 class="m-skill__case-title fx-hide">一个主题,<br>整首能听的歌。</h3>
+        <p class="m-skill__case-body fx-hide">词、曲、编、唱,全部 AI 生成。给一个主题,拿到一首能直接播放的原创歌。</p>
+        <p class="m-skill__case-data fx-hide">一个主题 → 《Orbiting the Unknown》· 词曲编唱全 AI</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 其余技能 · 文字详解(修订单-02 §3.2,收章) =====
+       上面大屏案例之外的全部 skill,每个三行:做什么 / 给什么 / 价值。
+       编号沿用格阵原编号 00–15(03 后跳号:04/05/06 已在上方案例出镜,不重复列)。 -->
+  <div class="m-skill__list" id="msk-list">
+    <div class="m-skill__list-head">
+      <p class="m-skill__list-eyebrow fx-label fx-label--dim fx-hide">INDEX — 技能详解</p>
+      <h3 class="m-skill__list-title fx-hide">没上大屏的,一样按标准干活。</h3>
+    </div>
+    <div class="m-skill__list-grid">
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">00</i><b>一键建站</b><span>make-website</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>按固定流程,生成一个完整网页</dd></div>
+          <div><dt>给什么</dt><dd>可直接打开的 HTML,排版动效配好</dd></div>
+          <div><dt>价值</dt><dd>不养前端,当天也能上线一个页面</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">01</i><b>页面设计</b><span>frontend-design</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把「要好看」翻译成具体的设计决策</dd></div>
+          <div><dt>给什么</dt><dd>页面结构、配色、字距,一次给齐</dd></div>
+          <div><dt>价值</dt><dd>拿出去的页面,不用再请人返工</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">02</i><b>部署上线</b><span>cf-pages-deploy</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把做好的页面推上公网</dd></div>
+          <div><dt>给什么</dt><dd>一条能发给任何人的正式链接</dd></div>
+          <div><dt>价值</dt><dd>从「做完了」到「别人能打开」,几分钟</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">03</i><b>口播成片</b><span>audio-driven-video</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>一段口播音频,直接驱动成片</dd></div>
+          <div><dt>给什么</dt><dd>带字幕、能直接发布的竖屏视频</dd></div>
+          <div><dt>价值</dt><dd>口播内容不等剪辑师,录完就能发</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">07</i><b>落地文案</b><span>copywriting</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>对着一个产品写整页销售文案</dd></div>
+          <div><dt>给什么</dt><dd>卖点、结构、行动话术齐全的落地页文案</dd></div>
+          <div><dt>价值</dt><dd>新品上架当天,就有能转化的页面</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">08</i><b>观点成文</b><span>blog-writer</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把一个观点展开成完整长文</dd></div>
+          <div><dt>给什么</dt><dd>结构清晰、可直接发布的文章</dd></div>
+          <div><dt>价值</dt><dd>想法不过夜,当天变成对外内容</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">09</i><b>搜索文章</b><span>seo-content-writer</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>围绕一个关键词,写能被搜到的文章</dd></div>
+          <div><dt>给什么</dt><dd>标题、结构、关键词布局齐全的稿件</dd></div>
+          <div><dt>价值</dt><dd>不投广告,搜索也持续有人找进来</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">10</i><b>全网分发</b><span>social-content-generator</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>一条内容,改写成各平台的版本</dd></div>
+          <div><dt>给什么</dt><dd>小红书、公众号、微博,各一份帖子</dd></div>
+          <div><dt>价值</dt><dd>一次创作全渠道铺开,不逐个重写</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">11</i><b>规范论文</b><span>research-paper-writer</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>按学术规范组织一个题目</dd></div>
+          <div><dt>给什么</dt><dd>结构、引用、格式合规的初稿</dd></div>
+          <div><dt>价值</dt><dd>白皮书、行业报告,有了规范底稿</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">12</i><b>想法落定</b><span>brainstorming</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把一个模糊想法逼问成明确方案</dd></div>
+          <div><dt>给什么</dt><dd>目标、路径、取舍,一页清单</dd></div>
+          <div><dt>价值</dt><dd>会还没开,方案已经有草案</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">13</i><b>市场调研</b><span>market-research</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>摸清一个市场的盘子与缺口</dd></div>
+          <div><dt>给什么</dt><dd>规模、竞品、机会点的调研报告</dd></div>
+          <div><dt>价值</dt><dd>进不进场,用数据拍板</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">14</i><b>结构面试</b><span>interview-designer</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>对着一份简历,设计一场面试</dd></div>
+          <div><dt>给什么</dt><dd>结构化问题清单与评估维度</dd></div>
+          <div><dt>价值</dt><dd>招人不凭眼缘,每轮都问在点上</dd></div>
+        </dl>
+      </div>
+
+      <div class="m-skill__li fx-hide">
+        <div class="m-skill__li-name"><i class="fx-num">15</i><b>造新技能</b><span>skill-creator</span></div>
+        <dl class="m-skill__li-rows">
+          <div><dt>做什么</dt><dd>把重复流程封装成新的 skill</dd></div>
+          <div><dt>给什么</dt><dd>可安装、可复用的能力包</dd></div>
+          <div><dt>价值</dt><dd>今天缺的能力,明天是清单里的新条目</dd></div>
+        </dl>
+      </div>
+
+    </div>
+  </div>
+
+</section>

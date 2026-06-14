@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>最后两天 · 文字×剪影 · 电影版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;500;700;900&display=swap" rel="stylesheet">
+<!--
+  ============================================================================
+  动态文字(kinetic typography)引擎 · 逐字完整版
+  ----------------------------------------------------------------------------
+  第一原则：字幕里的每一个字都必须出现在屏幕上，逐字不漏、不改写。
+  做法：运行时直接读取你的 .srt 原文件 → 自动把每句按标点/语意拆成若干动态卡
+        (拼回 == 原句，已验证)，字号随长短自适应；不删除任何非空白字符。
+  另含：朱墨视觉皮肤、入场动效、章节电影转场、配音(.mp3)逐帧同步；
+        新增「电影剪影人物层」：程序化骨骼小人随字幕语义自动入画(详见第 6 节)。
+
+  用法：用浏览器打开本文件 →
+        · 拖入(或点击选择)你的 .srt 字幕；可再拖入 .mp3 配音做同步；
+        · 点「▶ 播放」。无配音也可静音预览(内置时钟按字幕时码走)。
+        · 空格 = 播放/暂停；按 ≡ 重新载入文件。
+  设计细节与可调参数见随附 SKILL.md。
+  ============================================================================
+-->
+<style>
+  :root{
+    --ink:#08070c;            /* 墨：近黑，冷暖平衡，作为最深底色 */
+    --ink-hi:#100d16;         /* 墨高点：纵深渐变用，给暗部一点呼吸 */
+    --paper:#f3ecda;          /* 宣纸白：略收亮度，去屏幕眩光 */
+    --paper-warm:#f7f0de;     /* 暖高光：标题/钤印用 */
+    --paper-dim:rgba(243,236,218,.5);
+    --cinnabar:#cf3a2a;       /* 朱砂/印泥：略提通透度，glow 更干净，不带网页警示味 */
+    --cinnabar-2:#8c2419;     /* 暗朱(血朱)：发丝线与下划线用，给红一点纵深 */
+    --cinnabar-glow:rgba(207,58,42,.42); /* 朱砂辉光 */
+    --edge:rgba(230,208,166,.30); /* 暖光描边：极克制的"金属边缘"质感 */
+    --hair:rgba(243,236,218,.08); /* 发丝线 / 哑光内框 */
+    --serif:"Noto Serif SC","Source Han Serif SC","Source Han Serif CN","Songti SC","STSong","SimSun",serif;
+    --lb:0%;                  /* 遮幅：0 = 全画幅 16:9（应需求取消上下黑条；改回 12% 即恢复 2.39:1 宽银幕） */
+    --vig:.55;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;background:#000;overflow:hidden}
+  body{font-family:var(--serif);-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;color:var(--paper)}
+
+  #stage{position:relative;width:min(100vw,calc(100vh*16/9));height:min(100vh,calc(100vw*9/16));
+         background:var(--ink);
+         color:var(--paper);overflow:hidden;container-type:size}
+
+  /* 背景影片缓慢推近（只推背景，不推文字） */
+  @keyframes bgPush{0%{transform:scale(1.03)}100%{transform:scale(1.13) translate(-1.6%,-1%)}}
+
+  /* 边缘减光 scrim → 实色平涂的低亮压暗（仅在载入背景视频时起作用；无视频时被实色底吸收）。不用渐变。 */
+  #scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:rgba(8,7,12,.5)}
+
+  /* 空气浮尘（canvas）：缓慢飘动的细微光尘，制造纵深与"空气感"，随摄影机做视差。纵深来源是粒子+运镜，不靠任何背景渐变。 */
+  #dust{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.5;will-change:transform}
+
+  /* ════ 胶片黑：用一层"均匀"的极淡冷色把死黑抬离纯黑(lifted blacks)——实色平涂，不是渐变。
+     配合文字的暖色辉光，自然形成冷阴影 / 暖高光的电影分离调。════ */
+  #grade{position:absolute;inset:0;z-index:5;pointer-events:none;mix-blend-mode:screen;background:rgba(16,32,46,.06)}
+
+  /* 变形宽银幕横向耀光(anamorphic flare)：重锤字瞬间，一道蓝白长条横扫画面中心——最具辨识度的"电影镜头"信号 */
+  #flare{position:absolute;left:-12%;right:-12%;top:50%;height:2px;z-index:5;pointer-events:none;opacity:0;
+    transform:translateY(-50%) scaleX(.6);mix-blend-mode:screen;
+    background:linear-gradient(90deg,transparent 0%,rgba(130,175,255,0) 12%,rgba(160,195,255,.92) 50%,rgba(130,175,255,0) 88%,transparent 100%);
+    filter:blur(1.4px) drop-shadow(0 0 16px rgba(120,170,255,.7))}
+  @keyframes flareFlash{0%{opacity:0;transform:translateY(-50%) scaleX(.55)}18%{opacity:.85}100%{opacity:0;transform:translateY(-50%) scaleX(1.12)}}
+  #flare.flash{animation:flareFlash .62s cubic-bezier(.2,.7,.2,1)}
+
+  /* 极细纸纹 —— 真实"质感"来源之一（叠在暗底上，不碰文字） */
+  #paper{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.55'/%3E%3C/svg%3E")}
+
+  /* 场景层只做定位，不再整体推镜：文字要锁定、要稳、落定即静 */
+  #scene{position:absolute;inset:0;z-index:3}
+  #sceneInner{position:absolute;inset:0;will-change:filter,opacity}
+
+  /* 字幕双层交叉 */
+  #textWrap{position:absolute;inset:0;z-index:4;transform-origin:50% 50%;will-change:transform;backface-visibility:hidden}
+  .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 7cqw;opacity:0;will-change:transform,opacity,filter}
+  .word{display:inline-block;text-align:center;line-height:1.06;font-weight:900;letter-spacing:-.012em;color:var(--paper);text-shadow:0 0 .72em rgba(247,240,222,.12),0 0 .15em rgba(247,240,222,.11),0 .02em .06em rgba(0,0,0,.6),0 0 .012em rgba(0,0,0,.5)}
+
+  /* 逐字单元：每个字独立入场（拼回==原句；空白保留为非断行空格，不计入级联） */
+  .ch{display:inline-block;will-change:transform,opacity,filter;backface-visibility:hidden}
+  .ch.sp{width:.32em}
+
+  /* 强调（朱）= 利器：实心朱砂 + 一缕朱光 + 毛笔感锋线（带笔锋渐隐） */
+  .word b{position:relative;display:inline-block;font-style:normal;font-weight:900}
+  .ch.em{color:var(--cinnabar);text-shadow:0 0 .5em rgba(207,58,42,.4),0 0 .16em rgba(207,58,42,.46),0 .02em .045em rgba(0,0,0,.55)}
+  .word b::after{content:"";position:absolute;left:-.03em;right:-.03em;bottom:-.10em;height:.05em;border-radius:1em;
+    background:linear-gradient(90deg,var(--cinnabar-2) 0%,var(--cinnabar) 58%,rgba(143,38,28,0) 100%);
+    transform:scaleX(0);transform-origin:left center;opacity:.95;
+    animation:ruleWipe .5s .22s cubic-bezier(.16,1,.3,1) both}
+  @keyframes ruleWipe{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+  .word.xl b::after,.word.l b::after{display:none}
+  /* D) 朱字点睛:强调词入场后给一个极轻的"点火"落定(只动作,不碰朱砂色) */
+  @keyframes emPop{0%{transform:scale(1)}45%{transform:scale(1.035)}100%{transform:scale(1)}}
+  .word.split b{animation:emPop .52s .28s var(--eBack) both;transform-origin:50% 78%}
+
+  /* 持握时近乎无感的“呼吸”，避免落定即死（仅逐字卡，振幅极小，相位随机） */
+  /* 落定后的"呼吸"已上移到摄影机层：整帧统一缓慢漂移，而非每字各自浮动，更像真实运镜 */
+
+  /* 字号阶梯：xl/l 单行重锤；m 单行；s 单行自适应；s2 长句换行可读 */
+  .xl{font-size:30cqh;font-weight:900;letter-spacing:-.022em;line-height:1.0;white-space:nowrap}
+  .l {font-size:19cqh;font-weight:900;letter-spacing:-.016em;line-height:1.04;white-space:nowrap}
+  .m {font-size:12cqh;font-weight:800;letter-spacing:.004em;line-height:1.16;white-space:normal;max-width:84cqw;text-wrap:balance}
+  .s {font-size:8.6cqh;font-weight:500;letter-spacing:.02em;line-height:1.38;white-space:normal;max-width:82cqw;text-wrap:balance;color:color-mix(in srgb,var(--paper) 86%,transparent)}
+  .s2{font-size:6.2cqh;font-weight:500;letter-spacing:.01em;line-height:1.55;white-space:normal;max-width:82cqw;text-wrap:pretty;color:color-mix(in srgb,var(--paper) 88%,transparent)}
+  .word.mb{white-space:nowrap;max-width:none}   /* 手动断行:仅 <br> 生效,不再自动折行 */
+
+  /* ════════ 入场动效库（颠覆版）：逐字级联 / 毛笔扫写 / 重锤 / 静置呼吸 ════════
+     动作带“分量”(回弹缓动)，相邻卡片不重复，节奏跟着内容走：
+     重锤(短句) · 锁字(列表/数据) · 抬升(疑问) · 静置(休息收束) · 柔起(长句)。 */
+  :root{--eBack:cubic-bezier(.18,.82,.26,1.05);--eOut:cubic-bezier(.16,1,.3,1);--eSnap:cubic-bezier(.22,1.14,.4,1)}
+
+  /* 逐字：--d 控每字延迟，--dur 控时长（由 JS 按字数与排序写入） */
+  .word.split .ch{animation-duration:var(--dur,.6s);animation-fill-mode:both;animation-delay:var(--d,0s);transform-origin:50% 100%}
+
+  @keyframes chUp   {0%{opacity:0;transform:translateY(.62em) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes chDown {0%{opacity:0;transform:translateY(-.6em) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes chBloom{0%{opacity:0;transform:scale(.30);filter:blur(.05em)}55%{opacity:1}100%{opacity:1;transform:scale(1);filter:blur(0)}}
+  @keyframes chInk  {0%{opacity:0;clip-path:inset(0 100% 0 0);transform:translateX(-.14em)}100%{opacity:1;clip-path:inset(0 -12% 0 0);transform:translateX(0)}}
+  @keyframes chLock {0%{opacity:0;transform:translateY(.16em) scale(1.22)}68%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes chFlip {0%{opacity:0;transform:perspective(440px) rotateX(-82deg) translateY(.3em)}100%{opacity:1;transform:perspective(440px) rotateX(0) translateY(0)}}
+  @keyframes chScat {0%{opacity:0;transform:translate(var(--dx,.1em),var(--dy,.12em)) scale(.97)}100%{opacity:1;transform:translate(0,0) scale(1)}}
+  @keyframes chSet  {0%{opacity:0;transform:translateY(.42em);filter:blur(.035em)}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
+
+  .e-cascadeUp   .ch{animation-name:chUp;   animation-timing-function:var(--eBack)}
+  .e-cascadeDown .ch{animation-name:chDown; animation-timing-function:var(--eBack)}
+  .e-bloom       .ch{animation-name:chBloom;animation-timing-function:var(--eBack)}
+  .word.split.e-bloom .ch{transform-origin:50% 50%}
+  .e-swipeInk    .ch{animation-name:chInk;  animation-timing-function:var(--eOut)}
+  .e-typeLock    .ch{animation-name:chLock; animation-timing-function:var(--eSnap)}
+  .e-liftRotate  .ch{animation-name:chFlip; animation-timing-function:var(--eBack)}
+  .e-fadeScatter .ch{animation-name:chScat; animation-timing-function:var(--eOut)}
+  .e-settle      .ch{animation-name:chSet;  animation-timing-function:var(--eOut)}
+
+  /* 整词级（不拆字）：重锤(短句冲击) / 柔起(长句可读) */
+  @keyframes wSlam{0%{opacity:0;transform:scale(1.52);filter:blur(.045em)}58%{opacity:1;transform:scale(.985)}100%{opacity:1;transform:scale(1);filter:blur(0)}}
+  @keyframes wSoft{0%{opacity:0;transform:translateY(.34em) scale(.992);filter:blur(.03em)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+  .word.e-slam{animation:wSlam .62s var(--eBack) both}
+  .word.e-soft{animation:wSoft .72s var(--eOut) both}
+
+  /* 离场：带动量（轻微上浮 + 失焦），取代生硬瞬切 */
+  @keyframes layerOut{0%{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}100%{opacity:0;filter:blur(4px);transform:translateY(-1.2cqh) scale(1.018)}}
+  .layer.out{animation:layerOut .5s cubic-bezier(.4,0,.22,1) both}
+
+  /* 背景轻微“震一下”：重锤/列表/暗调句触发，与文字节奏同步 */
+  @keyframes sceneKick{0%{transform:scale(1)}28%{transform:scale(1.013)}100%{transform:scale(1)}}
+  #sceneInner.kick{animation:sceneKick .52s cubic-bezier(.2,.8,.2,1)}
+
+  /* 朱砂边缘热度：仅在重锤字瞬间，画面四边泛起一缕朱红（取代中央光团） */
+  #heatedge{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;mix-blend-mode:screen;
+    background:radial-gradient(125% 120% at 50% 50%, transparent 64%, rgba(197,57,43,.42) 104%)}
+
+  /* 剪影人物层（canvas）：墨笔小人 + 地面光池，落在文字之下、浮尘之上 */
+  #figc{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+
+  /* 胶片颗粒 */
+  #grain{position:absolute;inset:-40%;z-index:6;pointer-events:none;opacity:.04;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.8s steps(4) infinite}
+  @keyframes grain{0%{transform:translate(0,0)}33%{transform:translate(-2%,1%)}66%{transform:translate(1%,-2%)}100%{transform:translate(2%,2%)}}
+
+  /* 暗角（受 --vig 驱动，重锤字会让它"砸"一下） */
+  /* 暗角：电影级镜头边缘减光。中性、只压暗最外圈（中心大面积全透明），不带任何色相，不是"配色渐变"。 */
+  #vignette{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(140% 132% at 50% 50%, transparent 60%, rgba(0,0,0,calc(var(--vig)*.85)) 100%)}
+
+  /* 遮幅 */
+  #lbTop,#lbBot{position:absolute;left:0;width:100%;height:var(--lb);background:#000;z-index:8;pointer-events:none}
+  #lbTop{top:0}#lbBot{bottom:0}
+
+  /* 章节转场（朱砂硬条扫切，配合留白） */
+  #leak{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:0;background:linear-gradient(100deg,transparent 42%,var(--cinnabar) 49%,var(--cinnabar) 51%,transparent 58%)}
+  #actCard{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .actNo{font-size:11cqh;font-weight:900;color:var(--cinnabar);line-height:1;text-shadow:0 0 .5em var(--cinnabar-glow)}
+  .actRule{width:6cqw;height:1.5px;background:linear-gradient(90deg,transparent,var(--cinnabar),transparent);margin:2.6cqh 0 2.2cqh}
+  .actName{font-size:7cqh;font-weight:900;letter-spacing:.06em;color:var(--paper-warm)}
+  .actSub{font-size:2.3cqh;font-weight:300;letter-spacing:.4em;color:var(--paper-dim);margin-top:1.8cqh}
+  .act-run #lbTop,.act-run #lbBot{animation:lbSqueeze 3.2s cubic-bezier(.7,0,.2,1) both}
+  @keyframes lbSqueeze{0%{height:var(--lb)}15%{height:14%}80%{height:14%}100%{height:var(--lb)}}
+  .act-run #sceneInner{animation:focusOut 3.2s cubic-bezier(.4,0,.2,1) both}
+  @keyframes focusOut{0%{opacity:1}15%{opacity:.1}78%{opacity:.1}100%{opacity:1}}
+  .act-run #leak{animation:leakSweep 3.2s ease both}
+  @keyframes leakSweep{0%{opacity:0;transform:translateX(-60%)}12%{opacity:.9}26%{opacity:0;transform:translateX(20%)}100%{opacity:0;transform:translateX(60%)}}
+  .act-run #actCard{animation:actReveal 3.2s ease both}
+  @keyframes actReveal{0%{opacity:0;transform:translateY(.3em)}18%{opacity:1;transform:translateY(0)}72%{opacity:1}86%{opacity:0}100%{opacity:0}}
+
+  /* 框饰：极细定位角标 */
+  /* 框饰 → 电影取景器：修长发丝线角括（取代"网页方框"观感） */
+  .reg{position:absolute;width:3.2cqh;height:3.2cqh;z-index:7;pointer-events:none;opacity:.6;border-color:var(--edge)}
+  .reg.tl{top:calc(var(--lb) + 2.2cqh);left:2.8cqw;border-top:1.2px solid;border-left:1.2px solid}
+  .reg.tr{top:calc(var(--lb) + 2.2cqh);right:2.8cqw;border-top:1.2px solid;border-right:1.2px solid}
+  .reg.bl{bottom:calc(var(--lb) + 2.2cqh);left:2.8cqw;border-bottom:1.2px solid;border-left:1.2px solid}
+  .reg.br{bottom:calc(var(--lb) + 2.2cqh);right:2.8cqw;border-bottom:1.2px solid;border-right:1.2px solid}
+  /* 取景器中点导引刻度：四边中点各一道短刻，最像"透过摄影机取景框看" */
+  #guides{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:.42}
+  #guides i{position:absolute;background:var(--edge)}
+  #guides .gt{left:50%;top:calc(var(--lb) + 2cqh);width:1.2px;height:1.5cqh;transform:translateX(-50%)}
+  #guides .gb{left:50%;bottom:calc(var(--lb) + 2cqh);width:1.2px;height:1.5cqh;transform:translateX(-50%)}
+  #guides .gl{top:50%;left:2.8cqw;height:1.2px;width:1.5cqh;transform:translateY(-50%)}
+  #guides .gr{top:50%;right:2.8cqw;height:1.2px;width:1.5cqh;transform:translateY(-50%)}
+
+  /* 哑光内框：一道极细发丝线框住画面 → 杂志/电影哑边的高级感（纯装饰，无 JS） */
+  #frame{position:absolute;top:calc(var(--lb) + 1.5cqh);bottom:calc(var(--lb) + 1.5cqh);left:2.4cqw;right:2.4cqw;
+    z-index:7;pointer-events:none;border:1px solid var(--hair);box-shadow:inset 0 0 9cqh rgba(0,0,0,.22)}
+
+  /* 朱砂印 —— 仿手钤石印（轻微旋转 + 肌理） */
+  #seal{position:absolute;top:calc(var(--lb) + 3.4cqh);left:4cqw;z-index:7;width:4.6cqh;height:4.6cqh;
+    background:var(--cinnabar);color:var(--paper-warm);display:flex;align-items:center;justify-content:center;
+    border-radius:.6cqh;font-size:2.85cqh;font-weight:900;line-height:1;transform:rotate(-2deg);overflow:hidden;
+    box-shadow:inset 0 .05cqh .3cqh rgba(0,0,0,.3),inset 0 -.05cqh .25cqh rgba(255,236,210,.08),0 .16cqh .55cqh rgba(0,0,0,.42),0 0 1cqh var(--cinnabar-glow)}
+  #seal::after{content:"";position:absolute;inset:0;opacity:.28;mix-blend-mode:multiply;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='sn'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23sn)'/%3E%3C/svg%3E")}
+  #act{position:absolute;bottom:calc(var(--lb) + 3.6cqh);left:4cqw;z-index:7;font-size:1.9cqh;font-weight:300;letter-spacing:.36em;color:var(--paper-dim)}
+  #tc{position:absolute;bottom:calc(var(--lb) + 3.6cqh);right:4cqw;z-index:7;font-size:1.85cqh;font-weight:300;letter-spacing:.2em;color:var(--paper-dim);font-variant-numeric:tabular-nums}
+  /* ===== 进度条 / 拖拽定位（朱墨 · 电影质感）：常驻细线，悬停长出手柄与时间气泡 ===== */
+  #scrub{position:absolute;left:0;right:0;bottom:0;height:24px;z-index:9;cursor:pointer;
+    display:flex;align-items:flex-end;touch-action:none}
+  #bar{position:relative;width:100%;height:3px;background:rgba(243,236,218,.14);transition:height .18s ease}
+  #scrub:hover #bar,#scrub.dragging #bar{height:6px}
+  #barFill{position:absolute;left:0;top:0;height:100%;width:0%;
+    background:var(--cinnabar);box-shadow:0 0 .8cqh var(--cinnabar-glow)}
+  #barHandle{position:absolute;top:50%;left:0%;width:11px;height:11px;border-radius:50%;
+    background:var(--cinnabar);box-shadow:0 0 10px var(--cinnabar-glow),0 1px 3px rgba(0,0,0,.5);
+    transform:translate(-50%,-50%) scale(0);transition:transform .18s ease;pointer-events:none}
+  #scrub:hover #barHandle,#scrub.dragging #barHandle{transform:translate(-50%,-50%) scale(1)}
+  #barTip{position:absolute;bottom:15px;left:0;transform:translateX(-50%);
+    font-family:var(--serif);font-size:11px;font-weight:300;letter-spacing:.08em;color:var(--paper);
+    background:rgba(8,7,12,.82);border:1px solid var(--hair);padding:3px 8px;border-radius:3px;
+    font-variant-numeric:tabular-nums;opacity:0;transition:opacity .15s ease;pointer-events:none;white-space:nowrap}
+  #scrub:hover #barTip,#scrub.dragging #barTip{opacity:1}
+  .bar-tick{position:absolute;top:50%;width:2px;height:8px;transform:translate(-50%,-50%);background:var(--paper-warm);opacity:.55;pointer-events:none}
+  /* 播放时鼠标静止数秒自动隐藏光标，进度细线仍常驻 */
+  #stage.hide-cursor,#stage.hide-cursor #scrub{cursor:none}
+
+  /* 载入器 / 控件 */
+  #loader{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(4,4,3,.72);backdrop-filter:blur(6px);transition:opacity .35s}
+  #loader.hidden{opacity:0;pointer-events:none}
+  .card{width:min(86vw,520px);border:1px solid rgba(236,227,208,.18);background:rgba(11,9,7,.86);padding:34px 32px;color:var(--paper);text-align:center;border-radius:4px}
+  .card h1{font-size:22px;font-weight:900;letter-spacing:.04em;margin-bottom:6px}
+  .card p{font-size:13px;font-weight:300;color:rgba(236,227,208,.6);line-height:1.7;margin-bottom:20px}
+  .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .btn{font-family:var(--serif);font-size:13px;font-weight:500;letter-spacing:.05em;color:var(--paper);background:transparent;border:1px solid rgba(236,227,208,.3);padding:10px 16px;cursor:pointer;border-radius:3px;transition:.2s}
+  .btn:hover{border-color:var(--cinnabar);color:#fff}
+  .btn.primary{background:var(--cinnabar);border-color:var(--cinnabar);font-weight:700}
+  .status{font-size:12px;color:rgba(236,227,208,.5);min-height:1.2em;letter-spacing:.04em}
+  #reopen{position:fixed;top:14px;right:16px;z-index:19;font-size:18px;color:rgba(236,227,208,.45);background:transparent;border:none;cursor:pointer;padding:6px}
+  #reopen:hover{color:#fff}
+  #drophint{position:fixed;inset:0;z-index:18;display:none;align-items:center;justify-content:center;pointer-events:none;border:3px dashed var(--cinnabar);color:var(--cinnabar);font-size:24px;font-weight:700;background:rgba(210,58,43,.08)}
+  input[type=file]{display:none}
+  /* ===== 电影感背景视频 电影感.mp4（铺 #stage 最底层 z0；其上压 50% 暗幕 #scrim，再压文字/暗角/颗粒） ===== */
+  #bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 2.4s ease;transform:scale(1.03);animation:bgPush 28s ease-in-out infinite alternate;background:transparent}
+
+  /* ===== 开场封面：暗场 + 朱砂呼吸辉光，奠定全片"高级 + 沉静"的第一印象 ===== */
+  #filmCover{position:fixed;inset:0;z-index:60;cursor:pointer;overflow:hidden;background:var(--ink)}
+  .cover-bloom{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none}
+  #coverGlyph{position:absolute;left:50%;top:50%;transform:translate(-50%,-62%);
+    width:clamp(150px,22vmin,260px);height:clamp(150px,22vmin,260px);
+    border:1.5px solid rgba(207,58,42,.42);border-radius:14px;
+    display:flex;align-items:center;justify-content:center;color:rgba(207,58,42,.82);
+    font-family:var(--serif);font-weight:700;font-size:clamp(78px,13vmin,150px);
+    text-shadow:0 0 24px rgba(207,58,42,.4);animation:coverBreath 6s ease-in-out infinite, glyphFade 1.3s ease both}
+  @keyframes glyphFade{from{opacity:0}to{opacity:1}}
+  @keyframes fadeOnly{from{opacity:0}to{opacity:1}}
+  @keyframes coverBreath{
+    0%,100%{box-shadow:inset 0 0 70px rgba(207,58,42,.12),0 0 40px rgba(207,58,42,.08);transform:translate(-50%,-62%) scale(1)}
+    50%{box-shadow:inset 0 0 92px rgba(207,58,42,.22),0 0 72px rgba(207,58,42,.17);transform:translate(-50%,-62%) scale(1.015)}}
+  .cover-title{position:absolute;left:50%;top:50%;transform:translate(-50%,150%);text-align:center;font-family:var(--serif);color:var(--paper);animation:fadeOnly 1s .35s ease both}
+  .cover-title .t1{font-size:clamp(30px,5.4vmin,58px);font-weight:700;letter-spacing:.16em;text-shadow:0 2px 28px rgba(0,0,0,.6)}
+  .cover-rule{width:46px;height:1px;margin:1.1em auto .9em;background:linear-gradient(90deg,transparent,var(--edge),transparent)}
+  .cover-title .t2{font-size:clamp(12px,1.9vmin,17px);font-weight:300;letter-spacing:.5em;color:var(--paper-dim)}
+  .cover-play{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);color:var(--paper);font-family:var(--serif);font-size:14px;letter-spacing:.42em;font-weight:300;text-shadow:0 2px 12px rgba(0,0,0,.7);animation:playPulse 2.6s ease-in-out infinite}
+  @keyframes playPulse{0%,100%{opacity:.55}50%{opacity:.95}}
+</style>
+</head>
+<body>
+  <div id="filmCover">
+    <div id="coverGlyph">考</div>
+    <div class="cover-title">
+      <div class="t1">最后两天</div>
+      <div class="cover-rule"></div>
+      <div class="t2">写 给 考 前 的 你</div>
+    </div>
+    <div class="cover-play">▶ 点击播放</div>
+  </div>
+  <div id="stage">
+    <video id="bgvid" playsinline preload="auto"><source src="电影感.mp4" type="video/mp4"></video>
+    <div id="scrim"></div>
+    <div id="paper"></div>
+    <canvas id="dust"></canvas>
+    <canvas id="figc"></canvas>
+    <div id="scene"><div id="sceneInner">
+      <div id="textWrap"><div class="layer" id="layerA"></div><div class="layer" id="layerB"></div></div>
+    </div></div>
+    <div id="heatedge"></div>
+    <div id="grade"></div><div id="flare"></div>
+    <div id="grain"></div><div id="vignette"></div>
+    <div id="lbTop"></div><div id="lbBot"></div>
+    <div id="leak"></div><div id="actCard"></div>
+    <div class="reg tl"></div><div class="reg tr"></div><div class="reg bl"></div><div class="reg br"></div>
+    <div id="guides"><i class="gt"></i><i class="gb"></i><i class="gl"></i><i class="gr"></i></div>
+    <div id="frame"></div>
+    <div id="seal">考</div>
+    <div id="act">—</div>
+    <div id="tc">00:00</div>
+    <div id="scrub"><div id="bar"><div id="barFill"></div><div id="barTicks"></div><div id="barHandle"></div><div id="barTip">00:00</div></div></div>
+  </div>
+
+  <audio id="vo" preload="auto"></audio>
+  <audio id="bgmTrack" preload="auto" loop></audio>
+  <button id="reopen" title="重新载入 (≡)">≡</button>
+  <div id="drophint"><span>松手载入文件</span></div>
+  <div id="loader" class="hidden"><div class="card">
+    <h1>动态文字引擎 · 逐字完整版</h1>
+    <p>载入你的 <b style="color:var(--cinnabar)">.srt</b> 字幕，引擎会把每一句逐字拆成动态卡，一个字都不丢。<br>可再载入 <b style="color:var(--cinnabar)">.mp3</b> 配音做逐帧同步；无配音也能按时码静音预览。<br>本片含<b style="color:var(--cinnabar)">剪影人物层</b>：换入自己的字幕时，含相同关键词的句子仍会触发对应小人场景。</p>
+    <div class="row">
+      <button class="btn" id="pickSRT">选择 .srt 字幕</button>
+      <button class="btn" id="pickMP3">选择 .mp3 配音</button>
+    </div>
+    <div class="row"><button class="btn primary" id="play">▶ 播放</button></div>
+    <div class="status" id="status">未载入字幕 — 将使用内置样例(前 8 句)</div>
+  </div></div>
+  <input type="file" id="fileSRT" accept=".srt,text/plain">
+  <input type="file" id="fileMP3" accept="audio/*">
+
+<script>
+/* ============================================================================
+   配置（可调）
+   ============================================================================ */
+const CFG = {
+  TARGET:12, HARD:16, MAXBLOCK:28,   // 分卡：单卡目标≤12字；超长段按16字硬切；>28字才硬切
+  MIN_HOLD:0.5,                      // 每张卡最短停留(秒)
+  EMPHASIZE:true,                    // 标红(纯视觉，不改字)：数字 + 关键词
+  EMPHASIS:['睡眠','工作记忆','安慰剂','焦虑','巩固','什么都不做'],
+  CHAPTER_GAP:3.0,                   // 静音预览时在切点插入的电影转场停顿(秒)；载入配音后自动设0
+  ACT_MS:3200,                       // 转场动画时长(毫秒)，须与 CSS .act-run 一致
+  TAIL:0.6                           // 片尾停顿(秒)
+};
+/* 章节(电影转场)。at 可写秒数或 "HH:MM:SS,mmm"。第一条 at:0 = 开场标题。 */
+const CHAPTERS = [];
+/* 内置样例字幕(前8句，逐字原文)。载入你的 .srt 后会被替换。 */
+const SRT_FALLBACK = `1
+00:00:00,000 --> 00:00:01,600
+我换个方式说这件事
+
+2
+00:00:01,811 --> 00:00:04,691
+你跑一场马拉松，比赛前一天你干什么
+
+3
+00:00:04,830 --> 00:00:06,830
+你不会跑三十公里"再练练"
+
+4
+00:00:07,012 --> 00:00:09,892
+你会吃碳水、早睡、拉伸、什么都不干
+
+5
+00:00:10,031 --> 00:00:15,151
+所有运动员都知道这个道理：赛前的休息不是偷懒，是准备的最后一步
+
+6
+00:00:15,279 --> 00:00:18,879
+但到了高考这件事上，所有人突然忘了这个常识
+
+7
+00:00:18,994 --> 00:00:22,914
+家长觉得你还能"再看看"，你自己也觉得"万一考到了呢"
+
+8
+00:00:23,266 --> 00:00:24,786
+万一考到了怎样
+
+9
+00:00:24,892 --> 00:00:28,412
+你昨晚两点背的那个知识点，进了你的短期记忆
+
+10
+00:00:28,468 --> 00:00:32,948
+短期记忆的容量大概四到七个组块，保质期不到二十四小时
+
+11
+00:00:33,065 --> 00:00:36,985
+它要变成你考场上能调用的东西，必须经过睡眠
+
+12
+00:00:37,105 --> 00:00:40,865
+深度睡眠里，大脑会把短期记忆搬运到长期记忆区
+
+13
+00:00:41,006 --> 00:00:45,406
+这个过程叫巩固，至少需要一到两个完整的睡眠周期
+
+14
+00:00:45,558 --> 00:00:50,278
+你凌晨两点背完直接睡五小时，那个东西大概率在半路丢了
+
+15
+00:00:50,514 --> 00:00:54,834
+考场上你拼命想"我昨天明明看过这个"，但就是想不起来
+
+16
+00:00:54,938 --> 00:00:58,138
+不是你记忆力差，是它压根没到达目的地
+
+17
+00:00:58,189 --> 00:01:01,869
+所以算一笔账：你牺牲两小时睡眠换二十个知识点
+
+18
+00:01:01,997 --> 00:01:07,037
+这二十个知识点能被你考场上稳定调用的概率大概百分之二十
+
+19
+00:01:07,152 --> 00:01:09,712
+就是说，可能有四个你真能想起来
+
+20
+00:01:09,846 --> 00:01:11,366
+一个知识点对应多少分
+
+21
+00:01:11,644 --> 00:01:13,724
+假设两分，那你赚了八分
+
+22
+00:01:13,839 --> 00:01:16,159
+但你少睡两小时的代价是什么
+
+23
+00:01:16,254 --> 00:01:20,014
+是你整个人的工作记忆带宽下降百分之十五到二十五
+
+24
+00:01:20,062 --> 00:01:21,182
+工作记忆是什么
+
+25
+00:01:21,270 --> 00:01:26,070
+是你在考场上读题、理解题意、做运算、组织语言的底层硬件
+
+26
+00:01:26,285 --> 00:01:29,725
+底层硬件打了七五折，作用在每一道题上
+
+27
+00:01:29,861 --> 00:01:35,061
+一张一百五十分的卷子，所有题都打七五折运行，丢的分远超八分
+
+28
+00:01:35,202 --> 00:01:37,602
+你在用全局性能换局部知识
+
+29
+00:01:37,790 --> 00:01:38,990
+这是亏本买卖
+
+30
+00:01:39,103 --> 00:01:40,943
+再说一个更隐蔽的机制
+
+31
+00:01:41,053 --> 00:01:42,653
+你为什么停不下来
+
+32
+00:01:42,725 --> 00:01:45,045
+为什么明知道该休息还是想刷题
+
+33
+00:01:45,186 --> 00:01:47,906
+因为学习这个动作本身在缓解你的焦虑
+
+34
+00:01:48,112 --> 00:01:51,152
+注意，是缓解焦虑，不是提升能力
+
+35
+00:01:51,224 --> 00:01:55,864
+你翻开书的那一刻，焦虑就降了一格："我在做点什么"
+
+36
+00:01:56,007 --> 00:01:59,927
+合上书，焦虑又升上来："我是不是浪费时间了"
+
+37
+00:02:00,047 --> 00:02:05,327
+所以你被困在一个循环里：不是因为有用才学，是因为不学就焦虑
+
+38
+00:02:05,388 --> 00:02:07,788
+学习变成了安慰剂，不是药
+
+39
+00:02:07,942 --> 00:02:12,662
+你要把这两件事分清楚：什么是真的在准备，什么是在吃安慰剂
+
+40
+00:02:12,725 --> 00:02:16,165
+真的准备，在考前两天，只有一种形式
+
+41
+00:02:16,301 --> 00:02:19,181
+让你的身体和大脑进入最佳运行状态
+
+42
+00:02:19,273 --> 00:02:24,233
+吃安慰剂会让你感觉自己在努力，但同时在损耗你的运行状态
+
+43
+00:02:24,475 --> 00:02:25,835
+那最后两天该干什么
+
+44
+00:02:25,868 --> 00:02:26,988
+第一，睡觉
+
+45
+00:02:27,168 --> 00:02:31,968
+不是"尽量早睡"，是把睡眠当作考前最重要的那道题来对待
+
+46
+00:02:32,091 --> 00:02:34,091
+七到八小时，不能少
+
+47
+00:02:34,180 --> 00:02:35,700
+你每多睡一个小时
+
+48
+00:02:35,806 --> 00:02:37,566
+工作记忆容量恢复一格
+
+49
+00:02:37,756 --> 00:02:39,756
+情绪调节能力恢复一格
+
+50
+00:02:39,973 --> 00:02:41,653
+注意力持续时间恢复一格
+
+51
+00:02:41,843 --> 00:02:44,963
+这些东西到了考场上，每一道题都在用
+
+52
+00:02:45,094 --> 00:02:46,454
+第二，动身体
+
+53
+00:02:46,534 --> 00:02:50,134
+不是跑十公里那种，是散步、拉伸、出门走一圈
+
+54
+00:02:50,295 --> 00:02:52,375
+运动会促进BDNF分泌
+
+55
+00:02:52,524 --> 00:02:54,684
+这个东西帮助神经连接巩固
+
+56
+00:02:54,800 --> 00:02:58,720
+实际上比你坐着刷题更有利于"记住"你之前学过的东西
+
+57
+00:02:58,840 --> 00:03:02,440
+而且有氧运动完了之后，前额叶的供血会改善
+
+58
+00:03:02,555 --> 00:03:05,675
+你的决策质量和专注力都会上一个台阶
+
+59
+00:03:05,853 --> 00:03:08,253
+第三，做两道你最擅长的题
+
+60
+00:03:08,360 --> 00:03:10,440
+注意，不是做你不会的题
+
+61
+00:03:10,497 --> 00:03:12,337
+是做你最有把握的那种
+
+62
+00:03:12,447 --> 00:03:13,051
+为什么
+
+63
+00:03:13,051 --> 00:03:16,411
+因为这是在锚定自我效能感，让大脑确认
+
+64
+00:03:16,627 --> 00:03:19,347
+"我会做这个，我是能做对题的人"
+
+65
+00:03:19,459 --> 00:03:22,259
+这个心理信号比二十个知识点值钱得多
+
+66
+00:03:22,432 --> 00:03:25,072
+你带着"我能行"的确认感进考场
+
+67
+00:03:25,125 --> 00:03:28,085
+和带着"我还有好多不会"的恐慌进考场
+
+68
+00:03:28,237 --> 00:03:31,277
+做同一道题的正确率差距是真实存在的
+
+69
+00:03:31,394 --> 00:03:34,194
+第四，不要跟任何人讨论复习进度
+
+70
+00:03:34,320 --> 00:03:35,360
+"你复习到哪了"
+
+71
+00:03:35,435 --> 00:03:37,355
+"你觉得今年数学会不会很难"
+
+72
+00:03:37,478 --> 00:03:40,118
+"听说最后一道大题可能考什么什么"
+
+73
+00:03:40,172 --> 00:03:43,052
+每一句这样的话都在往你的工作记忆里塞垃圾
+
+74
+00:03:43,144 --> 00:03:47,224
+你的带宽就那么大，被这些噪音占满了，你的状态就碎了
+
+75
+00:03:47,370 --> 00:03:50,570
+考前两天最好的社交策略是：谁都别聊
+
+76
+00:03:50,621 --> 00:03:53,181
+或者只聊跟考试完全无关的事
+
+77
+00:03:53,407 --> 00:03:58,447
+第五，把"我没在学习"的愧疚感看成一个信号，而不是一个指令
+
+78
+00:03:58,748 --> 00:04:01,548
+你觉得愧疚，不代表你应该去学习
+
+79
+00:04:01,673 --> 00:04:06,073
+它只是说明，你被训练了十二年的条件反射还在起作用
+
+80
+00:04:06,224 --> 00:04:09,344
+"不学习，等于不努力，等于要完蛋"
+
+81
+00:04:09,555 --> 00:04:14,515
+这个反射在过去十二年是有用的，但在最后四十八小时它是有害的
+
+82
+00:04:14,584 --> 00:04:17,544
+你要做的是承认："我现在很想翻开书
+
+83
+00:04:17,695 --> 00:04:19,615
+但我知道这是焦虑在驱动我
+
+84
+00:04:19,692 --> 00:04:21,212
+不是理性在驱动我"
+
+85
+00:04:21,271 --> 00:04:22,551
+然后，放下书
+
+86
+00:04:22,664 --> 00:04:26,664
+说白了，最后两天你要做一件违反直觉的事：什么都不做
+
+87
+00:04:26,924 --> 00:04:28,764
+但这个"什么都不做"不是摆烂
+
+88
+00:04:28,887 --> 00:04:31,287
+是你这三年所有准备的最后一个动作
+
+89
+00:04:31,395 --> 00:04:34,275
+让机器休息够了，明天满功率上场
+
+90
+00:04:34,460 --> 00:04:37,180
+你不会在跑马拉松前一天去跑三十公里
+
+91
+00:04:37,293 --> 00:04:38,175
+同样的道理
+
+92
+00:04:38,175 --> 00:04:41,775
+这两天的不学习，是你能做的最后一件聪明事`;
+
+/* ============================================================================
+   1) 解析 SRT
+   ============================================================================ */
+function toSec(v){
+  if(typeof v==='number') return v;
+  const m=String(v).match(/(\d+):(\d+):(\d+)[,.](\d+)/);
+  if(m) return (+m[1])*3600+(+m[2])*60+(+m[3])+(+m[4])/1000;
+  const m2=String(v).match(/^\s*(\d+(?:\.\d+)?)\s*$/);
+  return m2?+m2[1]:0;
+}
+function parseSRT(t){
+  const blocks=t.replace(/\r/g,'').split(/\n\n+/).map(b=>b.trim()).filter(Boolean);
+  const cues=[];
+  for(const b of blocks){
+    const lines=b.split('\n');
+    let li=0; if(/^\d+$/.test(lines[0].trim())) li=1;        // 跳过序号行(若有)
+    const tm=(lines[li]||'').match(/(\d\d):(\d\d):(\d\d)[,.](\d\d\d)\s*-->\s*(\d\d):(\d\d):(\d\d)[,.](\d\d\d)/);
+    if(!tm) continue;
+    const start=(+tm[1])*3600+(+tm[2])*60+(+tm[3])+(+tm[4])/1000;
+    const end  =(+tm[5])*3600+(+tm[6])*60+(+tm[7])+(+tm[8])/1000;
+    const text=lines.slice(li+1).join(' ');
+    if(text.trim()) cues.push({start,end,text});
+  }
+  return cues;
+}
+
+/* ============================================================================
+   2) 逐字不丢的分卡（拼回 == 原句，已离线验证）
+   ============================================================================ */
+const BREAK=/[。，、；：！？…—·,.!?;:”’」』》）)】]/;   // 在其后断卡；前引/开括号不断，跟随后文
+function chunkLine(text){
+  const s=text.trim().replace(/\s+/g,' ');
+  const N=s.length; if(!N) return [];
+  const segs=[]; let start=0;
+  for(let i=0;i<N;i++){ if(BREAK.test(s[i])){ let j=i; while(j+1<N&&BREAK.test(s[j+1]))j++; segs.push([start,j+1]); start=j+1; i=j; } }
+  if(start<N) segs.push([start,N]); if(!segs.length) segs.push([0,N]);
+  const packed=[]; let acc=null;
+  for(const [a,b] of segs){ if(acc===null) acc=[a,b]; else if(b-acc[0]<=CFG.TARGET) acc[1]=b; else { packed.push(acc); acc=[a,b]; } }
+  if(acc) packed.push(acc);
+  const out=[];
+  for(const [a,b] of packed){ if(b-a<=CFG.MAXBLOCK) out.push([a,b]); else { let p=a; while(p<b){ const q=Math.min(p+CFG.HARD,b); out.push([p,q]); p=q; } } }
+  return out.map(([a,b])=>s.slice(a,b));
+}
+function tierOf(c){ const n=c.replace(/\s/g,'').length; return n<=4?'xl':n<=7?'l':n<=11?'m':n<=14?'s':'s2'; }
+
+/* —— 入场动效选择：内容驱动 + 轮转去重，让相邻卡片永不雷同 —— */
+const RE_LIST=/^[第]?[一二三四五六七八九十][、，,]/;
+const RE_Q   =/[？?]|为什么|万一|怎样|多少分|是什么|会不会|停不下来|该(干|做)什么|对应多少/;
+const RE_CALM=/什么都不做|什么都不干|放下书|睡觉|早睡|休息|平静|安静|让机器休息|满功率上场/;
+const RE_HARD=/完蛋|亏本|损耗|恐慌|愧疚|崩|碎|垃圾|噪音|丢了|想不起来|代价|违反直觉|摆烂/;
+const POOL_S=['bloom','liftRotate','cascadeUp','typeLock','swipeInk','cascadeDown'];        // 短句(冲)
+const POOL_M=['cascadeUp','swipeInk','fadeScatter','typeLock','cascadeDown','liftRotate'];  // 中/小句(读)
+const POOL_C=['cascadeUp','fadeScatter','swipeInk'];                                        // 续句(柔)
+let rotI=0, lastAnim='';
+function rotate(pool){ let k=pool[rotI%pool.length]; if(k===lastAnim){ rotI++; k=pool[rotI%pool.length]; } rotI++; lastAnim=k; return k; }
+function pickAnim(text, tier, cont){
+  const p=text.replace(/<[^>]+>/g,'');
+  if(tier==='s2'){ lastAnim='soft'; return {anim:'soft', split:false, kick:false, calm:false}; }       // 长句柔起整词，保可读
+  if(RE_CALM.test(p)){ lastAnim='settle'; return {anim:'settle', split:true, kick:false, calm:true}; } // 休息/收束：静置，与全片之“紧”作对照
+  if(tier==='xl'){ lastAnim='slam'; return {anim:'slam', split:false, kick:true, calm:false}; }         // 极短重句：整词重锤
+  if(RE_LIST.test(p)){ lastAnim='typeLock'; return {anim:'typeLock', split:true, kick:true, calm:false}; } // 列表项：锁字
+  if(RE_Q.test(p)){ const k=(rotI++%2)?'liftRotate':'cascadeUp'; lastAnim=k; return {anim:k, split:true, kick:false, calm:false}; } // 疑问：抬升
+  if(cont){ return {anim:rotate(POOL_C), split:true, kick:false, calm:false}; }                          // 续句偏柔
+  const k=rotate((tier==='m'||tier==='s')?POOL_M:POOL_S);
+  return {anim:k, split:true, kick:RE_HARD.test(p), calm:false};
+}
+const ORDER={bloom:'center', cascadeDown:'rl', fadeScatter:'rand', typeLock:'lr', swipeInk:'lr', cascadeUp:'lr', liftRotate:'lr', settle:'lr'};
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function emphasize(s){
+  let h=esc(s);
+  if(!CFG.EMPHASIZE) return h;
+  h=h.replace(/(\d[\d.,]*\s*%?)/g,'\u0001$1\u0002');                 // 数字占位
+  for(const k of CFG.EMPHASIS){ if(k) h=h.split(esc(k)).join('\u0001'+esc(k)+'\u0002'); }
+  h=h.replace(/\u0001(?=[^\u0002]*\u0001)/g,'').replace(/\u0002(?=[^\u0001]*\u0002)/g,''); // 防嵌套(粗处理)
+  return h.replace(/\u0001/g,'<b>').replace(/\u0002/g,'</b>');
+}
+
+/* ============================================================================
+   3) 构建时间线：cues→chunks(逐字) + chapters(转场)；静音时在切点插停顿
+   ============================================================================ */
+let EVENTS=[], TOTAL=0;
+function buildTimeline(cues, gap){
+  rotI=0; lastAnim='';
+  let ev=[];
+  for(const c of cues){
+    const chunks=chunkLine(c.text); if(!chunks.length) continue;
+    const lens=chunks.map(x=>Math.max(1,x.replace(/\s/g,'').length));
+    const sumLen=lens.reduce((a,b)=>a+b,0);
+    const dur=Math.max(0.4,c.end-c.start);
+    let durs=lens.map(l=>Math.max(CFG.MIN_HOLD, dur*l/sumLen));
+    const sd=durs.reduce((a,b)=>a+b,0); if(sd>dur){ const k=dur/sd; durs=durs.map(d=>d*k); }
+    let tc=c.start;
+    chunks.forEach((ch,i)=>{ const tier=tierOf(ch); const html=emphasize(ch); const pa=pickAnim(ch,tier,i>0);
+      ev.push({kind:'chunk',start:tc,end:tc+durs[i],tier,cont:i>0,html,anim:pa.anim,split:pa.split,kick:pa.kick,calm:pa.calm});
+      tc+=durs[i];
+    });
+  }
+  ev.sort((a,b)=>a.start-b.start);
+  const chs=CHAPTERS.map(c=>({...c,at:toSec(c.at)})).sort((a,b)=>a.at-b.at);
+  let cum=0;
+  for(const ch of chs){
+    const at=ch.at+cum;
+    if(gap>0 && ch.at>0){ ev.forEach(e=>{ if(e.start>=at){ e.start+=gap; e.end+=gap; } }); ev.push({kind:'act',start:at,end:at+gap,no:ch.no,name:ch.name,sub:ch.sub}); cum+=gap; }
+    else { ev.push({kind:'act',start:at,end:at+CFG.ACT_MS/1000,no:ch.no,name:ch.name,sub:ch.sub}); }
+  }
+  ev.sort((a,b)=>a.start-b.start);
+  EVENTS=ev;
+  TOTAL=ev.reduce((m,e)=>Math.max(m,e.end),0)+CFG.TAIL;
+}
+
+/* ============================================================================
+   4) 渲染引擎
+   ============================================================================ */
+const stage=document.getElementById('stage'), layerA=document.getElementById('layerA'), layerB=document.getElementById('layerB'),
+      heatEdge=document.getElementById('heatedge'),
+      actCard=document.getElementById('actCard'), barFill=document.getElementById('barFill'),
+      actEl=document.getElementById('act'), tcEl=document.getElementById('tc'), vo=document.getElementById('vo');
+const sceneInner=document.getElementById('sceneInner');
+const textWrap=document.getElementById('textWrap'),
+      dustC=document.getElementById('dust'), dctx=dustC?dustC.getContext('2d'):null;
+let camX=0,camY=0,camZ=1, camTX=0,camTY=0,camTZ=1;   // 摄影机：平滑当前值 / 每卡目标取景
+let active=layerA, idx=-1, clk=0, prevT=0, last=0, phase=0, playing=false,
+    glow=0, heat=0, dark=0.45, darkTarget=0.45, cw=0, chh=0, actTimer=0, clrTimer=0, useAudio=false;
+
+function measure(){ const r=stage.getBoundingClientRect(); cw=r.width; chh=r.height; }
+addEventListener('resize',measure); measure();
+
+/* —— 空气浮尘：随摄影机视差缓慢飘动的细微光尘，制造纵深与"空气" —— */
+let motes=[];
+function sizeDust(){ if(!dctx) return; const r=stage.getBoundingClientRect(); const dpr=Math.min(2,window.devicePixelRatio||1);
+  dustC.width=Math.max(1,Math.round(r.width*dpr)); dustC.height=Math.max(1,Math.round(r.height*dpr)); dctx.setTransform(dpr,0,0,dpr,0,0);
+  if(!motes.length){ for(let i=0;i<40;i++) motes.push({x:Math.random(),y:Math.random(),r:rnd(0.5,2.6),vx:rnd(-0.012,0.012),vy:rnd(-0.018,0.004),a:rnd(0.04,0.15),ph:rnd(0,6.28)}); } }
+function drawDust(dt){ if(!dctx) return; const r=stage.getBoundingClientRect(), W=r.width, H=r.height; dctx.clearRect(0,0,W,H);
+  for(const m of motes){ m.x+=m.vx*dt; m.y+=m.vy*dt; m.ph+=dt*0.7;
+    if(m.x<-0.06)m.x=1.06; else if(m.x>1.06)m.x=-0.06; if(m.y<-0.06)m.y=1.06; else if(m.y>1.06)m.y=-0.06;
+    const px=m.x*W, py=m.y*H, tw=Math.sin(m.ph)*0.4+0.6, rad=Math.max(.8,m.r*2.6), al=m.a*tw;
+    const g=dctx.createRadialGradient(px,py,0,px,py,rad);
+    g.addColorStop(0,'rgba(247,240,222,'+al.toFixed(3)+')'); g.addColorStop(1,'rgba(247,240,222,0)');
+    dctx.fillStyle=g; dctx.beginPath(); dctx.arc(px,py,rad,0,6.2832); dctx.fill(); } }
+sizeDust();
+function fit(word){ if(!word) return; word.style.fontSize='';
+  const sr=stage.getBoundingClientRect(); if(!sr.width) return;
+  const availW = sr.width  * (1 - 0.075*2);          // 左右留出与 .layer 内边距等宽的余量
+  const lbv=parseFloat(getComputedStyle(stage).getPropertyValue('--lb'));
+  const lb=(isNaN(lbv)?8:lbv)/100;
+  const availH = sr.height * (1 - lb*2) * 0.92;    // 上下避开遮幅(--lb)后再留一点呼吸
+  for(let pass=0; pass<3; pass++){                    // 多趟收敛:换行后行数变化会改变高度
+    const wr=word.getBoundingClientRect(); if(!wr.width||!wr.height) break;
+    const sc=Math.min(availW/wr.width, availH/wr.height, 1);
+    if(sc>0.998) break;
+    const cur=parseFloat(getComputedStyle(word).fontSize);
+    word.style.fontSize=(cur*sc).toFixed(2)+'px';
+  }
+}
+function pulseRing(){}  /* 光环已移除：冲击改由暗角下沉 + 朱砂边缘热度承担 */
+
+const MOOD_DARK=/死|完蛋|坏人|无视|恐怖|剥夺|无能|伤害|烂|屎|阴|傻|谩骂|诅咒|攻击/;
+const MOOD_LIFT=/上楼|加速|变好|提醒|强|守护|拥有|客观|改变|控制|格局|平静|掌控/;
+
+/* 逐字拆分：保留 <b> 强调与每一个字符（空白→spacer，不计入级联），返回字符 span 列表供写延迟 */
+function splitChars(html){
+  const src=document.createElement('div'); src.innerHTML=html;
+  const out=document.createElement('div'); const chars=[];
+  (function rec(srcNode,dst,em){
+    srcNode.childNodes.forEach(n=>{
+      if(n.nodeType===3){
+        for(const ch of n.textContent){
+          const s=document.createElement('span');
+          if(/\s/.test(ch)){ s.className='ch sp'; s.innerHTML='&nbsp;'; }
+          else { s.className='ch'+(em?' em':''); s.textContent=ch; chars.push(s); }
+          dst.appendChild(s);
+        }
+      } else if(n.nodeName==='B'){ const b=document.createElement('b'); dst.appendChild(b); rec(n,b,true); }
+      else { rec(n,dst,em); }
+    });
+  })(src,out,false);
+  return {node:out, chars};
+}
+function rnd(a,b){ return a+Math.random()*(b-a); }
+let kickT=0;
+const flareEl=document.getElementById('flare');
+function sceneKick(){ if(!sceneInner) return; sceneInner.classList.remove('kick'); void sceneInner.offsetWidth; sceneInner.classList.add('kick'); clearTimeout(kickT); kickT=setTimeout(()=>sceneInner.classList.remove('kick'),540);
+  if(flareEl){ flareEl.classList.remove('flash'); void flareEl.offsetWidth; flareEl.classList.add('flash'); } }
+
+// —— 指定长句的手动断行:find 用于识别该卡,brk 表示"在此片段之后换行" ——
+// 仅作用于 s2 整词卡(整词渲染、无逐字、本身无 <b> 标签),用 <br> 精确控制断点,
+// 配合 .word.mb 的 nowrap 杜绝浏览器自行断行,fit() 仍会按需缩放。
+const MANUAL_BREAK=[
+  {find:'稳定调用的概率', brk:'的概率'},   // 让“大概百分之二十”整体落到下一行,不拆开
+  {find:'坐着刷题更有利于', brk:'刷题'},   // 在“刷题”之后断行
+];
+function applyManualBreak(html){
+  const plain=html.replace(/<[^>]+>/g,'');
+  for(const r of MANUAL_BREAK){
+    if(plain.indexOf(r.find)>=0){
+      const i=html.indexOf(r.brk);
+      if(i>=0){ const cut=i+r.brk.length; return {html:html.slice(0,cut)+'<br>'+html.slice(cut), mb:true}; }
+    }
+  }
+  return {html, mb:false};
+}
+
+function showChunk(e){
+  const incoming=(active===layerA)?layerB:layerA, outgoing=active;
+  if(e.split){
+    const {node,chars}=splitChars(e.html);
+    const n=Math.max(1,chars.length);
+    const dur = e.calm?0.82 : (e.anim==='typeLock'?0.46 : (e.anim==='swipeInk'?0.5 : 0.6));
+    const ord = ORDER[e.anim]||'lr';
+    // A) 逐字 stagger 改为带缓动的递进:不再匀速等距,起手从容、尾字自然收拢
+    const mMax = Math.max(1, ord==='center' ? (n-1)/2 : (n-1));
+    const spread = Math.min(0.44, 0.05*mMax);
+    const easeStg = u => 1 - Math.pow(1-u, 1.5);
+    chars.forEach((s,k)=>{
+      let m = ord==='center'?Math.abs(k-(n-1)/2) : ord==='rl'?(n-1-k) : k;
+      s.style.setProperty('--d',(easeStg(m/mMax)*spread).toFixed(3)+'s');
+      if(e.anim==='fadeScatter'){ s.style.setProperty('--dx',rnd(-.13,.13).toFixed(3)+'em'); s.style.setProperty('--dy',rnd(.04,.16).toFixed(3)+'em'); }
+    });
+    const hf=(-rnd(0,8)).toFixed(2)+'s';
+    incoming.innerHTML='<span class="word '+e.tier+' split" style="--dur:'+dur+'s;--hf:'+hf+'">'+node.innerHTML+'</span>';
+  } else {
+    let h=e.html, mbCls='';
+    if(e.tier==='s2'){ const r=applyManualBreak(h); h=r.html; if(r.mb) mbCls=' mb'; }
+    incoming.innerHTML='<span class="word '+e.tier+mbCls+'">'+h+'</span>';
+  }
+  const word=incoming.firstElementChild; fit(word);                 // 先按静止排版量字号
+  void word.offsetWidth; word.classList.add('e-'+e.anim);           // 再触发入场
+  incoming.classList.remove('out'); incoming.style.opacity='1';
+  if(outgoing!==incoming){ outgoing.classList.remove('out'); void outgoing.offsetWidth; outgoing.classList.add('out'); }
+  active=incoming;
+  // 冲击力度随字号（驱动暗角“下沉”与朱砂边缘热度）
+  if(e.tier==='xl'){ glow=1; heat=0.9; }
+  else if(e.tier==='l'){ glow=Math.max(glow,0.6); heat=Math.max(heat,0.32); }
+  else { glow=Math.max(glow,0.22); }
+  if(e.kick){ heat=Math.max(heat,0.5); glow=Math.max(glow,0.55); sceneKick(); }
+  // 自动氛围(背景随情绪活):去标签取纯文字判断
+  const plain=(e.html||'').replace(/<[^>]+>/g,'');
+  if(e.calm){ darkTarget=0.20; glow=Math.max(glow,0.32); }
+  else if(MOOD_DARK.test(plain)){ darkTarget=0.92; heat=Math.max(heat,0.40); }
+  else if(MOOD_LIFT.test(plain)){ darkTarget=0.22; glow=Math.max(glow,0.5); }
+  else { darkTarget=0.45; }
+  // 摄影机：每张卡给一个轻微不同的"取景"(位移+推拉)，镜头平滑切入 → 像剪辑里换了机位
+  camTX=rnd(-0.9,0.9); camTY=rnd(-0.7,0.7); camTZ=rnd(1.0,1.03);
+  if(e.tier==='xl'){ camTZ=rnd(1.02,1.045); }                       // 重锤大字给更明显的推近
+  else if(e.calm){ camTX*=0.5; camTY*=0.5; camTZ=rnd(1.0,1.012); }  // 休息/收束句更稳，少动
+}
+let actUntil=0;   // 转场结束的时间戳(秒,基于音频/内置时钟)；期间锁住字幕渲染
+function clearLayers(){ layerA.innerHTML=''; layerB.innerHTML=''; layerA.classList.remove('out'); layerB.classList.remove('out'); layerA.style.opacity='0'; layerB.style.opacity='0'; }
+function runAct(e){
+  actEl.textContent=(e.no?e.no+' · ':'')+(e.name||'');
+  actCard.innerHTML=`<div class="actNo">${e.no||''}</div><div class="actRule"></div><div class="actName">${e.name||''}</div>${e.sub?`<div class="actSub">${e.sub}</div>`:''}`;
+  // 关键修复：转场一开始就【立即硬清空】字幕层,中止上一幕残留卡片的进行中动画
+  clearLayers();
+  clearTimeout(clrTimer);
+  // 锁住字幕渲染,直到转场动画基本结束(避免转场期间冒出新卡)
+  actUntil = (e.end!==undefined ? e.end : (e.start + CFG.ACT_MS/1000));
+  stage.classList.remove('act-run'); void stage.offsetWidth; stage.classList.add('act-run');
+  clearTimeout(actTimer); actTimer=setTimeout(()=>stage.classList.remove('act-run'), CFG.ACT_MS+60);
+  glow=0.7; heat=0.5; darkTarget=0.4;
+}
+function onLoopReset(){ idx=-1; layerA.innerHTML='';layerB.innerHTML='';layerA.classList.remove('out');layerB.classList.remove('out');layerA.style.opacity='0';layerB.style.opacity='0';
+  stage.classList.remove('act-run'); actCard.innerHTML=''; glow=0;heat=0;dark=0.45;darkTarget=0.45; SC_fired={}; lastT=-1; }
+
+function frame(ts){
+  requestAnimationFrame(frame);
+  const d=last?(ts-last)/1000:0; last=ts; phase+=d;
+  // 时钟：有配音跟随 currentTime，否则内置时钟按时码走
+  let t;
+  if(useAudio){ t=vo.currentTime; }
+  else { if(playing) clk+=d; if(clk>=TOTAL) clk-=TOTAL; t=clk; }
+  if(t<prevT-0.4) onLoopReset();  // 检测循环/跳回
+  prevT=t;
+
+  if(EVENTS.length){
+    let j=idx;
+    while(j+1<EVENTS.length && t>=EVENTS[j+1].start) j++;
+    while(j>=0 && t<EVENTS[j].start) j--;
+    if(j!==idx){
+      idx=j;
+      if(idx>=0){
+        const e=EVENTS[idx];
+        if(e.kind==='act'){ runAct(e); }
+        else if(t >= actUntil){ showChunk(e); }   // 转场锁期间:跳过但不渲染字幕(防转场上叠字)
+        // 若 t<actUntil 仍在转场中,该字幕卡被静默跳过,转场结束后下一张正常显示
+      }
+    }
+  }
+
+  updScenes(t);
+  glow*=0.85; heat*=0.88; dark+=(darkTarget-dark)*0.06;
+  // 重锤字瞬间：暗角加深一“砸” + 画面四边泛起一缕朱砂热度（无中央光团）
+  stage.style.setProperty('--vig',(0.52 + dark*0.30 + glow*0.16).toFixed(3));
+  heatEdge.style.opacity=(heat*0.5).toFixed(3);
+
+  const dur=useAudio?(vo.duration||TOTAL):TOTAL;
+  const pf=dur?Math.min(1,t/dur):0;
+  barFill.style.width=(pf*100).toFixed(2)+'%';
+  if(barHandle) barHandle.style.left=(pf*100).toFixed(2)+'%';
+  tcEl.textContent=fmtT(t)+' / '+fmtT(dur);
+  if(!playing && stage.classList.contains('hide-cursor')) stage.classList.remove('hide-cursor');
+
+  // ===== 摄影机：有机微漂移（多频正弦，不明显重复）+ 每卡平滑重构图；背景做视差 → 纵深 =====
+  const oX=Math.sin(phase*0.13)*0.5+Math.sin(phase*0.071+1.3)*0.28;
+  const oY=Math.cos(phase*0.11)*0.42+Math.sin(phase*0.053+0.7)*0.24;
+  const oR=Math.sin(phase*0.037)*0.1, oS=1+Math.sin(phase*0.047)*0.005;
+  camX+=(camTX-camX)*0.03; camY+=(camTY-camY)*0.03; camZ+=(camTZ-camZ)*0.03;
+  sceneLift+=((-9.4*SC_A)-sceneLift)*0.06;
+  const dampC=1-0.3*SC_A;
+  const tx=(oX+camX)*dampC, ty=(oY+camY)*dampC+sceneLift, sc=oS*camZ;
+  if(textWrap) textWrap.style.transform='translate3d('+tx.toFixed(3)+'%,'+ty.toFixed(3)+'%,0) scale('+sc.toFixed(4)+') rotate('+oR.toFixed(3)+'deg)';
+  if(dustC) dustC.style.transform='translate3d('+(tx*0.6).toFixed(3)+'%,'+(ty*0.6).toFixed(3)+'%,0)';
+  drawDust(d);
+
+  let op=1; if(!useAudio){ if(t>TOTAL-1.4) op=Math.max(0,(TOTAL-t)/1.4); else if(t<1.1) op=t/1.1; }
+  stage.style.opacity=op.toFixed(3);
+}
+
+/* ============================================================================
+   5) 载入 / 控件
+   ============================================================================ */
+const loader=document.getElementById('loader'), statusEl=document.getElementById('status'),
+      fileSRT=document.getElementById('fileSRT'), fileMP3=document.getElementById('fileMP3'),
+      drophint=document.getElementById('drophint');
+let srtText=SRT_FALLBACK, srtName='内置样例(前8句)';
+
+function rebuild(){ const gap=useAudio?0:CFG.CHAPTER_GAP; buildTimeline(parseSRT(srtText),gap); computeSceneTrack(); onLoopReset(); clk=0; prevT=0; if(typeof renderTicks==='function') renderTicks(); }
+
+function loadSRTText(txt,name){ srtText=txt; srtName=name||'字幕'; rebuild();
+  statusEl.textContent=`已载入字幕：${srtName} · 共 ${parseSRT(srtText).length} 句 → ${EVENTS.filter(e=>e.kind==='chunk').length} 张卡`; }
+function loadAudioFile(file){ const url=URL.createObjectURL(file); vo.src=url; vo.loop=true; useAudio=true; rebuild();
+  statusEl.textContent=`已载入配音：${file.name}（播放将与配音同步）`; }
+
+fileSRT.addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>loadSRTText(r.result,f.name); r.readAsText(f,'utf-8'); });
+fileMP3.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) loadAudioFile(f); });
+document.getElementById('pickSRT').onclick=()=>fileSRT.click();
+document.getElementById('pickMP3').onclick=()=>fileMP3.click();
+
+function start(){ loader.classList.add('hidden'); playing=true; if(useAudio){ vo.play().catch(()=>{}); } }
+function pause(){ playing=false; if(useAudio) vo.pause(); stage.classList.remove('hide-cursor'); }
+document.getElementById('play').onclick=start;
+document.getElementById('reopen').onclick=()=>{ pause(); loader.classList.remove('hidden'); };
+addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); if(loader.classList.contains('hidden')){ playing?pause():(playing=true,useAudio&&vo.play()); } else start(); } });
+
+// 全窗口拖拽载入
+['dragenter','dragover'].forEach(ev=>addEventListener(ev,e=>{e.preventDefault();drophint.style.display='flex';}));
+['dragleave','drop'].forEach(ev=>addEventListener(ev,e=>{e.preventDefault();if(ev==='dragleave'&&e.relatedTarget)return;drophint.style.display='none';}));
+addEventListener('drop',e=>{ const files=[...(e.dataTransfer?.files||[])];
+  for(const f of files){ if(/\.srt$/i.test(f.name)||f.type==='text/plain'){ const r=new FileReader(); r.onload=()=>loadSRTText(r.result,f.name); r.readAsText(f,'utf-8'); }
+    else if(/^audio\//.test(f.type)||/\.mp3$/i.test(f.name)){ loadAudioFile(f); } } });
+
+/* ===== 进度条：拖拽 / 点击定位 · 悬停预览 · 方向键 ±5s ===== */
+function fmtT(s){ s=Math.max(0,Math.floor(s||0)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+const scrub=document.getElementById('scrub'), barEl=document.getElementById('bar'),
+      barHandle=document.getElementById('barHandle'), barTip=document.getElementById('barTip'), barTicks=document.getElementById('barTicks');
+let dragging=false;
+function curDur(){ return useAudio?(vo.duration||TOTAL):TOTAL; }
+function fracAt(clientX){ const r=barEl.getBoundingClientRect(); if(!r.width) return 0; return Math.max(0,Math.min(1,(clientX-r.left)/r.width)); }
+function seekFrac(f){ const dur=curDur(); let target=Math.max(0,Math.min(dur-0.05, f*dur));
+  if(useAudio){ try{ vo.currentTime=target; }catch(_){} } else { clk=target; }
+  prevT=target;                                  // 防止被判成"循环回跳"
+  const ff=dur?target/dur:0;                      // 即时反馈，不等下一帧
+  barFill.style.width=(ff*100).toFixed(2)+'%'; if(barHandle) barHandle.style.left=(ff*100).toFixed(2)+'%';
+}
+if(scrub){
+  scrub.addEventListener('pointerdown',e=>{ dragging=true; scrub.classList.add('dragging');
+    try{ scrub.setPointerCapture(e.pointerId); }catch(_){}
+    seekFrac(fracAt(e.clientX)); revealCursor(); });
+  scrub.addEventListener('pointermove',e=>{ const f=fracAt(e.clientX);
+    if(barTip){ barTip.style.left=(f*100).toFixed(2)+'%'; barTip.textContent=fmtT(f*curDur()); }
+    if(dragging) seekFrac(f); });
+  const endDrag=e=>{ if(!dragging) return; dragging=false; scrub.classList.remove('dragging'); try{ scrub.releasePointerCapture(e.pointerId); }catch(_){} };
+  scrub.addEventListener('pointerup',endDrag); scrub.addEventListener('pointercancel',endDrag);
+}
+/* 章节刻度：若配置了 CHAPTERS，则在转场处打点（CHAPTERS 为空则无刻度） */
+function renderTicks(){ if(!barTicks) return; barTicks.innerHTML='';
+  const dur=curDur(); if(!dur) return;
+  EVENTS.filter(e=>e.kind==='act' && e.start>0).forEach(e=>{
+    const d=document.createElement('div'); d.className='bar-tick'; d.style.left=(Math.min(1,e.start/dur)*100).toFixed(2)+'%'; barTicks.appendChild(d); });
+}
+/* 播放时光标静止 2.6s 自动隐藏（进度细线常驻），任何移动即恢复 */
+let idleT=0;
+function revealCursor(){ stage.classList.remove('hide-cursor'); clearTimeout(idleT);
+  idleT=setTimeout(()=>{ if(playing) stage.classList.add('hide-cursor'); }, 2600); }
+addEventListener('pointermove',revealCursor); addEventListener('mousemove',revealCursor);
+/* 方向键定位 */
+addEventListener('keydown',e=>{ if(e.code==='ArrowRight'||e.code==='ArrowLeft'){ e.preventDefault();
+  const dur=curDur(), cur=useAudio?vo.currentTime:clk;
+  seekFrac(dur?Math.max(0,Math.min(dur-0.05, cur+(e.code==='ArrowRight'?5:-5)))/dur:0); revealCursor(); } });
+
+
+/* ============================================================================
+   6) 电影剪影人物层（颠覆版新增）
+   ----------------------------------------------------------------------------
+   · 一套程序化骨骼小人：canvas 逐帧解算关节角度（非贴图/非预渲染序列帧），
+     墨笔圆头笔触 + 暖纸辉光，气质与朱墨皮肤同源；
+   · 场景由【字幕语义】自动触发：正则规则 → 编译成时间轨道(SEGS/MOMS)，
+     一切都是 t 的纯函数 → 拖动进度 / 循环 / 换 SRT 全部确定性，不会错乱；
+   · 小人入画时文字自动上移让出舞台下三分之一，地平线 + 地面光池随之浮现；
+   · 共 12 幕：奔跑 / 拉伸 / 睡眠记忆搬运 / 带宽仪表 / 焦虑循环 / 睡眠恢复 /
+     行走 / 做题打勾 / 噪音气泡 / 信号之书 / 静坐 / 起跑冲刺。
+   ============================================================================ */
+const figC=document.getElementById('figc'), fx=figC?figC.getContext('2d'):null;
+function sizeFig(){ if(!fx) return; const r=stage.getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
+  figC.width=Math.max(1,Math.round(r.width*dpr)); figC.height=Math.max(1,Math.round(r.height*dpr)); fx.setTransform(dpr,0,0,dpr,0,0); }
+sizeFig(); addEventListener('resize',sizeFig);
+
+/* —— 语义 → 场景规则（min/max 为生效时间窗，防止片头片尾同词撞车）—— */
+const SCENE_RULES=[
+ {re:/满功率上场|跑马拉松前一天|去跑三十公里|同样的道理|聪明事/, sc:'start', min:255},
+ {re:/马拉松|三十公里/,                                          sc:'run',     max:120},
+ {re:/吃碳水|早睡、拉伸|什么都不干|休息不是偷懒|准备的最后一步/,  sc:'stretch', max:120},
+ {re:/短期记忆|长期记忆|能调用的东西|经过睡眠|深度睡眠|搬运|叫巩固|睡眠周期|半路丢了|想不起来|没到达目的地/, sc:'sleep', min:20, max:120},
+ {re:/工作记忆带宽|工作记忆是什么|底层硬件|七五折|作用在每一道题|一百五十分/,               sc:'gauge', min:60, max:120},
+ {re:/停不下来|还是想刷题|缓解你的焦虑|缓解焦虑|焦虑就降|焦虑又升|困在一个循环|安慰剂|不学就焦虑|真的准备|最佳运行状态|感觉自己在努力|损耗你的运行状态/, sc:'loop', min:95, max:150},
+ {re:/第一，睡觉|睡眠当作|七到八小时|每多睡|恢复一格|每一道题都在用/, sc:'restore', min:140, max:170},
+ {re:/第二，动身体|散步、拉伸|BDNF|神经连接|有氧运动|坐着刷题|前额叶|专注力/, sc:'walk', min:158, max:190},
+ {re:/第三，做两道|你不会的题|最有把握|锚定自我效能|我会做这个|做对题的人|我能行|心理信号|确认感|恐慌进考场|正确率差距/, sc:'desk', min:182, max:216},
+ {re:/第四，不要跟|复习到哪|会不会很难|大题可能考|塞垃圾|噪音占满|社交策略|谁都别聊|完全无关/, sc:'noise', min:208, max:238},
+ {re:/第五，|愧疚|条件反射|等于要完蛋|四十八小时|想翻开书|焦虑在驱动|理性在驱动|放下书/, sc:'signal', min:228, max:266},
+ {re:/违反直觉|什么都不做|不是摆烂|最后一个动作|机器休息/,         sc:'calm', min:255}
+];
+/* —— 一次性"时刻"：场景内的剧情点（掉落记忆球/恢复一格/打勾/静音环/合书/发令）—— */
+const MOMENT_RULES=[
+ {re:/半路丢了/, id:'drop'}, {re:/恢复一格/, id:'bar'},
+ {re:/我会做这个|我能行/, id:'check'}, {re:/谁都别聊/, id:'shield'},
+ {re:/放下书/, id:'bookdown'}, {re:/聪明事/, id:'launch'}
+];
+let SEGS=[], MOMS={}, SC_A=0, sceneLift=0, SC_fired={}, lastT=-1;
+
+function computeSceneTrack(){
+  SEGS=[]; MOMS={};
+  for(const e of EVENTS){
+    if(e.kind!=='chunk') continue;
+    const p=(e.html||'').replace(/<[^>]+>/g,'');
+    for(const r of SCENE_RULES){
+      if(r.re.test(p) && e.start>=(r.min||0) && e.start<=(r.max||1e9)){
+        const top=SEGS[SEGS.length-1];
+        if(top && top.sc===r.sc && e.start<=top.to+4.0) top.to=Math.max(top.to,e.end);
+        else SEGS.push({sc:r.sc, from:e.start, to:e.end});
+        break;
+      }
+    }
+    for(const m of MOMENT_RULES){ if(m.re.test(p)){ (MOMS[m.id]=MOMS[m.id]||[]).push(e.start+0.12); } }
+  }
+  SEGS.forEach(s=>{ s.to+=1.7; });   // 出画余韵
+}
+
+/* —— 小工具 —— */
+function cl01(x){ return x<0?0:x>1?1:x; }
+function ez(x){ x=cl01(x); return x*x*(3-2*x); }                  // smoothstep
+function eo3(x){ x=cl01(x); return 1-Math.pow(1-x,3); }           // easeOutCubic
+function mixN(a,b,k){ return a+(b-a)*k; }
+function hsh(n){ const x=Math.sin(n*127.1+13.7)*43758.5453; return x-Math.floor(x); }
+function P(a){ return 'rgba(243,236,218,'+a.toFixed(3)+')'; }      // 宣纸
+function PW(a){ return 'rgba(247,240,222,'+a.toFixed(3)+')'; }     // 暖高光
+function RD(a){ return 'rgba(207,58,42,'+a.toFixed(3)+')'; }       // 朱砂
+function fseg(x1,y1,x2,y2,w){ fx.lineWidth=w; fx.beginPath(); fx.moveTo(x1,y1); fx.lineTo(x2,y2); fx.stroke(); }
+function rrect(x,y,w,h,r){ fx.beginPath(); fx.moveTo(x+r,y); fx.arcTo(x+w,y,x+w,y+h,r); fx.arcTo(x+w,y+h,x,y+h,r); fx.arcTo(x,y+h,x,y,r); fx.arcTo(x,y,x+w,y,r); fx.closePath(); }
+function qpt(p0,p1,p2,k){ const a=1-k; return [a*a*p0[0]+2*a*k*p1[0]+k*k*p2[0], a*a*p0[1]+2*a*k*p1[1]+k*k*p2[1]]; }
+function momIn(id,g){ return (MOMS[id]||[]).filter(m=>m>=g.from-1 && m<=g.to+1).sort((a,b)=>a-b); }
+
+/* —— 骨骼小人：x/py=骨盆，dir=朝向，lean=前倾，legs/arms=[近,远]关节角(弧度) —— */
+function drawHuman(o){
+  const u=o.u, d=o.dir||1, ws=o.w||1;
+  const TOR=3.0*u, THI=1.95*u, SHN=1.88*u, UPA=1.5*u, FOA=1.38*u, HED=.8*u, FT=.6*u;
+  const br=o.br||0, nx=o.x+Math.sin(o.lean||0)*TOR*d, ny=o.py-Math.cos(o.lean||0)*TOR-br;
+  fx.lineCap='round'; fx.lineJoin='round';
+  fx.shadowColor=PW(.45*o.a); fx.shadowBlur=1.15*u;
+  function leg(t,k,al,w){ fx.strokeStyle=P(al);
+    const kx=o.x+Math.sin(t)*THI*d, ky=o.py+Math.cos(t)*THI;
+    const ax=kx+Math.sin(t-k)*SHN*d, ay=ky+Math.cos(t-k)*SHN;
+    fseg(o.x,o.py,kx,ky,w); fseg(kx,ky,ax,ay,w); fseg(ax,ay,ax+FT*d,ay,w*.9); }
+  function arm(t,e,al,w){ fx.strokeStyle=P(al);
+    const ex=nx+Math.sin(t)*UPA*d, ey=ny+Math.cos(t)*UPA;
+    const hx=ex+Math.sin(t+e)*FOA*d, hy=ey+Math.cos(t+e)*FOA;
+    fseg(nx,ny,ex,ey,w); fseg(ex,ey,hx,hy,w*.95); }
+  const W1=.78*u*ws, W0=.7*u*ws;
+  if(o.legs) leg(o.legs[1][0],o.legs[1][1],o.a*.5,W0);                 // 远腿
+  if(o.arms) arm(o.arms[1][0],o.arms[1][1],o.a*.5,W0);                 // 远臂
+  fx.strokeStyle=P(o.a*.95); fseg(o.x,o.py,nx,ny,.92*u*ws);            // 躯干
+  if(o.legs) leg(o.legs[0][0],o.legs[0][1],o.a*.95,W1);                // 近腿
+  fx.fillStyle=P(o.a*.95); fx.beginPath();
+  fx.arc(nx+d*(.16*u+(o.head?o.head[0]:0)), ny-(HED+.34*u)+(o.head?o.head[1]:0), HED,0,6.2832); fx.fill();
+  if(o.arms) arm(o.arms[0][0],o.arms[0][1],o.a*.95,W1);                // 近臂
+  fx.shadowBlur=0;
+  return {nx,ny};
+}
+/* —— 步态发生器 —— */
+function gaitRun(ph){ const sA=Math.sin(ph), sB=Math.sin(ph+Math.PI);
+  return { legs:[[ .95*sA, .5+1.35*Math.max(0,Math.sin(ph-1.15)) ],
+                 [ .95*sB, .5+1.35*Math.max(0,Math.sin(ph+Math.PI-1.15)) ]],
+           arms:[[ -.82*sA-.12, 1.9 ],[ -.82*sB-.12, 1.9 ]],
+           bob:.3*Math.sin(2*ph), lean:.3, head:[0,.07*Math.sin(2*ph)] }; }
+function gaitWalk(ph){ const sA=Math.sin(ph), sB=Math.sin(ph+Math.PI);
+  return { legs:[[ .5*sA, .16+.5*Math.max(0,Math.sin(ph-1.2)) ],
+                 [ .5*sB, .16+.5*Math.max(0,Math.sin(ph+Math.PI-1.2)) ]],
+           arms:[[ -.42*sA, .5 ],[ -.42*sB, .5 ]],
+           bob:.13*Math.sin(2*ph+1.5), lean:.06, head:[0,0] }; }
+
+/* —— 舞台公共件 —— */
+function ground(W,gy,a){ fx.strokeStyle=P(.2*a); fx.lineWidth=1;
+  fx.beginPath(); fx.moveTo(W*.07,gy); fx.lineTo(W*.93,gy); fx.stroke(); }
+function pool(cx,gy,u,a,rad){ const r=rad||8.5*u, g=fx.createRadialGradient(cx,gy,0,cx,gy,r);
+  g.addColorStop(0,PW(.075*a)); g.addColorStop(1,PW(0));
+  fx.save(); fx.translate(cx,gy); fx.scale(1,.22); fx.translate(-cx,-gy);
+  fx.fillStyle=g; fx.beginPath(); fx.arc(cx,gy,r,0,6.2832); fx.fill(); fx.restore(); }
+function dashes(W,gy,u,a,sp,s){ fx.strokeStyle=P(.13*a); fx.lineWidth=Math.max(1,.14*u);
+  const gap=4.6*u, off=((s*sp)%gap+gap)%gap;
+  for(let x=W*.07-off; x<W*.93; x+=gap){ if(x<W*.07) continue;
+    fx.beginPath(); fx.moveTo(x,gy+1); fx.lineTo(Math.min(x+1.5*u,W*.93),gy+1); fx.stroke(); } }
+function puffs(cx,gy,u,a,ph,freq,drift){            // 脚步扬尘：由相位反推，确定性
+  const k0=Math.floor(ph/Math.PI);
+  for(let i=0;i<4;i++){ const k=k0-i; if(k<2) continue;
+    const age=(ph-k*Math.PI)/(6.2832*freq); if(age>.75) continue;
+    const px=cx+((k%2)?1.1:-.4)*u - age*drift, r=(.22+age*2)*u, al=(1-age/.75)*.16*a;
+    fx.fillStyle=P(al); fx.beginPath(); fx.arc(px,gy-.15*u-age*.8*u,r,0,6.2832); fx.fill(); } }
+function sleeper(x0,u,gy,a,s){                      // 侧卧者（睡眠/恢复两幕共用）
+  const hy=gy-.72*u, br=.1*u*Math.sin(s*1.35);
+  fx.lineCap='round'; fx.shadowColor=PW(.4*a); fx.shadowBlur=u;
+  fx.strokeStyle=P(.95*a); fx.lineWidth=.92*u;
+  fx.beginPath(); fx.moveTo(x0-2.45*u,hy-.05*u);
+  fx.quadraticCurveTo(x0-1*u,hy-.62*u-br, x0+.45*u,hy); fx.stroke();          // 躯干呼吸弧
+  fseg(x0+.45*u,hy, x0+1.85*u,hy-1.05*u,.78*u);                               // 屈膝
+  fseg(x0+1.85*u,hy-1.05*u, x0+3.15*u,hy+.06*u,.78*u);
+  fseg(x0-2.45*u,hy-.05*u, x0-1.55*u,hy+.3*u,.72*u);                          // 枕臂
+  fseg(x0-1.55*u,hy+.3*u, x0-.55*u,hy+.28*u,.7*u);
+  fx.fillStyle=P(.95*a); fx.beginPath(); fx.arc(x0-3.3*u,hy-.28*u,.8*u,0,6.2832); fx.fill();
+  fx.shadowBlur=0;
+  return [x0-3.3*u, hy-.28*u];                                                 // 头心
+}
+function drawBook(x,y,u,open,glow,a,s,rings){       // 信号之书（open 1→0 合上）
+  if(glow>0){ const g=fx.createRadialGradient(x,y-.4*u,0,x,y-.4*u,2.6*u);
+    g.addColorStop(0,RD(.12*glow*a)); g.addColorStop(1,RD(0));
+    fx.fillStyle=g; fx.beginPath(); fx.arc(x,y-.4*u,2.6*u,0,6.2832); fx.fill(); }
+  if(rings && glow>0){ for(let j=0;j<2;j++){ const rt=((s/1.7)+j*.5)%1, rr=(.8+rt*3.6)*u;
+    fx.strokeStyle=RD((1-rt)*.3*glow*a); fx.lineWidth=Math.max(1,.13*u);
+    fx.beginPath(); fx.arc(x,y-.4*u,rr,0,6.2832); fx.stroke(); } }
+  fx.strokeStyle=P(.85*a); fx.lineCap='round';
+  const dy=.55*u*open+.04*u;
+  fseg(x,y, x-1.05*u, y-dy, .2*u);  fseg(x,y, x+1.05*u, y-dy, .2*u);          // 摊开的页
+  fseg(x-1.05*u,y-dy, x-1.05*u,y-dy+.3*u,.14*u); fseg(x+1.05*u,y-dy, x+1.05*u,y-dy+.3*u,.14*u);
+  fseg(x,y, x, y+.34*u, .2*u);                                                 // 书脊
+}
+function drawBubble(bx,by,u,a,seed){                 // 噪音对话泡
+  fx.strokeStyle=P(.6*a); fx.lineWidth=Math.max(1,.13*u);
+  rrect(bx-1.35*u,by-.85*u,2.7*u,1.7*u,.5*u); fx.stroke();
+  fseg(bx-1.1*u,by+.85*u, bx-1.6*u,by+1.45*u, Math.max(1,.12*u));             // 朝向小人的尾巴
+  fx.fillStyle=P(.6*a);
+  for(let j=0;j<3;j++){ fx.beginPath(); fx.arc(bx-.6*u+j*.6*u, by+.06*u*Math.sin(seed*7+j), .13*u,0,6.2832); fx.fill(); }
+}
+
+/* ════════ 十二幕 ════════ */
+const SC={};
+/* 奔跑（马拉松） */
+SC.run=function(s,a,E){ const u=E.u, gy=E.gy, cx=E.W*.5, f=1.45, ph=6.2832*f*s, g=gaitRun(ph);
+  pool(cx,gy,u,a); dashes(E.W,gy,u,a,9.5*u,s);
+  drawHuman({x:cx,py:gy-3.5*u+g.bob*u,u:u,dir:1,a:a,lean:g.lean,legs:g.legs,arms:g.arms,head:g.head});
+  puffs(cx,gy,u,a,ph,f,9.5*u); };
+/* 拉伸（赛前休整） */
+SC.stretch=function(s,a,E){ const u=E.u, gy=E.gy, cx=E.W*.5;
+  pool(cx,gy,u,a);
+  const rise=ez(Math.min(s/2.2,1)), sway=(s>2.2? .15*Math.sin((s-2.2)*.85):0);
+  const au=mixN(.25,2.75,rise), br=.12*u*Math.sin(s*1.3);
+  drawHuman({x:cx,py:gy-3.76*u,u:u,dir:1,a:a,lean:.03+sway*.25,br:br,
+    legs:[[.14,.06],[-.14,.06]], arms:[[au+sway*.3,.12],[au-sway*.3,.12]], head:[0,-br*.4]}); };
+/* 睡眠：记忆球从头颅出发，弧线搬运进"长期记忆之门"；"半路丢了"时一颗染朱坠灭 */
+SC.sleep=function(s,a,E){ const u=E.u, gy=E.gy, x0=E.W*.40, gx=x0+9.6*u;
+  pool(x0,gy,u,a); pool(gx,gy,u,a*.6,4*u);
+  const head=sleeper(x0,u,gy,a,s);
+  fx.strokeStyle=P(.55*a); const lw=Math.max(1,.12*u);                         // 门
+  fseg(gx-.65*u,gy, gx-.65*u,gy-3.5*u,lw); fseg(gx+.65*u,gy, gx+.65*u,gy-3.5*u,lw);
+  fseg(gx-.95*u,gy-3.5*u, gx+.95*u,gy-3.5*u,lw);
+  const gl=fx.createLinearGradient(gx,gy,gx,gy-3.5*u);
+  gl.addColorStop(0,PW(.10*a)); gl.addColorStop(1,PW(0));
+  fx.fillStyle=gl; fx.fillRect(gx-.62*u,gy-3.5*u,1.24*u,3.5*u);
+  const drops=momIn('drop',E.seg);
+  const p0=[head[0],head[1]-1*u], p1=[x0+3.6*u,gy-7.4*u], p2=[gx,gy-1.9*u];
+  for(let i=0;i<99;i++){ const ts=.4+i*1.15; if(ts>s) break; const age=s-ts; if(age>2.55) continue;
+    const abs=E.seg.from+ts, isDrop=drops.some(function(m){ return abs>m-1.45 && abs<m-.15; });
+    if(isDrop && age>1.2){                                                     // 半路掉落 → 染朱坠灭
+      const t2=age-1.2, q=qpt(p0,p1,p2,.5), al=Math.max(0,1-t2/.8)*a;
+      if(al<=0) continue;
+      fx.fillStyle=RD(.85*al); fx.shadowColor=RD(.6*al); fx.shadowBlur=.8*u;
+      fx.beginPath(); fx.arc(q[0]+t2*.8*u, q[1]+26*u*t2*t2, .27*u,0,6.2832); fx.fill(); fx.shadowBlur=0;
+      continue; }
+    const k=age/2.4, q=qpt(p0,p1,p2,k), al=Math.pow(Math.sin(Math.PI*cl01(k)),.7)*a;
+    fx.fillStyle=PW(.9*al); fx.shadowColor=PW(.7*al); fx.shadowBlur=.9*u;
+    fx.beginPath(); fx.arc(q[0],q[1],.26*u,0,6.2832); fx.fill(); fx.shadowBlur=0;
+    if(k>.93){ fx.strokeStyle=PW(Math.max(0,.5*a*(1-(k-.93)/.07))); fx.lineWidth=1;
+      fx.beginPath(); fx.arc(gx,gy-1.9*u,(.4+(k-.93)*12)*u,0,6.2832); fx.stroke(); } } };
+/* 带宽仪表：头顶弧表 100% → 75%，尾端朱砂闪烁 */
+SC.gauge=function(s,a,E){ const u=E.u, gy=E.gy, cx=E.W*.5;
+  pool(cx,gy,u,a);
+  const br=.1*u*Math.sin(s*1.3);
+  drawHuman({x:cx,py:gy-3.76*u,u:u,dir:1,a:a,lean:.02,br:br,
+    legs:[[.07,.05],[-.07,.05]], arms:[[.12,.3],[-.12,.3]]});
+  const c=[cx,gy-9.7*u], R=2.5*u, A0=195*Math.PI/180, SPAN=150*Math.PI/180;
+  fx.strokeStyle=P(.16*a); fx.lineWidth=.26*u; fx.lineCap='round';
+  fx.beginPath(); fx.arc(c[0],c[1],R,A0,A0+SPAN); fx.stroke();
+  let f=1; if(s>.5) f=1-.25*eo3((s-.5)/1.8);
+  if(s>2.3) f+= .01*Math.sin(s*21)*Math.exp(-(s-2.3)*.9);
+  fx.strokeStyle=RD(.85*a); fx.shadowColor=RD(.5*a); fx.shadowBlur=.8*u;
+  fx.beginPath(); fx.arc(c[0],c[1],R,A0,A0+SPAN*f); fx.stroke(); fx.shadowBlur=0;
+  const ta=A0+SPAN*f, tp=[c[0]+Math.cos(ta)*R, c[1]+Math.sin(ta)*R];
+  fx.fillStyle=RD(.9*a); fx.beginPath(); fx.arc(tp[0],tp[1],.2*u,0,6.2832); fx.fill();
+  for(let j=0;j<3;j++){ const ts=.7+j*.55, ag=s-ts; if(ag<0||ag>.6) continue;   // 流失火花
+    fx.fillStyle=RD((1-ag/.6)*.7*a); fx.beginPath();
+    fx.arc(tp[0]+ag*1.2*u, tp[1]+ag*ag*22*u, .12*u,0,6.2832); fx.fill(); } };
+/* 焦虑循环：困在虚线环里，追一本悬着的书 */
+SC.loop=function(s,a,E){ const u=E.u, gy=E.gy, cx=E.W*.48;
+  pool(cx,gy,u,a);
+  fx.save(); fx.strokeStyle=P(.3*a); fx.lineWidth=Math.max(1,.12*u);
+  fx.setLineDash([.9*u,.8*u]); fx.lineDashOffset=-s*2.6*u;
+  fx.beginPath(); fx.ellipse(cx,gy-.15*u,5.7*u,1.45*u,0,0,6.2832); fx.stroke();
+  fx.setLineDash([]); fx.restore();
+  const ph=6.2832*.95*s, g=gaitWalk(ph);
+  const c=s%3.6, r=c<.55?ez(c/.55): c<1.5?1 : c<2.1? 1-ez((c-1.5)/.6) : 0;     // 周期性伸手
+  const armN=[ mixN(g.arms[0][0],1.62,r), mixN(g.arms[0][1],.15,r) ];
+  drawHuman({x:cx,py:gy-3.72*u+g.bob*u,u:u,dir:1,a:a,lean:g.lean+r*.08,
+    legs:g.legs, arms:[armN,g.arms[1]], head:g.head});
+  drawBook(cx+4.8*u, gy-3.3*u+.22*u*Math.sin(s*1.7), u, 1, .8, a, s, false); };
+/* 第一，睡觉：侧卧呼吸 + 三格恢复条（工作记忆/情绪/注意力） */
+SC.restore=function(s,a,E){ const u=E.u, gy=E.gy, x0=E.W*.42;
+  pool(x0,gy,u,a);
+  sleeper(x0,u,gy,a,s);
+  const bars=momIn('bar',E.seg), bx=x0+5.4*u, by=gy-7.9*u, bw=4.6*u, bh=.5*u;
+  for(let j=0;j<3;j++){ const y=by+j*1.05*u;
+    fx.strokeStyle=P(.3*a); fx.lineWidth=Math.max(1,.1*u); rrect(bx,y,bw,bh,bh*.5); fx.stroke();
+    const m=bars[j];
+    if(m!==undefined && E.t>=m){ const fr=eo3((E.t-m)/.6);
+      fx.fillStyle=PW(.85*a); fx.shadowColor=PW(.6*a); fx.shadowBlur=.6*u;
+      rrect(bx+.08*u,y+.08*u,Math.max(.01,(bw-.16*u)*fr),bh-.16*u,(bh-.16*u)*.5); fx.fill(); fx.shadowBlur=0;
+      if(fr>=1 && E.t-m<1.1){ fx.strokeStyle=PW(Math.max(0,(1-(E.t-m-.6)/.5))*.5*a); fx.lineWidth=1;
+        rrect(bx-.2*u,y-.2*u,bw+.4*u,bh+.4*u,bh); fx.stroke(); } } } };
+/* 第二，动身体：缓步行走 */
+SC.walk=function(s,a,E){ const u=E.u, gy=E.gy, cx=E.W*.5, f=.95, ph=6.2832*f*s, g=gaitWalk(ph);
+  pool(cx,gy,u,a); dashes(E.W,gy,u,a,3.4*u,s);
+  drawHuman({x:cx,py:gy-3.72*u+g.bob*u,u:u,dir:1,a:a,lean:g.lean,legs:g.legs,arms:g.arms,head:g.head,
+    br:.06*u*Math.sin(s*1.2)});
+  puffs(cx,gy,u,a,ph,f,3.4*u); };
+/* 第三，做两道擅长的题：伏案书写，朱砂对勾升起 */
+SC.desk=function(s,a,E){ const u=E.u, gy=E.gy, cx=E.W*.46, dy=gy-2.55*u;
+  pool(cx+2*u,gy,u,a,9.5*u);
+  fx.strokeStyle=P(.6*a);                                                       // 桌
+  fseg(cx+.5*u,dy, cx+5.4*u,dy,.2*u);
+  fseg(cx+.9*u,dy, cx+.9*u,gy,Math.max(1,.12*u)); fseg(cx+5*u,dy, cx+5*u,gy,Math.max(1,.12*u));
+  fx.strokeStyle=P(.4*a); fseg(cx+2.1*u,dy-.1*u, cx+3.5*u,dy-.1*u,Math.max(1,.1*u)); // 卷面
+  const o=drawHuman({x:cx,py:gy-2.16*u,u:u,dir:1,a:a,lean:.2,
+    legs:[[1.42,1.5],[1.18,1.65]], arms:null, head:[0,.05*u*Math.sin(s*1.05)+.06*u]});
+  fx.strokeStyle=P(.5*a);                                                        // 搁着的远臂
+  fseg(o.nx,o.ny, o.nx-.2*u,o.ny+1.3*u,.7*u); fseg(o.nx-.2*u,o.ny+1.3*u, cx+1.7*u,dy-.1*u,.66*u);
+  fx.strokeStyle=P(.95*a);                                                       // 书写的近臂
+  const hx=cx+2.55*u+.16*u*Math.cos(s*6.5), hy=dy-.12*u+.06*u*Math.sin(s*13);
+  fseg(o.nx,o.ny, o.nx+.45*u,o.ny+1.35*u,.78*u); fseg(o.nx+.45*u,o.ny+1.35*u, hx,hy,.74*u);
+  const cks=momIn('check',E.seg);
+  for(let ci=0;ci<cks.length;ci++){ const ag=E.t-cks[ci]; if(ag<0||ag>1.9) continue;  // 对勾
+    const pop=eo3(Math.min(ag/.4,1)), al=(1-ag/1.9)*a, ox=cx+3.1*u, oy=dy-3.2*u-ag*1.5*u;
+    fx.save(); fx.translate(ox,oy); fx.scale(pop,pop);
+    fx.strokeStyle=RD(.9*al); fx.shadowColor=RD(.55*al); fx.shadowBlur=.7*u;
+    fx.lineCap='round'; fx.lineWidth=.42*u;
+    fx.beginPath(); fx.moveTo(-.75*u,.05*u); fx.lineTo(-.15*u,.6*u); fx.lineTo(1.05*u,-.6*u); fx.stroke();
+    fx.restore(); fx.shadowBlur=0; } };
+/* 第四，谁都别聊：对话泡飘来，触界即碎；小人抱臂而立 */
+SC.noise=function(s,a,E){ const u=E.u, gy=E.gy, fp=E.W*.40, popX=fp+6*u, spd=7.6*u;
+  pool(fp,gy,u,a);
+  drawHuman({x:fp,py:gy-3.76*u,u:u,dir:1,a:a,lean:.02,br:.1*u*Math.sin(s*1.25),
+    legs:[[.09,.05],[-.09,.05]], arms:[[.5,2.45],[.36,2.55]]});
+  const tPop=(E.W*.94-popX)/spd;
+  for(let i=0;i<99;i++){ const ts=.55+i*1.32; if(ts>s) break; const age=s-ts;
+    const pa=age-tPop; if(pa>.32) continue;
+    const byB=gy-6.3*u-hsh(i*3+1)*3.2*u, by=byB+.3*u*Math.sin(s*1.9+i);
+    if(pa<0){ drawBubble(E.W*.94-age*spd, by, u, a*.85, i); }
+    else { const k=pa/.32, sc2=1+.5*k;                                          // 碎裂
+      fx.save(); fx.translate(popX,by); fx.scale(sc2,sc2); fx.translate(-popX,-by);
+      drawBubble(popX,by,u,a*(1-k),i); fx.restore();
+      fx.fillStyle=P((1-k)*.7*a);
+      for(let q2=0;q2<4;q2++){ const an=q2*1.57+.4;
+        fx.beginPath(); fx.arc(popX+Math.cos(an)*k*2.2*u, by+Math.sin(an)*k*2.2*u, .1*u,0,6.2832); fx.fill(); } } }
+  const shs=momIn('shield',E.seg);
+  for(let si=0;si<shs.length;si++){ const ag=E.t-shs[si]; if(ag<0||ag>.7) continue; // 静音环
+    fx.strokeStyle=P((1-ag/.7)*.4*a); fx.lineWidth=Math.max(1,.14*u);
+    fx.beginPath(); fx.arc(popX,gy-6.4*u,(.5+ag*8)*u,0,6.2832); fx.stroke(); } };
+/* 第五，信号不是指令：朱光之书脉动，手伸出又收回；"放下书"后合上熄灭 */
+SC.signal=function(s,a,E){ const u=E.u, gy=E.gy, fp=E.W*.34, bx=fp+6.6*u;
+  pool(fp,gy,u,a); pool(bx,gy,u,a*.7,4.5*u);
+  const md=momIn('bookdown',E.seg), m=md.length?md[0]:undefined;
+  const cAge=(m!==undefined && E.t>=m)? E.t-m : -1;
+  const openK=cAge<0?1:1-ez(cAge/.8), glowK=cAge<0?1:Math.max(0,1-cAge/.7);
+  fx.strokeStyle=P(.5*a); fseg(bx,gy, bx,gy-2.4*u,.4*u);                         // 台座
+  drawBook(bx,gy-2.65*u,u,openK,glowK,a,s,cAge<0);
+  let armN=[.12,.3], hd=[0,0], br=.1*u*Math.sin(s*1.3);
+  if(cAge<0){ const c=s%5.8, r=c<.9?ez(c/.9): c<1.6?1 : c<2.7? 1-ez((c-1.6)/1.1) : 0;
+    armN=[ mixN(.12,1.55,r), mixN(.3,.18,r) ]; }
+  else { hd=[-.12*u,.02*u]; br=.14*u*Math.sin(s*.9); }                           // 收手·转头·深呼吸
+  drawHuman({x:fp,py:gy-3.76*u,u:u,dir:1,a:a,lean:.03,br:br,
+    legs:[[.08,.05],[-.08,.05]], arms:[armN,[-.1,.28]], head:hd}); };
+/* 什么都不做：静坐，尘光缓缓上升 */
+SC.calm=function(s,a,E){ const u=E.u, gy=E.gy, cx=E.W*.5, py=gy-1.12*u;
+  pool(cx,gy,u,a);
+  const br=.15*u*Math.sin(s*.85), nx=cx, ny=py-2.9*u-br;
+  fx.lineCap='round'; fx.shadowColor=PW(.45*a); fx.shadowBlur=u;
+  fx.strokeStyle=P(.5*a);                                                        // 远侧
+  fseg(cx,py, cx+1.9*u,gy-.5*u,.7*u); fseg(cx+1.9*u,gy-.5*u, cx-.6*u,gy-.22*u,.66*u);
+  fseg(nx,ny, nx-1.25*u,py-.7*u,.66*u); fseg(nx-1.25*u,py-.7*u, cx-1.75*u,gy-.58*u,.62*u);
+  fx.strokeStyle=P(.95*a); fseg(cx,py,nx,ny,.92*u);                              // 躯干
+  fseg(cx,py, cx-1.9*u,gy-.5*u,.78*u); fseg(cx-1.9*u,gy-.5*u, cx+.6*u,gy-.22*u,.74*u);
+  fseg(nx,ny, nx+1.25*u,py-.7*u,.74*u); fseg(nx+1.25*u,py-.7*u, cx+1.75*u,gy-.58*u,.7*u);
+  fx.fillStyle=P(.95*a); fx.beginPath(); fx.arc(nx,ny-1.14*u+.1*u,.8*u,0,6.2832); fx.fill();
+  fx.shadowBlur=0;
+  for(let j=0;j<3;j++){ const yr=((s*.06+hsh(j*7))%1);                           // 上升尘光
+    const mx=cx+(hsh(j*3)-.5)*7*u+Math.sin(s*.5+j)*.5*u, my=gy-1*u-yr*7*u;
+    fx.fillStyle=PW(Math.sin(Math.PI*yr)*.22*a); fx.beginPath(); fx.arc(mx,my,.14*u,0,6.2832); fx.fill(); } };
+/* 起跑：蹲踞 → "聪明事"落锤瞬间发令，冲出画面 */
+SC.start=function(s,a,E){ const u=E.u, gy=E.gy, x0=E.W*.44;
+  const Ls=momIn('launch',E.seg), L=Ls.length?Ls[0]:undefined;
+  const q=(L!==undefined && E.t>=L)? E.t-L : -1;
+  fx.strokeStyle=P(.5*a);                                                        // 起跑线
+  fseg(x0+2.6*u,gy-.04*u, x0+2.6*u,gy-1*u, Math.max(1,.16*u));
+  fseg(x0+2.2*u,gy-.02*u, x0+3.0*u,gy-.02*u, Math.max(1,.16*u));
+  if(q<0){                                                                       // 蹲踞·微晃
+    const sw=.05*u*Math.sin(s*1.15), py=gy-2.2*u+sw*.3;
+    pool(x0+1*u,gy,u,a);
+    const o=drawHuman({x:x0,py:py,u:u,dir:1,a:a,lean:1.25,
+      legs:[[1.3,2.1],[-.95,.1]], arms:null, head:[.05*u,.18*u]});
+    fx.strokeStyle=P(.95*a); fseg(o.nx,o.ny, x0+2.95*u, gy-.22*u,.74*u);         // 撑地双臂
+    fx.strokeStyle=P(.5*a);  fseg(o.nx,o.ny, x0+2.35*u, gy-.22*u,.66*u);
+  } else {                                                                       // 发令 → 加速冲出
+    const r=ez(q/.75), f=1.5+1.3*ez(q/1.2), ph=6.2832*f*q, g=gaitRun(ph);
+    const xq=x0+19*u*(q-.55*(1-Math.exp(-q/.55)));
+    pool(xq,gy,u,a);
+    const py=mixN(gy-2.2*u, gy-3.5*u+g.bob*u, r), lean=mixN(1.25,.32,r);
+    const legs=[[ mixN(1.3,g.legs[0][0],r), mixN(2.1,g.legs[0][1],r) ],
+                [ mixN(-.95,g.legs[1][0],r), mixN(.1,g.legs[1][1],r) ]];
+    const arms=[[ mixN(.15,g.arms[0][0],r), mixN(.2,g.arms[0][1],r) ],
+                [ mixN(.05,g.arms[1][0],r), mixN(.2,g.arms[1][1],r) ]];
+    const o=drawHuman({x:xq,py:py,u:u,dir:1,a:a,lean:lean,legs:legs,arms:arms,
+      head:[0,(g.head?g.head[1]:0)*r]});
+    if(q>.35){ const ln=(2.5+3*ez(q))*u;                                         // 速度线
+      fx.strokeStyle=P(.14*a); const lw2=Math.max(1,.12*u);
+      fseg(xq-1.4*u-ln, o.ny-.3*u, xq-1.4*u, o.ny-.3*u, lw2);
+      fseg(xq-1.7*u-ln*.8, o.ny+.7*u, xq-1.7*u, o.ny+.7*u, lw2);
+      fseg(xq-1.2*u-ln*.6, o.ny+1.7*u, xq-1.2*u, o.ny+1.7*u, lw2); }
+    for(let j=0;j<7;j++){ const qj=q-j*.16; if(qj<.25) continue;                 // 沿途扬尘
+      const age=j*.16; if(age>.75) continue;
+      const xj=x0+19*u*(qj-.55*(1-Math.exp(-qj/.55)));
+      fx.fillStyle=P((1-age/.75)*.14*a);
+      fx.beginPath(); fx.arc(xj-.6*u, gy-.15*u-age*.8*u, (.2+age*1.8)*u,0,6.2832); fx.fill(); }
+  } };
+
+/* —— 每帧调度：算激活段 → 画场景 → 输出 SC_A（驱动文字上移与运镜阻尼）—— */
+function segAlpha(g,t){ const i=ez((t-g.from)/.55), o=ez((g.to-t)/.55); return Math.max(0,Math.min(i,o)); }
+function updScenes(t){
+  if(!fx){ SC_A=0; return; }
+  const r=stage.getBoundingClientRect(), W=r.width, H=r.height;
+  if(!W||!H){ SC_A=0; return; }
+  // 每帧自校准像素后备与变换：抗浏览器缩放/DPR切换/窗口尺寸变化，杜绝整层错位
+  const dpr=Math.min(2,window.devicePixelRatio||1),
+        bw=Math.max(1,Math.round(W*dpr)), bh=Math.max(1,Math.round(H*dpr));
+  if(figC.width!==bw||figC.height!==bh){ figC.width=bw; figC.height=bh; }
+  fx.setTransform(dpr,0,0,dpr,0,0);
+  fx.clearRect(0,0,W,H);
+  const u=H*.0200, gy=H*.800;
+  let amax=0; const act=[];
+  for(const g of SEGS){ const al=segAlpha(g,t); if(al>.004){ act.push([g,al]); if(al>amax) amax=al; } }
+  SC_A=amax;
+  if(act.length){
+    const px=(camX||0)*.4*W/100, py2=(camY||0)*.4*H/100;       // 与浮尘同向的轻视差 → 像"在景里"
+    fx.save(); fx.translate(px,py2);
+    ground(W,gy,amax);
+    for(const ga of act){ const fn=SC[ga[0].sc];
+      if(fn) fn(t-ga[0].from, ga[1], {W:W,H:H,u:u,gy:gy,t:t,seg:ga[0]}); }
+    fx.restore();
+  }
+  // 发令瞬间的一次性冲击（横扫耀光+震镜+朱砂热度）；跨帧检测，拖动进度也能重触发
+  const Ls=MOMS.launch||[];
+  for(let i2=0;i2<Ls.length;i2++){ const m=Ls[i2];
+    if(lastT>=0 && lastT<m && t>=m && !SC_fired['L'+m.toFixed(2)]){
+      SC_fired['L'+m.toFixed(2)]=1; sceneKick(); heat=Math.max(heat,.7); glow=Math.max(glow,.85); } }
+  lastT=t;
+}
+
+/* ===== 单文件成片模式 boot:点击封面 → 内置时码时钟播放(无外部音视频) ===== */
+useAudio=false;            // 走内置时码时钟,字幕节奏由 SRT 时间戳驱动
+rebuild();
+requestAnimationFrame(frame);
+var __started=false, __cover=document.getElementById('filmCover'), __bg=document.getElementById('bgvid');
+function __go(){
+  if(__started) return; __started=true;
+  playing=true; clk=0; prevT=0;
+  if(__bg){ __bg.style.opacity='1'; if(__bg.play) __bg.play().catch(function(){}); }   // 电影感背景视频淡入并播放
+  loader.classList.add('hidden');
+  if(__cover){ __cover.style.transition='opacity .5s'; __cover.style.opacity='0'; setTimeout(function(){__cover.style.display='none';},500); }
+}
+if(__cover) __cover.addEventListener('click',__go);
+var __rz; addEventListener('resize',function(){ cancelAnimationFrame(__rz); __rz=requestAnimationFrame(function(){ sizeDust(); var w=active&&active.firstElementChild; if(w) fit(w); }); });
+addEventListener('keydown',function(ev){ if(ev.code==='Space'){ ev.preventDefault(); if(!__started)__go(); else playing=!playing; } });
+</script>
+</body>
+</html>

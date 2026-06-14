@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>m-guide 独立验收页(窗口 A 自测用,不进总装)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000'/%3E%3C/svg%3E">
+<!-- base 指回 v2/ 根:data-img 与下方资源路径即与 index.html 同口径 -->
+<base href="../../">
+<script>document.documentElement.className += ' fx-js';</script>
+<link rel="stylesheet" href="base/base.css">
+<link rel="stylesheet" href="sections/m-guide/m-guide.css">
+<style>
+.t-spacer{height:110vh;background:var(--fx-k);color:var(--fx-g);display:flex;align-items:flex-end;padding:24px;}
+.t-target{height:120vh;background:var(--fx-w);color:var(--fx-k);padding:24px;border-top:4px solid var(--fx-k);}
+.t-target--dark{background:var(--fx-k);color:var(--fx-w);}
+</style>
+</head>
+<body class="fx-body">
+<div class="t-spacer"><p class="fx-label">↓ 滚动进章(模拟品牌幕收尾)</p></div>
+
+<!-- ===== fragment 原样(与 m-guide.html 保持一致)===== -->
+<!--#GUIDE-FRAGMENT-START-->
+<section class="m-guide" id="sec-guide" data-title="使用指南">
+  <div class="m-guide__pin">
+    <header class="m-guide__head">
+      <p class="m-guide__kicker fx-label fx-hide">GUIDE — 使用指南</p>
+      <h2 class="m-guide__title fx-hide">树成林 · 学生使用指南</h2>
+      <p class="m-guide__sub fx-hide">说一句话,以下都能拿到。</p>
+    </header>
+    <div class="m-guide__body">
+      <ol class="m-guide__list">
+        <li><a class="m-guide__row fx-hide" href="#chap-02" data-target="#chap-02" data-chapter="02"
+               data-img="sections/m-web/assets/shots/file-zero2one.jpg">
+          <span class="m-guide__num fx-num">01</span>
+          <span class="m-guide__name">顶级审美的网站</span>
+          <span class="m-guide__desc">任何一个学生,给你一个能上线的网站</span>
+          <span class="m-guide__tag fx-label">→ 02 作品</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#chap-01" data-target="#chap-01" data-chapter="01"
+               data-img="sections/m-web/assets/shots/cube-03-portrait-archive.jpg">
+          <span class="m-guide__num fx-num">02</span>
+          <span class="m-guide__name">个性写真</span>
+          <span class="m-guide__desc">没有摄影师,整本杂志级写真</span>
+          <span class="m-guide__tag fx-label">→ 01 写真</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#chap-03" data-target="#chap-03" data-chapter="03"
+               data-img="sections/m-video/assets/gen-01-poster.jpg">
+          <span class="m-guide__num fx-num">03</span>
+          <span class="m-guide__name">一键产出视频</span>
+          <span class="m-guide__desc">AI 生视频 / AI 代码视频,两条流水线</span>
+          <span class="m-guide__tag fx-label">→ 03 视频</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case2" data-target="#msk-case2" data-chapter="05"
+               data-img="sections/m-skill/assets/poster-bot.jpg">
+          <span class="m-guide__num fx-num">04</span>
+          <span class="m-guide__name">微信转录与需求分析</span>
+          <span class="m-guide__desc">零散聊天,变成需求单</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case4" data-target="#msk-case4" data-chapter="05"
+               data-img="sections/m-skill/assets/poster-clip-cut.jpg">
+          <span class="m-guide__num fx-num">05</span>
+          <span class="m-guide__name">剪辑工具与一键出片</span>
+          <span class="m-guide__desc">口播素材进,成片出</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case1" data-target="#msk-case1" data-chapter="05"
+               data-img="sections/m-skill/assets/poster-xhs.jpg">
+          <span class="m-guide__num fx-num">06</span>
+          <span class="m-guide__name">小红书采集与选题</span>
+          <span class="m-guide__desc">关键词进去,选题库出来</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case3" data-target="#msk-case3" data-chapter="05"
+               data-img="sections/m-skill/assets/poster-kb.jpg">
+          <span class="m-guide__num fx-num">07</span>
+          <span class="m-guide__name">知识库与内容沉淀</span>
+          <span class="m-guide__desc">一堆资料,长成分类好的案例库</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-case6" data-target="#msk-case6" data-chapter="05"
+               data-img="sections/m-skill/assets/collage-shulin.jpg">
+          <span class="m-guide__num fx-num">08</span>
+          <span class="m-guide__name">整首成歌 / 海报 / 文案</span>
+          <span class="m-guide__desc">词曲、合辑海报、公众号长文,一句话起稿</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 案例</span>
+        </a></li>
+        <li><a class="m-guide__row fx-hide" href="#msk-list" data-target="#msk-list" data-chapter="05"
+               data-img="sections/m-skill/assets/kb-screenshot2.jpg">
+          <span class="m-guide__num fx-num">09</span>
+          <span class="m-guide__name">调研 · 访谈 · 再造新技能</span>
+          <span class="m-guide__desc">市场调研、访谈提纲、论文级长文;缺什么,造什么</span>
+          <span class="m-guide__tag fx-label">→ 技能 · 详解</span>
+        </a></li>
+      </ol>
+      <figure class="m-guide__peek" aria-hidden="true">
+        <img alt="" decoding="async">
+      </figure>
+    </div>
+  </div>
+</section>
+<!--#GUIDE-FRAGMENT-END-->
+
+<!-- 假目标章:验证现量 offsetTop 跳转 -->
+<section class="t-target" id="chap-01" data-chapter="01"><p class="fx-label">假 01 写真章</p></section>
+<section class="t-target t-target--dark" id="chap-02" data-chapter="02"><p class="fx-label">假 02 作品章</p></section>
+<section class="t-target" id="chap-03" data-chapter="03"><p class="fx-label">假 03 视频章</p></section>
+<section class="t-target t-target--dark" id="msk-case2" data-chapter="05"><p class="fx-label">假 技能·案例2(微信)</p></section>
+
+<script src="base/vendor/gsap.min.js"></script>
+<script src="base/vendor/ScrollTrigger.min.js"></script>
+<script src="base/vendor/lenis.min.js"></script>
+<script src="base/fx.js"></script>
+<script src="sections/m-guide/m-guide.js"></script>
+</body>
+</html>

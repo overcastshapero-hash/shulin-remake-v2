@@ -1,0 +1,27 @@
+<!-- ============================================================
+     m-slogan.html — 巨字短幕(窗口 A,自序章拆出的独立 fragment)
+     约 80vh,黑底白巨字 + 指令行情带。
+     【总装插桩位置】v2/index.html:
+       1. markup:插在 01 写真章 </section>(#chap-01)之后、
+          02 作品章 <section class="m-web">(#chap-02)之前;
+       2. <head> 加:<link rel="stylesheet" href="sections/m-slogan/m-slogan.css">
+       3. 底部脚本区在 m-intro.js 之后加:
+          <script src="sections/m-slogan/m-slogan.js"></script>
+     依赖:base/base.css + base/fx.js(revealText/marquee)
+     ============================================================ -->
+<section class="m-slogan" id="sec-slogan" data-title="标准化">
+  <div class="m-slogan__inner">
+    <h2 class="m-slogan__title fx-hide">
+      <span class="m-slogan__title-line">标准化生产。</span>
+      <span class="m-slogan__title-line">顶级交付。</span>
+    </h2>
+    <p class="m-slogan__sub fx-hide">网站、视频、写真、歌。每一件,都是用 AI 当场做出来的。</p>
+  </div>
+  <div class="m-slogan__tape">
+    <span class="m-slogan__tape-item">"把这份母亲节祝福做成一个会动、配轻音乐的网页"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把我这段口播音频做成能录屏发抖音的视频"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把我的写真做成一整本不同风格的合辑海报"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"用婚恋法律去小红书把爆款笔记扒出来整理成选题库"</span><span class="m-slogan__tape-sep">✦</span>
+    <span class="m-slogan__tape-item">"把这段微信聊天整理成需求单和下一步行动"</span><span class="m-slogan__tape-sep">✦</span>
+  </div>
+</section>

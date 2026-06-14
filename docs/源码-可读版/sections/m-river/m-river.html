@@ -1,0 +1,35 @@
+<!-- ============================================================
+  m-river.html — 05 章「档案」素材河(窗口 D 产出)
+  用本 <section> 整体替换 index.html 里 .v2-slot[data-slot="m-river"];
+  <head> 加 sections/m-river/m-river.css;fx.js 之后加 m-river.js。
+  瘦身刀(总装若嫌长):m-river.js 顶部 CLUSTERS 删簇即可,其余自适应。
+  ============================================================ -->
+<section class="m-river" id="chap-04" data-chapter="04" data-title="04 素材河">
+
+  <!-- 章头(黑底直切,上一章→素材河直接背景切换;章号以总装 index.html 为准) -->
+  <header class="m-river__head">
+    <p class="m-river__kicker fx-label fx-hide"><span class="fx-chapnum">04</span> — 档案 · RAW ARCHIVE</p>
+    <h2 class="m-river__title fx-display fx-hide">素材河</h2>
+    <p class="m-river__sub fx-label fx-label--dim fx-hide">精选成品顺流而下 · 全部走同一条产线</p>
+  </header>
+
+  <!-- 河道:pin 层(中心字标 + 左下元数据)+ 三个绝对层由 JS 注入 -->
+  <div class="m-river__stream" id="riverStream">
+    <div class="m-river__pin">
+      <div class="m-river__mark fx-display" id="riverMark" aria-hidden="true">
+        <span class="m-river__mark-line">标准化</span>
+        <span class="m-river__mark-line m-river__mark-line--2">量产</span>
+        <span class="m-river__mark-line m-river__mark-line--3">顶级内容。</span>
+      </div>
+      <div class="m-river__meta">
+        <p class="m-river__meta-line fx-label" id="riverMeta"></p>
+        <p class="m-river__meta-note" id="riverMetaNote"></p>
+      </div>
+    </div>
+    <!-- .m-river__layer--far / --near / --tag ← m-river.js -->
+  </div>
+
+  <!-- 红字光标随动标签(只在 live 图块上出现) -->
+  <div class="m-river__cursor fx-label" id="riverCursor" aria-hidden="true">查看 ↗</div>
+
+</section>

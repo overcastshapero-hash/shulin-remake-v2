@@ -1,0 +1,121 @@
+/* ============================================================
+   m-guide.css — 树成林 · 学生使用指南(窗口 A,全站总目录)
+   黑底白字编号目录(编号红=契约跳色);hover 整行反白 +
+   右侧固定预览(禁止跟随鼠标)。pin ≤200vh。
+   只动 transform/opacity;缓动 var(--fx-ease);前缀 m-guide。
+   ============================================================ */
+
+.m-guide{
+  position:relative;
+  background:var(--fx-k);color:var(--fx-w);
+}
+.m-guide__pin{
+  height:100vh;height:100svh;
+  display:flex;flex-direction:column;
+  padding:calc(var(--fx-pad) + 44px) var(--fx-pad) var(--fx-pad);
+  overflow:hidden;
+}
+
+/* ---------- 章头 ---------- */
+.m-guide__head{margin-bottom:4vh;}
+.m-guide__kicker{margin:0 0 12px;color:var(--fx-g);}
+.m-guide__title{
+  margin:0;
+  font-family:var(--fx-sans);font-weight:900;
+  font-size:clamp(34px,4.6vw,72px);
+  line-height:1.06;letter-spacing:-.04em;
+  color:var(--fx-w);
+}
+.m-guide__sub{
+  margin:1.6vh 0 0;
+  font-family:var(--fx-sans);font-weight:400;
+  font-size:clamp(14px,1.3vw,19px);
+  line-height:1.7;color:var(--fx-g);
+}
+
+/* ---------- 目录 + 固定预览 ---------- */
+.m-guide__body{
+  flex:1;min-height:0;
+  display:flex;gap:clamp(24px,4vw,72px);
+  align-items:stretch;
+}
+.m-guide__list{
+  flex:1;min-width:0;
+  margin:0;padding:0;list-style:none;
+  display:flex;flex-direction:column;justify-content:space-evenly;
+}
+.m-guide__row{
+  display:flex;align-items:baseline;gap:1.2em;
+  padding:.55em .6em;
+  border-top:1px solid rgba(255,255,255,.18);
+  text-decoration:none;color:inherit;
+  cursor:pointer;
+  transition:background .25s var(--fx-ease),color .25s var(--fx-ease);
+}
+.m-guide__list li:last-child .m-guide__row{
+  border-bottom:1px solid rgba(255,255,255,.18);
+}
+.m-guide__num{
+  flex:none;width:2.4ch;
+  font-family:var(--fx-mono);font-weight:700;font-size:12px;
+  letter-spacing:.08em;
+  color:var(--fx-r); /* 编号红 = 契约跳色白名单 */
+}
+.m-guide__name{
+  flex:none;
+  font-family:var(--fx-sans);font-weight:900;
+  font-size:clamp(18px,2.1vw,30px);
+  letter-spacing:-.02em;line-height:1.25;
+}
+.m-guide__desc{
+  flex:1;min-width:0;
+  font-family:var(--fx-sans);font-weight:400;
+  font-size:clamp(12px,1.05vw,15px);
+  color:var(--fx-g);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.m-guide__tag{
+  flex:none;margin:0;
+  color:var(--fx-g);
+}
+/* hover 整行反白(编号保持红) */
+.m-guide__row:hover,
+.m-guide__row:focus-visible{
+  background:var(--fx-w);color:var(--fx-k);
+  outline:none;
+}
+.m-guide__row:hover .m-guide__desc,
+.m-guide__row:hover .m-guide__tag,
+.m-guide__row:focus-visible .m-guide__desc,
+.m-guide__row:focus-visible .m-guide__tag{color:var(--fx-k);}
+
+/* 右侧固定预览:位置写死,不跟随鼠标 */
+.m-guide__peek{
+  flex:none;width:clamp(240px,26vw,420px);
+  margin:0;align-self:center;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  opacity:0;
+  transition:opacity .3s var(--fx-ease);
+  pointer-events:none;
+}
+.m-guide__peek.is-on{opacity:1;}
+.m-guide__peek img{
+  width:100%;height:100%;object-fit:cover;object-position:top;
+}
+
+/* ---------- reduced-motion / 无JS:静态全显 ---------- */
+.fx-reduced .m-guide__pin{height:auto;min-height:100vh;}
+.fx-reduced .m-guide__peek,
+html:not(.fx-js) .m-guide__peek{display:none;}
+
+@media (max-width:900px){
+  .m-guide__peek{display:none;}
+  .m-guide__desc{display:none;}
+  .m-guide__row{flex-wrap:wrap;row-gap:2px;}
+}
+
+/* 第七轮:疏松化覆写(用户:第一页太拥挤) */
+.m-guide__head{margin-bottom:7vh;}
+.m-guide__row{padding:1.05em .6em;}
+.m-guide__title{margin-bottom:.3em;}

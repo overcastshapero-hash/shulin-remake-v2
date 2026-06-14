@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>语言的力量 — The Power of Language</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;0,6..96,900;1,6..96,400;1,6..96,900&family=Space+Grotesk:wght@400;500;700&family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;500;700;900&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#ff3d7f;
+  --blue:#1840ff;
+  --yellow:#ffd60a;
+  --cream:#f3eee4;
+  --ink:#0a0a0a;
+  --red:#e63946;
+  --green:#0fb37b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--cream);color:var(--ink);overflow-x:hidden}
+body{
+  font-family:"Noto Serif SC","Bodoni Moda",Georgia,serif;
+  font-size:18px;line-height:1.7;
+  cursor:none;
+}
+body *{cursor:none}
+@media (max-width:760px){
+  body,body *{cursor:auto}
+  .cursor,.cursor-ring{display:none}
+}
+::selection{background:var(--pink);color:var(--cream)}
+img{max-width:100%;display:block}
+
+/* ========== custom cursor ========== */
+.cursor{
+  position:fixed;top:0;left:0;
+  width:18px;height:18px;
+  background:var(--cream);
+  border-radius:50%;
+  pointer-events:none;z-index:9999;
+  mix-blend-mode:difference;
+  transition:width .28s cubic-bezier(.2,.8,.2,1),height .28s cubic-bezier(.2,.8,.2,1),background .2s,mix-blend-mode 0s linear .15s;
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Space Grotesk",sans-serif;font-size:0;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);
+  will-change:transform;
+}
+.cursor.big{
+  width:84px;height:84px;
+  background:var(--pink);
+  mix-blend-mode:normal;
+  transition:width .28s cubic-bezier(.2,.8,.2,1),height .28s cubic-bezier(.2,.8,.2,1),background .2s,mix-blend-mode 0s;
+}
+.cursor.big::after{content:attr(data-label);font-size:11px;color:var(--cream);white-space:nowrap}
+.cursor.click{width:36px;height:36px;background:var(--yellow);mix-blend-mode:normal}
+.cursor-ring{
+  position:fixed;top:0;left:0;
+  width:46px;height:46px;
+  border:2px solid var(--cream);
+  border-radius:50%;
+  pointer-events:none;z-index:9998;
+  mix-blend-mode:difference;
+  transition:width .35s cubic-bezier(.2,.8,.2,1),height .35s cubic-bezier(.2,.8,.2,1),opacity .3s,border-color .3s;
+  will-change:transform;
+}
+.cursor-ring.hide{opacity:0}
+
+/* ========== sticky nav / progress ========== */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:18px 28px;font-family:"Space Grotesk",sans-serif;font-size:12px;letter-spacing:.18em;text-transform:uppercase;mix-blend-mode:difference;color:#fff;pointer-events:none}
+.topbar a{color:inherit;text-decoration:none;pointer-events:auto;border-bottom:1px solid transparent;transition:border-color .2s}
+.topbar a:hover{border-color:#fff}
+.progress{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--pink);z-index:60;transition:width .1s linear}
+
+/* ========== hero ========== */
+.hero{
+  min-height:100vh;background:var(--ink);color:var(--cream);
+  position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:120px 6vw 80px;
+}
+.hero .meta{font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--yellow);margin-bottom:30px;display:flex;gap:24px;flex-wrap:wrap}
+.hero h1{
+  font-family:"Bodoni Moda","Noto Serif SC",serif;
+  font-weight:900;
+  font-size:clamp(70px,15vw,260px);
+  line-height:.86;letter-spacing:-.02em;
+  font-style:italic;
+}
+.hero h1 .word{display:inline-block;transition:transform .4s cubic-bezier(.2,.8,.2,1),color .3s}
+.hero h1 .word:hover{transform:translateY(-12px) rotate(-3deg);color:var(--pink)}
+.hero h1 .accent{color:var(--pink);font-style:normal;font-family:"Noto Serif SC",serif}
+.hero h1 .accent2{color:var(--yellow);font-style:normal;font-family:"Noto Serif SC",serif}
+.hero .sub{margin-top:38px;font-family:"Space Grotesk",sans-serif;font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#a89e8c;display:flex;align-items:center;gap:18px}
+.hero .sub .dot{width:8px;height:8px;background:var(--pink);border-radius:50%;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
+
+.hero .opening{
+  position:absolute;right:6vw;bottom:8vh;max-width:420px;
+  border-left:3px solid var(--yellow);padding:8px 0 8px 22px;
+  font-family:"Noto Serif SC",serif;font-size:17px;line-height:1.7;color:#d6cdb9;
+}
+.hero .scroll-hint{position:absolute;left:6vw;bottom:6vh;font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--cream);display:flex;align-items:center;gap:10px}
+.hero .scroll-hint::before{content:"";width:60px;height:1px;background:var(--cream);animation:slide 2s infinite}
+@keyframes slide{0%{transform-origin:left;transform:scaleX(0)}50%{transform-origin:left;transform:scaleX(1)}50.01%{transform-origin:right;transform:scaleX(1)}100%{transform-origin:right;transform:scaleX(0)}}
+
+/* floating shapes */
+.shape{position:absolute;pointer-events:none;will-change:transform}
+.shape.s1{top:14%;right:10%;width:160px;height:160px;background:var(--pink);border-radius:50%;mix-blend-mode:screen;opacity:.85}
+.shape.s2{top:60%;left:38%;width:80px;height:80px;background:var(--yellow);transform:rotate(45deg)}
+.shape.s3{top:30%;left:5%;width:120px;height:6px;background:var(--cream)}
+
+/* ========== section base ========== */
+section{position:relative;padding:140px 6vw}
+.tag{font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.35em;text-transform:uppercase;display:inline-flex;align-items:center;gap:14px;margin-bottom:42px}
+.tag::before{content:"";width:30px;height:1px;background:currentColor}
+.h2{font-family:"Bodoni Moda","Noto Serif SC",serif;font-weight:900;font-style:italic;font-size:clamp(50px,8vw,120px);line-height:.95;letter-spacing:-.02em;margin-bottom:50px}
+.lede{font-size:clamp(20px,2.4vw,30px);line-height:1.55;max-width:880px;margin-bottom:40px}
+p.body{max-width:680px;margin-bottom:22px;font-size:18px;line-height:1.85}
+p.body.right{margin-left:auto}
+.kicker{font-family:"Space Grotesk",sans-serif;font-size:13px;letter-spacing:.25em;text-transform:uppercase;color:var(--ink);opacity:.55;margin-bottom:14px}
+
+/* fade in on scroll */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ========== SECTION 2 — words as cage ========== */
+.cage{background:var(--cream);color:var(--ink)}
+.cage-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;
+  margin:60px 0 30px;
+  border-top:1px solid var(--ink);border-left:1px solid var(--ink);
+}
+.cage-grid .w{
+  border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);
+  padding:26px 14px;text-align:center;
+  font-family:"Noto Serif SC",serif;font-weight:700;font-size:22px;
+  cursor:none;transition:background .25s,color .25s,transform .25s;
+  user-select:none;position:relative;
+}
+.cage-grid .w small{display:block;font-family:"Space Grotesk",sans-serif;font-weight:400;font-size:10px;letter-spacing:.2em;color:var(--ink);opacity:.5;margin-top:4px}
+.cage-grid .w:hover{background:var(--ink);color:var(--cream)}
+.cage-grid .w.gone{background:var(--ink);color:var(--ink);text-decoration:line-through;text-decoration-color:var(--pink);text-decoration-thickness:3px}
+.cage-grid .w.gone small{color:var(--pink);opacity:.7}
+.cage-counter{
+  font-family:"Space Grotesk",sans-serif;font-size:14px;letter-spacing:.2em;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;flex-wrap:wrap;gap:20px;
+}
+.cage-counter .num{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:900;font-size:80px;color:var(--pink);line-height:1;letter-spacing:-.04em}
+.cage-counter .reset{padding:10px 22px;border:1px solid var(--ink);background:transparent;font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;cursor:none;transition:.2s}
+.cage-counter .reset:hover{background:var(--ink);color:var(--cream)}
+.bigquote{font-family:"Bodoni Moda","Noto Serif SC",serif;font-style:italic;font-weight:900;font-size:clamp(34px,5vw,72px);line-height:1.05;margin:80px 0 0;max-width:1100px}
+.bigquote .hl{background:var(--yellow);padding:0 .15em}
+.bigquote .strike{text-decoration:line-through;text-decoration-color:var(--pink);text-decoration-thickness:5px;color:#7a7a7a}
+
+/* ========== SECTION 3 — Russian blues ========== */
+.blues{background:#0a0d2a;color:var(--cream);overflow:hidden}
+.blues .h2{color:var(--cream)}
+.blues .h2 em{color:#7d9bff;font-family:inherit}
+.blue-bar{display:flex;height:120px;margin:50px 0;border-radius:0;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.blue-bar .swatch{flex:1;cursor:none;transition:flex .5s cubic-bezier(.2,.8,.2,1);display:flex;align-items:flex-end;padding:14px;font-family:"Space Grotesk",sans-serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);position:relative}
+.blue-bar .swatch:hover{flex:6;color:#fff}
+.blue-bar .swatch:hover::after{content:attr(data-cn);position:absolute;top:14px;left:14px;font-family:"Noto Serif SC",serif;font-size:36px;font-weight:900;letter-spacing:0;color:#fff;text-transform:none}
+.blue-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:30px;margin-top:30px;font-family:"Space Grotesk",sans-serif}
+.stat{padding:24px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.03)}
+.stat .num{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:900;font-size:60px;line-height:1;color:#7d9bff}
+.stat .lab{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:8px}
+
+/* ========== SECTION 4 — Chinese vs English ========== */
+.grammar{background:var(--cream);color:var(--ink)}
+.grammar-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--ink);margin-top:60px}
+.grammar-split>div{padding:50px;min-height:480px;display:flex;flex-direction:column;justify-content:space-between}
+.grammar-split .cn{background:var(--cream)}
+.grammar-split .en{background:var(--ink);color:var(--cream)}
+.grammar-split h3{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:900;font-size:54px;letter-spacing:-.02em;margin-bottom:8px}
+.grammar-split .label{font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;opacity:.6;margin-bottom:30px}
+.morph{font-family:"Noto Serif SC",serif;font-weight:900;font-size:clamp(30px,4.2vw,58px);line-height:1.2;min-height:160px;letter-spacing:-.01em}
+.morph .miss{color:var(--pink);opacity:.4}
+.morph .add{background:var(--yellow);color:var(--ink);padding:0 .15em}
+.grammar-toggle{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.grammar-toggle button{padding:10px 18px;font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:none;background:transparent;border:1px solid currentColor;color:inherit;transition:.2s}
+.grammar-toggle button:hover,.grammar-toggle button.active{background:var(--pink);color:var(--cream);border-color:var(--pink)}
+.en .grammar-toggle button:hover,.en .grammar-toggle button.active{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+
+@media (max-width:820px){.grammar-split{grid-template-columns:1fr}}
+
+/* ========== SECTION 5 — I vs Them ========== */
+.self{background:var(--pink);color:var(--cream);position:relative;overflow:hidden}
+.self .h2{color:var(--cream)}
+.self-stage{position:relative;height:480px;margin:60px 0;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.06)}
+.self-stage .me{font-family:"Bodoni Moda","Noto Serif SC",serif;font-weight:900;font-style:italic;font-size:clamp(120px,28vw,420px);color:var(--yellow);line-height:.8;transition:transform .4s cubic-bezier(.2,.8,.2,1);z-index:2}
+.self-stage .them{position:absolute;font-family:"Noto Serif SC",serif;font-weight:700;color:rgba(255,255,255,.5);transition:transform .6s,opacity .6s,font-size .6s}
+.self-stage .them.t1{top:18%;left:14%;font-size:42px}
+.self-stage .them.t2{top:25%;right:18%;font-size:36px}
+.self-stage .them.t3{bottom:18%;left:24%;font-size:48px}
+.self-stage .them.t4{bottom:22%;right:14%;font-size:40px}
+.self-stage .them.t5{top:50%;right:8%;font-size:32px}
+.self-stage.crisis .me{transform:scale(1.6) rotate(-3deg);color:var(--cream)}
+.self-stage.crisis .them{opacity:.08;transform:scale(.6)}
+.self-controls{display:flex;gap:14px;justify-content:center;margin-top:0}
+.self-controls button{padding:14px 28px;font-family:"Space Grotesk",sans-serif;font-size:12px;letter-spacing:.25em;text-transform:uppercase;cursor:none;border:1px solid var(--cream);background:transparent;color:var(--cream);transition:.2s}
+.self-controls button:hover{background:var(--cream);color:var(--pink)}
+.self-controls button.crit{border-color:var(--yellow);color:var(--yellow)}
+.self-controls button.crit:hover{background:var(--yellow);color:var(--pink)}
+
+.pull{font-family:"Bodoni Moda","Noto Serif SC",serif;font-style:italic;font-weight:900;font-size:clamp(40px,6vw,90px);line-height:1.05;letter-spacing:-.02em;margin-top:80px;max-width:1100px}
+.pull .strike{text-decoration:line-through;text-decoration-color:var(--ink);text-decoration-thickness:6px}
+
+/* ========== SECTION 6 — Precision lab (centerpiece) ========== */
+.lab{background:var(--ink);color:var(--cream);overflow:hidden}
+.lab .h2{color:var(--cream)}
+.lab .h2 em{color:var(--yellow)}
+.lab .lede{color:#bdb6a8}
+.lab-stage{
+  margin:60px 0 30px;border:1px solid rgba(255,255,255,.15);
+  display:grid;grid-template-columns:1.4fr 1fr;min-height:520px;
+}
+@media(max-width:900px){.lab-stage{grid-template-columns:1fr}}
+.lab-display{padding:50px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid rgba(255,255,255,.15);background:linear-gradient(180deg,#0a0a0a,#161616)}
+.lab-display .step{font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--yellow);margin-bottom:18px}
+.lab-text{font-family:"Noto Serif SC",serif;font-weight:900;font-size:clamp(34px,4.6vw,68px);line-height:1.18;letter-spacing:-.01em;min-height:240px;transition:opacity .4s}
+.lab-text .new{color:var(--yellow)}
+.lab-text .gone{text-decoration:line-through;text-decoration-color:var(--pink);text-decoration-thickness:4px;color:#666}
+.lab-text .why{background:var(--pink);color:var(--cream);padding:0 .15em}
+.lab-feeling{margin-top:34px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px}
+.lab-feeling .meter{flex:1;min-width:240px}
+.lab-feeling .meter+.meter{margin-left:20px}
+.meter .lab{font-family:"Space Grotesk",sans-serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;display:flex;justify-content:space-between;color:#aaa099;margin-bottom:8px}
+.meter .bar{height:6px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
+.meter .bar::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w,0%);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.meter.fear .bar::after{background:var(--red)}
+.meter.action .bar::after{background:var(--green)}
+
+.lab-control{padding:50px;display:flex;flex-direction:column;background:#161616}
+.lab-control .ttl{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:900;font-size:36px;margin-bottom:6px}
+.lab-control .desc{font-family:"Space Grotesk",sans-serif;font-size:13px;color:#aaa099;line-height:1.7;margin-bottom:30px}
+.lab-step{display:block;width:100%;text-align:left;padding:18px 22px;margin-bottom:10px;background:transparent;color:var(--cream);border:1px solid rgba(255,255,255,.15);font-family:"Noto Serif SC",serif;font-size:16px;cursor:none;transition:.25s;line-height:1.4;position:relative}
+.lab-step .n{font-family:"Space Grotesk",sans-serif;font-size:10px;letter-spacing:.25em;color:#aaa099;display:block;margin-bottom:6px}
+.lab-step:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.4)}
+.lab-step.active{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+.lab-step.active .n{color:var(--ink);opacity:.6}
+.lab-nav{display:flex;justify-content:space-between;margin-top:auto;gap:10px;padding-top:24px}
+.lab-nav button{flex:1;padding:14px;font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;background:var(--pink);color:var(--cream);border:none;cursor:none;transition:.2s}
+.lab-nav button:hover{background:var(--yellow);color:var(--ink)}
+.lab-nav button:disabled{opacity:.3;cursor:not-allowed}
+
+.lab-final{font-family:"Bodoni Moda","Noto Serif SC",serif;font-style:italic;font-weight:900;font-size:clamp(36px,5vw,80px);line-height:1.05;margin-top:60px;color:var(--cream)}
+.lab-final em{font-family:inherit;color:var(--yellow)}
+
+/* ========== SECTION 7 — Manifesto ========== */
+.manifesto{background:var(--yellow);color:var(--ink);padding:160px 6vw 120px;position:relative;overflow:hidden}
+.manifesto-num{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:900;font-size:clamp(80px,16vw,260px);line-height:.85;letter-spacing:-.04em;margin-bottom:30px}
+.manifesto-title{font-family:"Bodoni Moda","Noto Serif SC",serif;font-weight:900;font-style:italic;font-size:clamp(60px,10vw,170px);line-height:.9;letter-spacing:-.03em;margin-bottom:60px}
+.manifesto-title .l1{display:block}
+.manifesto-title .l2{display:block;color:var(--pink)}
+.manifesto-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px;margin-top:40px}
+.m-card{background:var(--ink);color:var(--cream);padding:36px 28px;min-height:260px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .3s,background .3s}
+.m-card:hover{transform:translate(-4px,-4px);background:var(--pink)}
+.m-card .n{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:900;font-size:54px;color:var(--yellow);line-height:1}
+.m-card .t{font-family:"Noto Serif SC",serif;font-weight:900;font-size:22px;line-height:1.4}
+.m-card .d{font-family:"Space Grotesk",sans-serif;font-size:13px;letter-spacing:.05em;color:#bdb6a8;line-height:1.6;margin-top:14px}
+
+/* footer */
+footer{background:var(--ink);color:var(--cream);padding:80px 6vw 50px;font-family:"Space Grotesk",sans-serif}
+footer .ftop{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:30px;border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:40px}
+footer h4{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:900;font-size:clamp(34px,5vw,68px);letter-spacing:-.02em;color:var(--cream);max-width:700px}
+footer .meta{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#aaa099}
+footer .fbot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;margin-top:28px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#888070}
+
+/* drag tag (decorative) */
+.tape{position:absolute;background:var(--pink);color:var(--cream);font-family:"Space Grotesk",sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:6px 16px;transform:rotate(-3deg)}
+</style>
+</head>
+<body>
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curR"></div>
+<div class="progress" id="prog"></div>
+
+<nav class="topbar">
+  <div>语言的力量 / The Power of Language</div>
+  <div><a href="#lab">→ 精确实验室</a></div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="hero">
+  <div class="shape s1" data-depth="0.05"></div>
+  <div class="shape s2" data-depth="0.1"></div>
+  <div class="shape s3" data-depth="0.03"></div>
+
+  <div class="meta">
+    <span>NO. 001</span>
+    <span>2026 · LANGUAGE</span>
+    <span>读 / 思 / 行</span>
+  </div>
+
+  <h1>
+    <span class="word">语</span><span class="word">言</span><span class="word">的</span><br>
+    <span class="word accent">力</span><span class="word accent">量</span>
+    <em style="font-family:'Bodoni Moda',serif;font-size:.18em;font-style:italic;font-weight:400;letter-spacing:.05em;color:var(--cream);display:inline-block;vertical-align:super;margin-left:.4em">— a manifesto.</em>
+  </h1>
+
+  <div class="sub">
+    <span class="dot"></span>
+    <span>Scroll to enter · 第 0 章 · 一个奴役一个民族的方法</span>
+  </div>
+
+  <div class="opening">
+    <em style="font-family:'Bodoni Moda',serif;color:var(--yellow);font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-style:italic">Prologue.</em><br><br>
+    "我想彻底奴役一个民族，应该怎么做？<br>
+    那就删掉他们语言里所有关于反抗的词汇——<br>
+    "自由""斗争""骨气"。"
+  </div>
+
+  <div class="scroll-hint">SCROLL · 向下</div>
+</section>
+
+<!-- ===================== SECTION 2 — words as cage ===================== -->
+<section class="cage" id="cage">
+  <div class="tag reveal">CHAPTER 01 / 语言是栅栏</div>
+  <h2 class="h2 reveal">人，是<br>激励的产物。</h2>
+  <p class="lede reveal">语言不是窗户，是栅栏。你的思维被紧紧地包裹在它的围墙之内——它禁止你思考语言里没有的东西。<em style="font-family:'Bodoni Moda',serif;font-style:italic">你说不出来的东西，你就想不到。</em></p>
+
+  <p class="kicker reveal">点击下面任意一个词，把它从这个民族的语言里删掉 →</p>
+
+  <div class="cage-grid reveal" id="cageGrid">
+    <div class="w" data-w="自由">自由<small>FREEDOM</small></div>
+    <div class="w" data-w="斗争">斗争<small>STRUGGLE</small></div>
+    <div class="w" data-w="骨气">骨气<small>BACKBONE</small></div>
+    <div class="w" data-w="反抗">反抗<small>RESIST</small></div>
+    <div class="w" data-w="尊严">尊严<small>DIGNITY</small></div>
+    <div class="w" data-w="主体">主体<small>SUBJECT</small></div>
+    <div class="w" data-w="独立">独立<small>INDEPENDENT</small></div>
+    <div class="w" data-w="选择">选择<small>CHOICE</small></div>
+    <div class="w" data-w="拒绝">拒绝<small>REFUSE</small></div>
+    <div class="w" data-w="质疑">质疑<small>QUESTION</small></div>
+    <div class="w" data-w="勇气">勇气<small>COURAGE</small></div>
+    <div class="w" data-w="边界">边界<small>BOUNDARY</small></div>
+  </div>
+
+  <div class="cage-counter reveal">
+    <div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;opacity:.5">已被删除</div>
+      <div class="num"><span id="goneCount">0</span><span style="font-size:30px;color:var(--ink);opacity:.4"> / 12</span></div>
+    </div>
+    <button class="reset" onclick="resetCage()">↻ 找回这些词</button>
+    <div style="max-width:380px;font-size:14px;line-height:1.6;opacity:.75">
+      它们消失之后，你脑子里那个"想要离开""想要拒绝""想要更好"的冲动，会跟着一起被消音。<br>
+      <em style="font-family:'Bodoni Moda',serif">— 这就是《1984》的核心。</em>
+    </div>
+  </div>
+
+  <div class="bigquote reveal">
+    "<span class="strike">语言是窗户</span>"<br>
+    语言是<span class="hl">墙</span>——<br>
+    你的语言指向不了的地方，<br>
+    你的思维也<em style="font-family:'Bodoni Moda',serif;color:var(--pink)">到不了。</em>
+  </div>
+</section>
+
+<!-- ===================== SECTION 3 — Russian blues ===================== -->
+<section class="blues" id="blues">
+  <div class="tag reveal" style="color:#7d9bff">CHAPTER 02 / 俄罗斯人的蓝色</div>
+  <h2 class="h2 reveal">他们能看见<br>你看不见的<em>蓝。</em></h2>
+
+  <p class="lede reveal" style="color:#bdc6e8">俄语里有两种基本蓝：天空的<strong style="color:#fff">天蓝</strong> и 海的<strong style="color:#fff">墨蓝</strong>。从这两种里又延伸出十几种细分。结果是——他们对蓝色的辨别能力，远高于其他国家的人。语言塑造认知。</p>
+
+  <p class="kicker reveal" style="color:#7d9bff">悬停 / 触摸下面任意一段色带，看它的真名 →</p>
+
+  <div class="blue-bar reveal" id="blueBar">
+    <div class="swatch" style="background:#dce6ff" data-cn="淡蓝">PALE</div>
+    <div class="swatch" style="background:#a9c0ff" data-cn="天空">CIEL</div>
+    <div class="swatch" style="background:#7d9bff" data-cn="法兰西">FRANCE</div>
+    <div class="swatch" style="background:#5577ff" data-cn="湛蓝">BRIGHT</div>
+    <div class="swatch" style="background:#3855e8" data-cn="宝石">GEM</div>
+    <div class="swatch" style="background:#1840ff" data-cn="电光蓝">ELECTRIC</div>
+    <div class="swatch" style="background:#0f2ec2" data-cn="海军">NAVY</div>
+    <div class="swatch" style="background:#0a2080" data-cn="深海">ABYSS</div>
+    <div class="swatch" style="background:#071657" data-cn="子夜">MIDNIGHT</div>
+    <div class="swatch" style="background:#040a30" data-cn="墨夜">INK</div>
+  </div>
+
+  <div class="blue-stats reveal">
+    <div class="stat">
+      <div class="num">12+</div>
+      <div class="lab">俄语对蓝色的细分</div>
+    </div>
+    <div class="stat">
+      <div class="num">2</div>
+      <div class="lab">中文里的基本蓝</div>
+    </div>
+    <div class="stat">
+      <div class="num">∞</div>
+      <div class="lab">语言塑造认知的边界</div>
+    </div>
+  </div>
+
+  <div class="bigquote reveal" style="color:#dfe5ff;border-left:3px solid #7d9bff;padding-left:30px;margin-top:80px">
+    没有词的地方，<br>
+    眼睛看不见，<br>
+    心里也<span style="background:#7d9bff;color:#0a0d2a;padding:0 .15em">没分别。</span>
+  </div>
+</section>
+
+<!-- ===================== SECTION 4 — Grammar split ===================== -->
+<section class="grammar" id="grammar">
+  <div class="tag reveal">CHAPTER 03 / 主语之争</div>
+  <h2 class="h2 reveal">"走吗？"<br>"走。"</h2>
+  <p class="lede reveal">你仔细看这段对话——主语、宾语、时间、地点，全部缺席。中文允许含混、希望你意会、过分强调语境。最后我们就一句话：<em style="font-family:'Bodoni Moda',serif">"你懂的。"</em>
+  英文不一样：哪怕没有人在下雨，他们也会强行加一个 <strong>It</strong>。</p>
+
+  <div class="grammar-split reveal" id="grammar">
+    <div class="cn">
+      <div>
+        <div class="label">中文 · MANDARIN</div>
+        <h3>含混</h3>
+        <div class="morph" id="cnMorph">下雨了。</div>
+      </div>
+      <div class="grammar-toggle" data-target="cn">
+        <button class="active" data-i="0">原句</button>
+        <button data-i="1">补主语</button>
+        <button data-i="2">补时间</button>
+        <button data-i="3">补完整</button>
+      </div>
+    </div>
+    <div class="en">
+      <div>
+        <div class="label" style="opacity:.6;color:var(--yellow)">ENGLISH · 英文</div>
+        <h3>主谓宾</h3>
+        <div class="morph" id="enMorph">It rains.</div>
+      </div>
+      <div class="grammar-toggle" data-target="en">
+        <button class="active" data-i="0">Base</button>
+        <button data-i="1">+ Tense</button>
+        <button data-i="2">+ Where</button>
+        <button data-i="3">+ Full</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bigquote reveal" style="margin-top:80px">
+    "我"被允许缺席的语言，<br>
+    最后会让<em style="font-family:'Bodoni Moda',serif;background:var(--pink);color:var(--cream);padding:0 .15em">"我"</em>真的<br>
+    缺席。
+  </div>
+
+  <p class="body reveal" style="margin-top:60px;font-size:20px">所以一个经常写作的人，主体性都比较强。口语允许含混；但<strong>书面表达天然就需要主客清晰</strong>——是什么、为什么、怎么做。What、Why、How。这是天然的思维训练。</p>
+  <p class="body reveal" style="font-size:20px">当 "我想"、"我感觉"、"我认为" 总是被强调，那个"我怎么想"自然就变得重要了。而"你们""他们""大家"，就自然变小了。</p>
+</section>
+
+<!-- ===================== SECTION 5 — I vs Them ===================== -->
+<section class="self" id="self">
+  <div class="tap" style="position:absolute;top:30px;right:30px;background:var(--ink);color:var(--yellow);font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:8px 16px;transform:rotate(3deg)">CHAPTER 04</div>
+
+  <div class="tag reveal" style="color:var(--cream)">"我" 与 "他们"</div>
+  <h2 class="h2 reveal">他们重要的时候，<br>你就<em style="font-style:normal;color:var(--yellow)">不重要</em>了。</h2>
+
+  <p class="lede reveal" style="color:rgba(255,255,255,.85);max-width:760px">"我"和"他们"是竞争关系。他们可能是期末考试，可能是你爸妈的看法，也可能是你以为的梦想。但只要"我"不在了——这一切都消失。</p>
+
+  <p class="kicker reveal" style="color:rgba(255,255,255,.7)">点击 "我生病了"，看 "我" 怎么把世界变小 →</p>
+
+  <div class="self-stage reveal" id="selfStage">
+    <div class="them t1">期末考试</div>
+    <div class="them t2">爸妈的看法</div>
+    <div class="them t3">他人的目光</div>
+    <div class="them t4">你以为的梦想</div>
+    <div class="them t5">钱</div>
+    <div class="me">我</div>
+  </div>
+
+  <div class="self-controls reveal">
+    <button onclick="setSelf(false)">日常 / Normal</button>
+    <button class="crit" onclick="setSelf(true)">↯ 我生病了</button>
+  </div>
+
+  <div class="pull reveal">
+    在意别人，<span class="strike">是无条件的</span><br>
+    在意别人，<em style="font-family:'Bodoni Moda',serif;color:var(--yellow)">是有条件的。</em><br>
+    在你<u>有力气</u>的时候，<br>
+    你才有意愿在意别人。
+  </div>
+
+  <p class="body reveal" style="color:rgba(255,255,255,.9);max-width:780px;margin-top:60px;font-size:20px">所以本质应该是：<strong>不管我们生病与否，他们都不重要。</strong>
+  我，是最大的一切。不是我的人、事、物，都应从属于我。如果你觉得这样冷漠，那换一种说法——
+  <em style="font-family:'Bodoni Moda',serif;background:var(--ink);padding:2px 10px">当你都快离开的时候，你还依旧觉得重要的人和事，那才是真正重要的人和事。</em></p>
+</section>
+
+<!-- ===================== SECTION 6 — Precision Lab ===================== -->
+<section class="lab" id="lab">
+  <div class="tag reveal" style="color:var(--yellow)">CHAPTER 05 / 精确实验室 · The Precision Lab</div>
+  <h2 class="h2 reveal">把 <em>"我就是不行"</em><br>送进实验室。</h2>
+  <p class="lede reveal">语言的第一要义是<strong style="color:var(--yellow)">精确</strong>。一个不精确的句子，会替你完成最恐怖的人格判断；一个精确的句子，会自然给你一个动作。</p>
+
+  <p class="kicker reveal" style="color:#aaa099">点击右侧的五个阶段，把这句话一步步升级 →</p>
+
+  <div class="lab-stage reveal">
+    <div class="lab-display">
+      <div>
+        <div class="step" id="labStep">阶段 00 · 人格论断</div>
+        <div class="lab-text" id="labText">
+          "我就是不行。"
+        </div>
+      </div>
+      <div class="lab-feeling">
+        <div class="meter fear">
+          <div class="lab"><span>FEAR · 焦虑恐惧</span><span id="fearV">95%</span></div>
+          <div class="bar" id="fearBar" style="--w:95%"></div>
+        </div>
+        <div class="meter action">
+          <div class="lab"><span>ACTION · 行动力</span><span id="actV">5%</span></div>
+          <div class="bar" id="actBar" style="--w:5%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-control">
+      <div class="ttl">五次升级。</div>
+      <div class="desc">每一步只比上一步精确<em>一点点</em>——但每一步都把"恐惧"换成"行动"。</div>
+
+      <button class="lab-step active" data-i="0">
+        <span class="n">STAGE 00</span>
+        我就是不行。
+      </button>
+      <button class="lab-step" data-i="1">
+        <span class="n">STAGE 01 · 加限定</span>
+        我这一次不行。
+      </button>
+      <button class="lab-step" data-i="2">
+        <span class="n">STAGE 02 · 划范围</span>
+        我这一次在视频上不行。
+      </button>
+      <button class="lab-step" data-i="3">
+        <span class="n">STAGE 03 · 去形容词</span>
+        我这次做的视频播放量只有 50。
+      </button>
+      <button class="lab-step" data-i="4">
+        <span class="n">STAGE 04 · 加因果</span>
+        因为封面、文案或 BGM 拉低了播放。
+      </button>
+      <button class="lab-step" data-i="5">
+        <span class="n">STAGE 05 · 升级为行动</span>
+        改封面 → 改文案 → 换 BGM。
+      </button>
+
+      <div class="lab-nav">
+        <button onclick="labStep(-1)">← 退一步</button>
+        <button onclick="labStep(1)">更精确 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lab-final reveal">
+    "我就是不行" 封闭了所有可能。<br>
+    <em>而精确，会自动指给你下一步。</em>
+  </div>
+</section>
+
+<!-- ===================== SECTION 7 — Manifesto ===================== -->
+<section class="manifesto" id="manifesto">
+  <div class="tape" style="top:50px;right:8vw">FINAL CHAPTER · 06</div>
+
+  <div class="reveal">
+    <div class="manifesto-num">06.</div>
+    <div class="manifesto-title">
+      <span class="l1">精 确 ，</span>
+      <span class="l2">是焦虑的敌人。</span>
+    </div>
+  </div>
+
+  <p class="lede reveal" style="font-size:clamp(20px,2.4vw,28px);max-width:920px">人一旦开始做事，情绪自然就被搁置。什么焦虑、恐惧、担忧，全部一扫而空。<em style="font-family:'Bodoni Moda',serif">用好这把武器。</em></p>
+
+  <div class="manifesto-grid reveal">
+    <div class="m-card">
+      <div class="n">01</div>
+      <div>
+        <div class="t">不要给自己<br>下人格判断。</div>
+        <div class="d">"我不行" = 你被淘汰。<br>这是一句你不会允许任何人对你说的话。</div>
+      </div>
+    </div>
+    <div class="m-card">
+      <div class="n">02</div>
+      <div>
+        <div class="t">把形容词<br>换成数字。</div>
+        <div class="d">"播放量不好" → "播放量只有 50"。<br>形容词是模糊，数字是路标。</div>
+      </div>
+    </div>
+    <div class="m-card">
+      <div class="n">03</div>
+      <div>
+        <div class="t">一个结论后<br>必须接一个原因。</div>
+        <div class="d">是封面？文案？BGM？<br>原因揪出来，行动就生出来。</div>
+      </div>
+    </div>
+    <div class="m-card">
+      <div class="n">04</div>
+      <div>
+        <div class="t">每周写一次<br>反思日记。</div>
+        <div class="d">"我"出现得越多，<br>"他们"占的位置就越小。</div>
+      </div>
+    </div>
+    <div class="m-card">
+      <div class="n">05</div>
+      <div>
+        <div class="t">当 "我们" 时，<br>记得检查自己。</div>
+        <div class="d">中文允许"我"消失。<br>每次写下"我们"前，先问一句"我"。</div>
+      </div>
+    </div>
+    <div class="m-card">
+      <div class="n">06</div>
+      <div>
+        <div class="t">第一性原理，<br>每件事都过一遍。</div>
+        <div class="d">辨清概念，会让你的生命中<br>少很多噪音。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="ftop">
+    <h4>"语言的边界，就是<br>思维的边界。" <em style="font-family:'Bodoni Moda',serif;color:var(--yellow)">— Wittgenstein</em></h4>
+    <div class="meta">
+      <div>EDITION 001</div><br>
+      <div style="margin-top:8px;color:#666">2026 · MAY · 10</div>
+    </div>
+  </div>
+  <div class="fbot">
+    <div>设计献给：所有想看见自己的人</div>
+    <div>↑ 回到顶部 · BACK TO TOP</div>
+  </div>
+</footer>
+
+<script>
+/* ===== custom cursor ===== */
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+let mx=window.innerWidth/2,my=window.innerHeight/2,rx=mx,ry=my;
+window.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+  cur.style.transform='translate(-50%,-50%)';
+});
+function loop(){
+  rx+=(mx-rx)*.18;ry+=(my-ry)*.18;
+  curR.style.left=rx+'px';curR.style.top=ry+'px';
+  curR.style.transform='translate(-50%,-50%)';
+  requestAnimationFrame(loop);
+}loop();
+
+/* hide outside window */
+document.addEventListener('mouseleave',()=>{cur.style.opacity=0;curR.style.opacity=0});
+document.addEventListener('mouseenter',()=>{cur.style.opacity=1;curR.style.opacity=1});
+
+/* label-aware hover targets */
+const hoverMap=[
+  {sel:'.cage-grid .w',label:'DELETE'},
+  {sel:'.cage-counter .reset',label:'RESET'},
+  {sel:'.blue-bar .swatch',label:'EXPAND'},
+  {sel:'.grammar-toggle button',label:'MORPH'},
+  {sel:'.self-stage .me',label:'I AM'},
+  {sel:'.self-controls button',label:'TRY'},
+  {sel:'.lab-step',label:'+1 STAGE'},
+  {sel:'.lab-nav button',label:'NEXT →'},
+  {sel:'.m-card',label:'OPEN'},
+  {sel:'a',label:'GO'},
+  {sel:'.hero h1 .word',label:'WORD'}
+];
+hoverMap.forEach(({sel,label})=>{
+  document.querySelectorAll(sel).forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cur.dataset.label=label;cur.classList.add('big')});
+    el.addEventListener('mouseleave',()=>{cur.classList.remove('big')});
+  });
+});
+
+/* click pulse — gives haptic feel */
+document.addEventListener('mousedown',()=>{cur.classList.add('click')});
+document.addEventListener('mouseup',()=>{cur.classList.remove('click')});
+
+/* ===== reveal on scroll ===== */
+const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ===== progress bar ===== */
+const prog=document.getElementById('prog');
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  prog.style.width=(window.scrollY/h*100)+'%';
+});
+
+/* ===== hero parallax shapes ===== */
+const shapes=document.querySelectorAll('.shape');
+window.addEventListener('mousemove',e=>{
+  const cx=e.clientX-window.innerWidth/2,cy=e.clientY-window.innerHeight/2;
+  shapes.forEach(s=>{
+    const d=parseFloat(s.dataset.depth||0);
+    s.style.transform=`translate(${cx*d}px,${cy*d}px)`;
+  });
+});
+
+/* ===== Section 2 — cage words ===== */
+const cageWords=document.querySelectorAll('#cageGrid .w');
+const goneCount=document.getElementById('goneCount');
+cageWords.forEach(w=>{
+  w.addEventListener('click',()=>{
+    w.classList.toggle('gone');
+    const n=document.querySelectorAll('#cageGrid .w.gone').length;
+    goneCount.textContent=n;
+    if(n===12){goneCount.style.color='var(--pink)';}
+  });
+});
+function resetCage(){cageWords.forEach(w=>w.classList.remove('gone'));goneCount.textContent='0';goneCount.style.color='var(--pink)';}
+
+/* ===== Section 4 — grammar morph ===== */
+const morphs={
+  cn:[
+    '下雨了。',
+    '<span class="add">天</span>下雨了。',
+    '<span class="add">今天傍晚</span>，天下雨了。',
+    '<span class="add">今天傍晚</span>，天<span class="add">在北京</span>下了一场<span class="add">中</span>雨。'
+  ],
+  en:[
+    'It rains.',
+    'It <span class="add">is raining</span>.',
+    'It <span class="add">is raining in Beijing</span>.',
+    '<span class="add">A moderate rain</span> is falling <span class="add">in Beijing this evening</span>.'
+  ]
+};
+document.querySelectorAll('.grammar-toggle').forEach(group=>{
+  const target=group.dataset.target;
+  const out=document.getElementById(target+'Morph');
+  group.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      group.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      out.style.opacity=0;
+      setTimeout(()=>{out.innerHTML=morphs[target][+btn.dataset.i];out.style.opacity=1},200);
+    });
+  });
+});
+
+/* ===== Section 5 — Self stage ===== */
+const stage=document.getElementById('selfStage');
+function setSelf(crisis){stage.classList.toggle('crisis',crisis)}
+// also click "我" to toggle
+document.querySelector('#selfStage .me').addEventListener('click',()=>stage.classList.toggle('crisis'));
+
+/* ===== Section 6 — Precision Lab ===== */
+const labStages=[
+  {step:'阶段 00 · 人格论断',html:'"<span class="why">我就是不行</span>。"',fear:95,act:5},
+  {step:'阶段 01 · 加限定 · 这一次',html:'"我<span class="new">这一次</span><span class="gone">就是</span>不行。"',fear:78,act:22},
+  {step:'阶段 02 · 划范围 · 在哪里',html:'"我这一次<span class="new">在视频上</span>不行。"',fear:55,act:45},
+  {step:'阶段 03 · 去形容词 · 用数字',html:'"我这次做的视频<span class="gone">不行</span><span class="new">播放量只有 50</span>。"',fear:32,act:70},
+  {step:'阶段 04 · 加因果 · 为什么',html:'"<span class="new">因为</span>封面 / 文案 / BGM 的问题，<br>这个视频播放量只有 50。"',fear:18,act:88},
+  {step:'阶段 05 · 升级为行动 · 怎么做',html:'<span class="new">"改封面 → 改文案 → 换 BGM。"</span><br><span style="font-size:.55em;color:#aaa099;font-weight:400;font-family:\'Space Grotesk\',sans-serif;letter-spacing:.05em">情绪自动让位，行动接管。</span>',fear:5,act:97}
+];
+const labText=document.getElementById('labText');
+const labStepLab=document.getElementById('labStep');
+const fearBar=document.getElementById('fearBar'),actBar=document.getElementById('actBar');
+const fearV=document.getElementById('fearV'),actV=document.getElementById('actV');
+const labBtns=document.querySelectorAll('.lab-step');
+let labIdx=0;
+function labGo(i){
+  i=Math.max(0,Math.min(labStages.length-1,i));
+  labIdx=i;
+  const s=labStages[i];
+  labText.style.opacity=0;
+  setTimeout(()=>{
+    labText.innerHTML=s.html;
+    labText.style.opacity=1;
+  },200);
+  labStepLab.textContent=s.step;
+  fearBar.style.setProperty('--w',s.fear+'%');
+  actBar.style.setProperty('--w',s.act+'%');
+  fearV.textContent=s.fear+'%';
+  actV.textContent=s.act+'%';
+  labBtns.forEach((b,j)=>b.classList.toggle('active',j===i));
+}
+labBtns.forEach(b=>b.addEventListener('click',()=>labGo(+b.dataset.i)));
+function labStep(d){labGo(labIdx+d)}
+
+/* ===== keyboard ↑/↓ for lab when in viewport ===== */
+window.addEventListener('keydown',e=>{
+  const r=document.getElementById('lab').getBoundingClientRect();
+  if(r.top<window.innerHeight*.6&&r.bottom>window.innerHeight*.3){
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'){labStep(1);e.preventDefault()}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){labStep(-1);e.preventDefault()}
+  }
+});
+</script>
+</body>
+</html>

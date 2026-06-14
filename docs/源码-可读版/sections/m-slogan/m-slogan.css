@@ -1,0 +1,50 @@
+/* ============================================================
+   m-slogan.css — 巨字短幕(窗口 A)
+   黑底白巨字 + 指令行情带,约 80vh,插在写真章之后。
+   只动 transform/opacity;缓动 var(--fx-ease);前缀 m-slogan。
+   ============================================================ */
+
+.m-slogan{
+  position:relative;
+  min-height:80vh;
+  background:var(--fx-k);color:var(--fx-w);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.m-slogan__inner{
+  flex:1;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:10vh var(--fx-pad) 6vh;
+}
+.m-slogan__title{
+  margin:0;
+  font-family:var(--fx-sans);font-weight:900;
+  font-size:clamp(56px,11vw,176px);
+  line-height:1.04;letter-spacing:-.04em;
+  color:var(--fx-w);
+}
+.m-slogan__title-line{display:block;}
+.m-slogan__sub{
+  margin:4vh 0 0;max-width:38em;
+  font-family:var(--fx-sans);font-weight:400;
+  font-size:clamp(15px,1.5vw,21px);
+  line-height:1.7;color:var(--fx-w);
+}
+
+/* ---------- 指令行情带 ---------- */
+.m-slogan__tape{
+  border-top:1px solid var(--fx-w);
+  padding:16px 0;
+  font-family:var(--fx-mono);font-size:12px;
+  letter-spacing:.08em;line-height:1;
+  opacity:0;
+}
+.m-slogan__tape-item{padding:0 1.6em;}
+.m-slogan__tape-sep{color:var(--fx-g);}
+
+.fx-reduced .m-slogan__tape,
+html:not(.fx-js) .m-slogan__tape{opacity:1;}
+
+@media (max-width:760px){
+  .m-slogan__title{font-size:clamp(48px,15vw,110px);}
+}

@@ -1,0 +1,337 @@
+/* ============================================================
+   m-skill.css — 技能(窗口 C 产出,修订单-01 §2/§5 + 修订单-02 §0/§3)
+   契约:#000/#FFF/#8A8A8A;红 #E32B16 仅 .fx-chapnum(章节编号/
+   案例红编号)与格阵巨字开章一拍;缓动 var(--fx-ease);前缀 m-skill。
+   修订单-02 铁律落点:彩色直出(无 grayscale 滤镜)/统计数字不出现/
+   pin·scrub 行程再砍(drop 150→120vh,格阵 200→150vh,案例右栏
+   140→100vh)。静态退化 .m-skill--static。
+   ============================================================ */
+
+.m-skill{
+  position:relative;
+  background:var(--fx-w);color:var(--fx-k);
+  --msk-card-w:clamp(118px,12.5vw,188px);
+  --msk-card-h:calc(var(--msk-card-w)*.62);
+}
+
+/* ============ 开章:物理掉落 ============ */
+.m-skill__drop{height:120vh;position:relative;}
+.m-skill__drop-stage{
+  position:sticky;top:0;height:100vh;overflow:hidden;
+}
+.m-skill__kicker{position:absolute;top:76px;left:var(--fx-pad);z-index:3;}
+.m-skill__drop-hint{position:absolute;bottom:22px;left:var(--fx-pad);z-index:3;}
+.m-skill__pile{position:absolute;inset:0;z-index:2;pointer-events:none;}
+.m-skill__pile.is-settled{pointer-events:auto;}
+
+.m-skill__card{
+  position:absolute;top:0;left:0;
+  width:var(--msk-card-w);height:var(--msk-card-h);
+  will-change:transform;visibility:hidden;
+  perspective:600px;cursor:pointer;
+}
+.m-skill__card.is-live{visibility:visible;}
+.m-skill__card-in{
+  position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;
+  transition:transform .55s var(--fx-ease);
+}
+.is-settled .m-skill__card:hover .m-skill__card-in,
+.m-skill__card:focus-visible .m-skill__card-in{transform:rotateY(180deg);}
+.m-skill__card-face,
+.m-skill__card-back{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:9px 11px;border:1.5px solid;
+}
+.m-skill__card-back{transform:rotateY(180deg);}
+/* 白卡描黑边 / 黑卡描白边(黑卡外再补 1px 黑,白底上可见) */
+.m-skill__card--w .m-skill__card-face{background:var(--fx-w);color:var(--fx-k);border-color:var(--fx-k);}
+.m-skill__card--w .m-skill__card-back{background:var(--fx-k);color:var(--fx-w);border-color:var(--fx-k);}
+.m-skill__card--k .m-skill__card-face{background:var(--fx-k);color:var(--fx-w);border-color:var(--fx-w);box-shadow:0 0 0 1px var(--fx-k);}
+.m-skill__card--k .m-skill__card-back{background:var(--fx-w);color:var(--fx-k);border-color:var(--fx-k);}
+/* 正面=中文第一可视层 */
+.m-skill__card-zh{
+  font-family:var(--fx-sans);font-weight:900;letter-spacing:.02em;
+  font-size:clamp(15px,1.5vw,22px);line-height:1.1;margin:0;
+}
+.m-skill__card-line{
+  font-family:var(--fx-mono);
+  font-size:clamp(8px,.62vw,10px);letter-spacing:.04em;
+  line-height:1.45;margin:0;opacity:.82;
+}
+/* 背面=英文包名(Space Mono) */
+.m-skill__card-idx{
+  font-family:var(--fx-mono);font-weight:700;
+  font-size:clamp(15px,1.4vw,22px);margin:0;
+  font-variant-numeric:tabular-nums;
+}
+.m-skill__card-eng{
+  font-family:var(--fx-mono);
+  font-size:clamp(10px,.8vw,13px);letter-spacing:.04em;
+  line-height:1.3;margin:0;overflow-wrap:anywhere;
+}
+
+/* ============ 中文格阵(150vh) ============ */
+.m-skill__act1{height:150vh;position:relative;}
+.m-skill__act1-stage{
+  position:sticky;top:0;height:100vh;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:0 var(--fx-pad);
+}
+.m-skill__act1-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:14px;
+}
+.m-skill__grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--fx-k);
+  height:min(72vh,860px);
+}
+.m-skill__cell{
+  position:relative;
+  border-right:1px solid var(--fx-k);
+  border-bottom:1px solid var(--fx-k);
+  padding:clamp(8px,1.4vh,16px) clamp(10px,1.1vw,18px);
+  display:flex;flex-direction:column;gap:5px;
+  background:var(--fx-w);
+  color:var(--fx-g);
+  transition:color .35s var(--fx-ease);
+  overflow:hidden;
+}
+.m-skill__cell:nth-child(4n){border-right:0;}
+.m-skill__cell:nth-child(n+13){border-bottom:0;}
+.m-skill__cell.is-lit{color:var(--fx-k);}
+.m-skill__cell-idx{
+  font-family:var(--fx-mono);font-size:10px;letter-spacing:.18em;
+  font-variant-numeric:tabular-nums;margin:0;
+}
+/* 中文名为主(大),英文包名为辅(小灰) */
+.m-skill__cell-zh{
+  font-family:var(--fx-sans);font-weight:900;letter-spacing:.02em;
+  font-size:clamp(17px,1.9vw,30px);line-height:1.05;margin:0;
+}
+.m-skill__cell-eng{
+  font-family:var(--fx-mono);font-size:clamp(9px,.72vw,11px);
+  letter-spacing:.08em;margin:auto 0 0;color:var(--fx-g);
+}
+.m-skill__cell-glyph{
+  position:absolute;top:clamp(8px,1.4vh,16px);right:clamp(10px,1.1vw,18px);
+  width:clamp(12px,1.2vw,18px);height:clamp(12px,1.2vw,18px);
+  color:inherit;
+}
+.m-skill__cell-glyph svg{display:block;width:100%;height:100%;}
+/* hover 浮出对应成品缩略(彩色直出,仅有真实成品的格子) */
+.m-skill__cell-thumb{
+  position:absolute;right:clamp(8px,.8vw,14px);bottom:clamp(8px,1.2vh,14px);
+  width:46%;aspect-ratio:16/10;object-fit:cover;
+  border:1px solid var(--fx-k);
+  opacity:0;transform:translateY(8px);
+  transition:opacity .35s var(--fx-ease),transform .35s var(--fx-ease);
+  pointer-events:none;
+}
+.m-skill__cell:hover .m-skill__cell-thumb,
+.m-skill__cell.is-target .m-skill__cell-thumb{opacity:1;transform:none;}
+/* 点击卡片跳转后的定位反馈 */
+.m-skill__cell.is-target{background:var(--fx-k);color:var(--fx-w);}
+.m-skill__cell.is-target .m-skill__cell-eng{color:var(--fx-w);}
+/* 格阵巨字 —— 红色仅开章一拍,随滚动缩小退到眉标位 */
+.m-skill__giant{
+  position:absolute;inset:0;z-index:2;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+  color:var(--fx-r);
+  font-size:clamp(150px,30vw,560px);
+  will-change:transform;
+}
+
+/* ============ 分屏案例 ×6(7:5) ============ */
+.m-skill__act3{background:var(--fx-w);}
+.m-skill__case{
+  display:grid;grid-template-columns:7fr 5fr;
+  border-top:1px solid var(--fx-k);
+}
+.m-skill__case-media{
+  position:sticky;top:0;height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:7vh 3.4vw;
+}
+.m-skill__frame{
+  margin:0;width:100%;max-width:880px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.m-skill__frame .m-skill__video{
+  width:100%;border:1.5px solid var(--fx-k);
+  background:var(--fx-k);
+}
+.m-skill__frame--kb .m-skill__video{max-height:46vh;object-fit:cover;}
+.m-skill__kb-shot{
+  width:100%;max-height:30vh;object-fit:cover;object-position:top;
+  border:1.5px solid var(--fx-k);
+}
+/* 案例 4:两段竖屏并排(剪辑前 / 剪辑后) */
+.m-skill__duo-videos{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.m-skill__duo-videos .m-skill__video{
+  width:100%;max-height:74vh;aspect-ratio:9/16;object-fit:cover;
+}
+/* 案例 5:工作流整图(彩色直出) */
+.m-skill__case-img{
+  width:100%;max-height:80vh;object-fit:contain;
+  border:1.5px solid var(--fx-k);background:var(--fx-w);
+}
+/* 案例 6:歌词卡(黑卡白字,song.mp3 点播) */
+.m-skill__songcard{
+  background:var(--fx-k);color:var(--fx-w);
+  border:1.5px solid var(--fx-k);
+  padding:clamp(22px,3.2vw,44px);
+  display:flex;flex-direction:column;gap:16px;
+}
+.m-skill__songcard-tag{margin:0;}
+.m-skill__songcard-title{
+  font-size:clamp(36px,4.6vw,76px);
+  margin:0;color:var(--fx-w);
+}
+.m-skill__songcard-credit{margin:0;}
+.m-skill__songbtn{
+  margin-top:6px;
+  display:inline-flex;align-items:center;gap:14px;
+  background:none;border:1.5px solid var(--fx-w);
+  color:var(--fx-w);padding:13px 26px;cursor:pointer;
+  transition:background .3s var(--fx-ease),color .3s var(--fx-ease);
+  align-self:flex-start;
+}
+.m-skill__songbtn:hover,
+.m-skill__songbtn.is-playing{background:var(--fx-w);color:var(--fx-k);}
+.m-skill__songbtn-ico{font-size:13px;line-height:1;}
+.m-skill__songbtn-txt{letter-spacing:.18em;}
+/* 右栏三段式:红编号+眉标 / 标题 / 一句话 / mono 数据行 */
+.m-skill__case-copy{
+  min-height:100vh;
+  padding:18vh var(--fx-pad) 16vh clamp(20px,3.4vw,60px);
+  border-left:1px solid var(--fx-k);
+  display:flex;flex-direction:column;
+}
+.m-skill__case-num{
+  margin:0 0 1.2vh;
+  font-family:var(--fx-mono);font-weight:700;
+  font-size:clamp(34px,3.2vw,54px);line-height:1;
+}
+.m-skill__case-tag{margin:0 0 4vh;}
+.m-skill__case-title{
+  font-family:var(--fx-sans);font-weight:900;letter-spacing:-.01em;
+  font-size:clamp(2.2rem,4vw,3.4rem);line-height:1.12;
+  margin:0 0 5vh;
+}
+.m-skill__case-body{
+  font-family:var(--fx-sans);font-weight:400;
+  font-size:1.05rem;line-height:2;
+  margin:0 0 6vh;max-width:34em;
+}
+.m-skill__case-data{
+  margin:auto 0 0;
+  border-top:1px solid var(--fx-k);
+  padding-top:3vh;
+  font-family:var(--fx-mono);
+  font-size:clamp(14px,1.25vw,19px);line-height:1.6;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ============ 其余技能 · 文字详解(收章) ============ */
+.m-skill__list{
+  border-top:1px solid var(--fx-k);
+  padding:13vh var(--fx-pad) 15vh;
+}
+.m-skill__list-head{margin-bottom:6vh;}
+.m-skill__list-eyebrow{margin:0 0 2.2vh;}
+.m-skill__list-title{
+  font-family:var(--fx-sans);font-weight:900;letter-spacing:-.01em;
+  font-size:clamp(1.8rem,3.2vw,2.8rem);line-height:1.15;margin:0;
+}
+.m-skill__list-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  border:1px solid var(--fx-k);
+}
+.m-skill__li{
+  border-right:1px solid var(--fx-k);
+  border-bottom:1px solid var(--fx-k);
+  padding:clamp(18px,2.4vh,30px) clamp(16px,1.8vw,30px);
+  display:grid;grid-template-columns:minmax(9em,2fr) 3fr;
+  gap:clamp(12px,1.6vw,28px);
+}
+.m-skill__li:nth-child(2n){border-right:0;}
+.m-skill__li:nth-last-child(-n+1){border-bottom:0;}
+.m-skill__li-name{display:flex;flex-direction:column;gap:6px;}
+.m-skill__li-name i{
+  font-style:normal;font-family:var(--fx-mono);
+  font-size:10px;letter-spacing:.18em;color:var(--fx-g);
+}
+.m-skill__li-name b{
+  font-family:var(--fx-sans);font-weight:900;letter-spacing:.02em;
+  font-size:clamp(17px,1.5vw,24px);line-height:1.1;
+}
+.m-skill__li-name span{
+  font-family:var(--fx-mono);font-size:10px;letter-spacing:.08em;
+  color:var(--fx-g);overflow-wrap:anywhere;
+}
+.m-skill__li-rows{margin:0;display:flex;flex-direction:column;gap:8px;}
+.m-skill__li-rows>div{display:flex;gap:1.2em;align-items:baseline;}
+.m-skill__li-rows dt{
+  flex:none;width:3.6em;
+  font-family:var(--fx-mono);font-size:10px;letter-spacing:.18em;
+  color:var(--fx-g);
+}
+.m-skill__li-rows dd{
+  margin:0;font-family:var(--fx-sans);font-weight:400;
+  font-size:clamp(13px,.95vw,15px);line-height:1.7;
+}
+
+/* ============ 静态退化(reduced-motion / ?qa=1) ============ */
+.m-skill--static .m-skill__drop{height:auto;}
+.m-skill--static .m-skill__drop-stage{
+  position:static;height:auto;min-height:100vh;
+  display:flex;align-items:flex-end;
+}
+.m-skill--static .m-skill__pile{
+  position:static;inset:auto;pointer-events:auto;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;
+  gap:10px;padding:22vh var(--fx-pad) 9vh;width:100%;
+}
+.m-skill--static .m-skill__card{
+  position:static;visibility:visible;
+  transform:none !important;
+}
+.m-skill--static .m-skill__card:nth-child(3n){transform:rotate(2.5deg) !important;}
+.m-skill--static .m-skill__card:nth-child(3n+1){transform:rotate(-2deg) !important;}
+.m-skill--static .m-skill__act1{height:auto;}
+.m-skill--static .m-skill__act1-stage{position:relative;height:auto;min-height:100vh;justify-content:center;padding-top:8vh;padding-bottom:10vh;}
+.m-skill--static .m-skill__cell{color:var(--fx-k);}
+.m-skill--static .m-skill__giant{
+  position:static;order:-1;display:block;
+  font-size:clamp(40px,6vw,84px);line-height:1;
+  margin:0 0 16px;
+}
+html.fx-reduced .m-skill .m-skill__card-in{transition:none;}
+
+/* ============ 窄屏 ============ */
+@media (max-width:920px){
+  .m-skill{--msk-card-w:clamp(96px,24vw,150px);}
+  .m-skill__grid{grid-template-columns:repeat(2,1fr);height:auto;}
+  .m-skill__cell{min-height:11.5vh;}
+  .m-skill__cell:nth-child(4n){border-right:1px solid var(--fx-k);}
+  .m-skill__cell:nth-child(2n){border-right:0;}
+  .m-skill__cell:nth-child(n+13){border-bottom:1px solid var(--fx-k);}
+  .m-skill__cell:nth-child(n+15){border-bottom:0;}
+  .m-skill__giant{font-size:clamp(120px,38vw,300px);}
+  .m-skill__act1-stage{overflow-y:visible;}
+  .m-skill__case{grid-template-columns:1fr;}
+  .m-skill__case-media{position:relative;height:auto;padding:8vh var(--fx-pad) 0;}
+  .m-skill__case-copy{min-height:90vh;border-left:0;padding:8vh var(--fx-pad) 12vh;}
+  .m-skill__case-title{margin-bottom:4vh;}
+  .m-skill__case-body{margin-bottom:5vh;}
+  .m-skill__duo-videos .m-skill__video{max-height:54vh;}
+  .m-skill__list-grid{grid-template-columns:1fr;}
+  .m-skill__li{border-right:0;grid-template-columns:1fr;gap:10px;}
+}

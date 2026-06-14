@@ -1,0 +1,93 @@
+<!-- ============================================================
+     m-web.html — 02 作品(窗口 B 产出,第三轮整改版)
+     章内顺序:B1 WORKS 字母分隔带(60vh)→ B6 索引(开篇目录,
+       右侧固定预览)→ SLOTS(整屏「从0到1」hero → 交错网格 3列/2列,
+       全部 live iframe,每位作者+作品名+一句话)→ B2 快闪秀框
+       → B3 三列滚轮(白)→ B5 斜置橱窗(黑)→ B5+ 918(转台一圈)。
+     B6 / SLOTS / B2 / B3 / B5 内容由 m-web.js 注入。
+     此文件为 fragment 源;合入 index.html 时整段替换(章号随总装)。
+     ============================================================ -->
+<section class="m-web" id="chap-02" data-chapter="02" data-title="02 作品">
+
+  <!-- ===== B1 字母分隔带(约 60vh):WORKS,字形内播放网站录屏 ===== -->
+  <div class="m-web__b1" data-mweb="b1">
+    <p class="m-web__kicker fx-label fx-hide"><span class="fx-chapnum">02</span> — 作品</p>
+    <div class="m-web__letters" role="img" aria-label="WORKS">
+      <!-- 5 个字母格由 m-web.js 注入(video + svg mask) -->
+    </div>
+    <div class="m-web__b1-foot">
+      <div>
+        <h2 class="m-web__title fx-hide">我们对网站的顶级审美。</h2>
+        <p class="m-web__sub fx-hide">每件都挂着当时那句指令,点开就是正在运行的页面。</p>
+      </div>
+      <p class="m-web__b1-hint fx-label fx-label--dim fx-hide">HOVER · TYPE ANY LETTER</p>
+    </div>
+  </div>
+
+  <!-- ===== B6 索引(开篇目录):精选行 + 右侧固定预览(不跟鼠标)===== -->
+  <div class="m-web__b6" data-mweb="b6">
+    <header class="m-web__b6-head">
+      <p class="fx-label fx-hide"><span class="fx-chapnum">02</span> — 作品 · INDEX</p>
+      <p class="fx-label fx-label--dim fx-hide">HOVER TO PREVIEW</p>
+    </header>
+    <div class="m-web__b6-body">
+      <ol class="m-web__index"><!-- 精选行由 m-web.js 注入 --></ol>
+      <div class="m-web__peek" aria-hidden="true">
+        <img alt="" decoding="async">
+        <p class="m-web__peek-cap fx-label"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SLOTS 精选 live 大位:整屏「从0到1」→ 交错网格(3列/2列)===== -->
+  <div class="m-web__slots" data-mweb="slots"><!-- hero + 交错网格由 m-web.js 注入 --></div>
+
+  <!-- ===== B2 精华快闪秀框:自动快闪 → 滚动 scrub(行程 100vh)===== -->
+  <div class="m-web__b2" data-mweb="b2">
+    <div class="m-web__b2-pin">
+      <figure class="m-web__deck">
+        <div class="m-web__deck-frame"><!-- img × N 由 js 注入 --></div>
+        <figcaption class="m-web__deck-meta">
+          <span class="m-web__deck-count fx-label fx-num">01 / 18</span>
+          <span class="m-web__deck-name fx-label fx-label--dim"></span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- ===== B3 三列滚轮橱窗(白底,rotate -6°,彩色直出)===== -->
+  <div class="m-web__b3" data-mweb="b3">
+    <div class="m-web__b3-pin">
+      <div class="m-web__b3-tilt">
+        <div class="m-web__b3-col" data-col="0"><div class="m-web__b3-track"></div></div>
+        <div class="m-web__b3-col" data-col="1"><div class="m-web__b3-track"></div></div>
+        <div class="m-web__b3-col" data-col="2"><div class="m-web__b3-track"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== B5 斜置橱窗(黑底白影,横向 scrub)===== -->
+  <div class="m-web__b5" data-mweb="b5">
+    <div class="m-web__b5-pin">
+      <div class="m-web__b5-track"><!-- 展品由 m-web.js 注入 --></div>
+    </div>
+  </div>
+
+  <!-- ===== B5+ 旗舰位「918 驶入」:canvas 图序列 scroll-scrub(转台一圈)===== -->
+  <div class="m-web__b918" data-mweb="b918">
+    <div class="m-web__b918-pin">
+      <div class="m-web__b918-stage">
+        <canvas class="m-web__b918-canvas" aria-label="918 SPYDER — 滚动驱动的图序列"></canvas>
+      </div>
+      <p class="m-web__b918-note m-web__b918-note--1 fx-label">PCCB CERAMIC · FIVE DRIVE MODES</p>
+      <p class="m-web__b918-note m-web__b918-note--2 fx-label">887 PS · 2.6 S · 345 KM/H</p>
+      <p class="m-web__b918-mono fx-label">676 帧 · 单文件 · 滚轮往下,车会动</p>
+      <div class="m-web__b918-static" aria-hidden="true">
+        <img src="../../showcase-assets/918/seq_coming/frame_0110.webp" alt="" loading="lazy" decoding="async">
+        <img src="../../showcase-assets/918/seq_rotate/frame_0060.webp" alt="" loading="lazy" decoding="async">
+        <img src="../../showcase-assets/918/seq_oneshot/frame_0180.webp" alt="" loading="lazy" decoding="async">
+      </div>
+    </div>
+  </div>
+
+</section>
