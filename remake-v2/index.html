@@ -4,7 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>树成林 AI 产线剧场</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23040404'/%3E%3Cpath d='M14 14h36v36H14z' fill='none' stroke='%23fff' stroke-width='6'/%3E%3Cpath d='M19 44h26' stroke='%23e32b16' stroke-width='5'/%3E%3C/svg%3E">
+  <meta name="description" content="树成林 AI 产线剧场，把需求变成网站、视频、写真、技能和可访问作品。">
+  <script>
+    if (location.pathname.endsWith("/remake-v2")) {
+      location.replace(location.pathname + "/" + location.search + location.hash);
+    }
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23070706'/%3E%3Cpath d='M12 14h40v9H12zM12 29h28v8H12zM12 43h40v7H12z' fill='%23f6f4ea'/%3E%3Cpath d='M45 29h7v8h-7z' fill='%23e32b16'/%3E%3C/svg%3E">
   <link rel="preload" href="../base/fonts/noto-sans-sc-900-gb.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../base/fonts/noto-sans-sc-400-gb.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../base/fonts/archivo-latin-900.woff2" as="font" type="font/woff2" crossorigin>
@@ -13,393 +19,257 @@
 </head>
 <body>
   <div class="boot" id="boot" aria-hidden="true">
-    <div class="boot__scan">
-      <span>INPUT ACCEPTED</span>
-      <b id="bootWord">需求进入产线</b>
+    <div class="boot__inner">
+      <span id="bootWord">需求进入产线</span>
+      <strong id="bootCount">00</strong>
       <i></i>
     </div>
-    <div class="boot__count" id="bootCount" aria-hidden="true">3</div>
-    <div class="boot__badge" id="bootBadge" aria-hidden="true">FIRST EDUCATION</div>
   </div>
 
   <header class="hud" aria-label="站点导航">
-    <a href="#top" class="hud__brand">STUDENT AI ARCHIVE<i>®</i></a>
-    <nav aria-label="产线章节">
-      <a href="#intake">输入</a>
-      <a href="#dispatch">调度</a>
+    <a href="#top" class="hud__brand" aria-label="树成林首页">树成林</a>
+    <nav aria-label="核心章节">
       <a href="#brand">品牌</a>
-      <a href="#slogan">标准</a>
+      <a href="#dispatch">产线</a>
       <a href="#web">网站</a>
       <a href="#video">视频</a>
-      <a href="#identity">写真</a>
-      <a href="#skills">技能</a>
+      <a href="#identity">档案</a>
       <a href="#proof">证据</a>
-      <a href="#game">游戏</a>
     </nav>
-    <div class="hud-actions">
-      <button type="button" id="bgmToggle" aria-pressed="false" title="音乐">♪ MUSIC</button>
-      <button type="button" data-open-qr>扫码购买</button>
+    <div class="hud__actions">
+      <button type="button" id="bgmToggle" aria-pressed="false">MUSIC</button>
+      <button type="button" data-open-qr>加入</button>
     </div>
   </header>
 
-  <aside class="meter" aria-hidden="true">
-    <span>树成林</span>
-    <b id="meterNum">000</b>
-    <i id="meterLine"></i>
-  </aside>
-
   <main id="top">
-    <section class="hero scene scene--dark" id="intake" data-scene>
-      <div class="hero__film" aria-hidden="true">
+    <section class="hero scene" id="intake" data-scene>
+      <div class="hero__media" aria-hidden="true">
         <video src="../sections/m-web/assets/letters/l0.mp4" muted loop playsinline preload="metadata"></video>
         <video src="../sections/m-river/assets/riv-vid-flow.mp4" muted loop playsinline preload="metadata"></video>
         <img src="../sections/m-web/assets/shots/file-zero2one.jpg" alt="">
-        <img src="../sections/m-skill/assets/skill-imagegen-workflow.png" alt="">
+        <img src="../sections/m-skill/assets/collage-jiangge.jpg" alt="">
       </div>
-      <div class="hero__grid">
-        <div class="command-card reveal">
-          <p class="mono">LIVE INPUT</p>
-          <h1>把这件事<br>做成能交付的东西。</h1>
-          <p>一句模糊需求进入系统，出口不是建议，而是网站、视频、写真、知识库、选题库和可复用技能。</p>
+      <div class="hero__copy reveal">
+        <p class="kicker">STUDENT AI ARCHIVE</p>
+        <h1>树成林</h1>
+        <p class="hero__line">把一个模糊需求，做成能打开、能转发、能继续迭代的作品。</p>
+        <div class="hero__actions">
+          <a href="#web">看作品</a>
+          <button type="button" data-open-qr>扫码加入</button>
         </div>
-        <div class="brand-lock reveal">
-          <p class="mono">FIRST EDUCATION · STUDENT AI ARCHIVE</p>
-          <strong>树成林</strong>
-          <i></i>
-          <span>全国最大的大学生 AI 社群</span>
-        </div>
+      </div>
+      <div class="hero__statement reveal">
+        <span>全国最大的大学生 AI 社群</span>
+        <b>网站。视频。写真。技能。知识库。</b>
       </div>
     </section>
 
-    <section class="dispatch scene scene--light" id="dispatch" data-scene>
-      <header class="scene-head reveal">
-        <p class="mono"><span>00.5</span> 任务调度台</p>
-        <h2>一句需求，现场看它会被送去哪里。</h2>
-        <p>不只展示结果，还把“这句话会流向哪条产线”讲清楚。切一下，右侧就切到对应交付。</p>
-      </header>
-      <div class="dispatch-board">
-        <div class="dispatch-list" role="tablist" aria-label="真实需求切换">
-          <button class="dispatch-pill is-active" type="button" role="tab" aria-selected="true" data-mission="web">
-            <span class="mono">WEB</span>
+    <section class="brand-reveal scene" id="brand" data-scene>
+      <div class="brand-reveal__media" aria-hidden="true">
+        <video src="../sections/m-river/assets/riv-vid-aiweb.mp4" muted loop playsinline preload="metadata"></video>
+      </div>
+      <div class="brand-reveal__copy reveal">
+        <h2><span>树</span><span>成</span><span>林</span></h2>
+        <p>不是把案例堆满屏幕，而是让观众先记住一个判断：这里有一条学生 AI 生产线。</p>
+      </div>
+    </section>
+
+    <section class="dispatch scene" id="dispatch" data-scene>
+      <div class="section-intro reveal">
+        <h2>需求先被分流。</h2>
+        <p>每个入口都是一句真实需求。点一下，看它被送到哪条产线。</p>
+      </div>
+      <div class="dispatch__grid">
+        <div class="dispatch__list" role="tablist" aria-label="需求切换">
+          <button class="mission-row dispatch-pill is-active" type="button" role="tab" aria-selected="true" data-mission="web">
+            <span>WEB</span>
             <b>母亲节祝福网页</b>
-            <p>把一段祝福做成会动、能发链接的网页。</p>
+            <small>祝福进入，动态页面出来。</small>
           </button>
-          <button class="dispatch-pill" type="button" role="tab" aria-selected="false" data-mission="video">
-            <span class="mono">VIDEO</span>
+          <button class="mission-row dispatch-pill" type="button" role="tab" aria-selected="false" data-mission="video">
+            <span>VIDEO</span>
             <b>口播音频成片</b>
-            <p>把音频做成能录屏发抖音的视频。</p>
+            <small>音频进入，发布视频出来。</small>
           </button>
-          <button class="dispatch-pill" type="button" role="tab" aria-selected="false" data-mission="identity">
-            <span class="mono">PORTRAIT</span>
+          <button class="mission-row dispatch-pill" type="button" role="tab" aria-selected="false" data-mission="identity">
+            <span>PORTRAIT</span>
             <b>写真合辑海报</b>
-            <p>把人物照片整理成一整套身份视觉。</p>
+            <small>照片进入，身份视觉出来。</small>
           </button>
-          <button class="dispatch-pill" type="button" role="tab" aria-selected="false" data-mission="skills">
-            <span class="mono">SKILL</span>
+          <button class="mission-row dispatch-pill" type="button" role="tab" aria-selected="false" data-mission="skills">
+            <span>SKILL</span>
             <b>群聊变需求单</b>
-            <p>把聊天记录整理成下一步行动和知识入口。</p>
+            <small>聊天进入，行动清单出来。</small>
           </button>
         </div>
         <article class="dispatch-panel reveal" id="dispatchPanel" aria-live="polite">
-          <div class="dispatch-panel__head">
-            <p class="mono" id="dispatchType">WEB OUTPUT</p>
-            <h3 id="dispatchTitle">母亲节祝福网页</h3>
-            <p id="dispatchCopy">一句祝福不该停在聊天框里，而是被交付成一个可以打开、滚动、转发的动态网页。</p>
-          </div>
           <div class="dispatch-media" id="dispatchMedia">
             <img id="dispatchMediaImage" src="../sections/m-web/assets/shots/mothers-day-1.jpg" alt="母亲节祝福网页预览">
           </div>
-          <div class="dispatch-actions">
-            <a id="dispatchPrimary" href="https://mothers-day-love-2026.netlify.app/" target="_blank" rel="noopener">打开样例 ↗</a>
-            <a id="dispatchSecondary" href="#web">查看网站工位 ↓</a>
+          <div class="dispatch-copy">
+            <p id="dispatchType">WEB OUTPUT</p>
+            <h3 id="dispatchTitle">母亲节祝福网页</h3>
+            <p id="dispatchCopy">一句祝福不该停在聊天框里，而是被交付成一个可以打开、滚动、转发的动态网页。</p>
+            <div>
+              <a id="dispatchPrimary" href="https://mothers-day-love-2026.netlify.app/" target="_blank" rel="noopener">打开样例</a>
+              <a id="dispatchSecondary" href="#web">看网站工位</a>
+            </div>
           </div>
         </article>
       </div>
     </section>
 
-    <section class="routing scene scene--light" data-scene>
-      <div class="routing__sticky">
-        <p class="mono"><span>01</span> 产线分流</p>
-        <h2>同一句需求，被拆进不同工位。</h2>
+    <section class="web-work scene" id="web" data-scene>
+      <div class="section-intro reveal">
+        <h2>作品必须能运行。</h2>
+        <p>有源码的作品不放截图，直接让它在页面里活着。</p>
       </div>
-      <div class="routes" aria-label="产线输出">
-        <a class="route reveal" href="#web" data-route-target="web">
-          <i>WEB</i>
-          <b>网站上线</b>
-          <p>想法进入页面工位，先变成可访问链接。</p>
-          <img src="../sections/m-web/assets/shots/file-zero2one.jpg" alt="网站作品预览">
-          <span class="route__cta">进入工位 ↗</span>
-        </a>
-        <a class="route reveal" href="#video" data-route-target="video">
-          <i>VIDEO</i>
-          <b>视频成片</b>
-          <p>脚本、画面、节奏和字幕被打包成可发布内容。</p>
-          <video src="../sections/m-video/assets/code-a.mp4" poster="../sections/m-video/assets/code-a-poster.jpg" muted loop playsinline preload="metadata"></video>
-          <span class="route__cta">进入工位 ↗</span>
-        </a>
-        <a class="route reveal" href="#identity" data-route-target="identity">
-          <i>PORTRAIT</i>
-          <b>身份视觉</b>
-          <p>照片不是素材堆，是一套可以被调用的人设视觉。</p>
-          <img src="../showcase-assets/sites/photo-orbit/assets/thumbs/f-024.jpg" alt="写真预览">
-          <span class="route__cta">进入工位 ↗</span>
-        </a>
-        <a class="route reveal" href="#skills" data-route-target="skills">
-          <i>SKILL</i>
-          <b>能力封装</b>
-          <p>重复动作沉淀成 skill，下次直接调用。</p>
-          <img src="../sections/m-skill/assets/poster-bot.jpg" alt="技能演示预览">
-          <span class="route__cta">进入工位 ↗</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="slogan-scene scene scene--dark" id="slogan" data-scene>
-      <div class="slogan-scene__inner reveal">
-        <h2 class="slogan-scene__title">
-          <span>标准化生产。</span>
-          <span>顶级交付。</span>
-        </h2>
-        <p class="slogan-scene__sub">网站、视频、写真、歌。每一件，都是用 AI 当场做出来的。</p>
-      </div>
-      <div class="slogan-scene__tape" aria-hidden="true">
-        <span>"把这份母亲节祝福做成一个会动、配轻音乐的网页"</span><span class="slogan-scene__tape-sep">✦</span>
-        <span>"把我这段口播音频做成能录屏发抖音的视频"</span><span class="slogan-scene__tape-sep">✦</span>
-        <span>"把我的写真做成一整本不同风格的合辑海报"</span><span class="slogan-scene__tape-sep">✦</span>
-        <span>"用婚恋法律去小红书把爆款笔记扒出来整理成选题库"</span><span class="slogan-scene__tape-sep">✦</span>
-        <span>"把这段微信聊天整理成需求单和下一步行动"</span><span class="slogan-scene__tape-sep">✦</span>
-      </div>
-    </section>
-
-    <section class="brand-scene scene scene--dark" id="brand" data-scene>
-      <div class="brand-scene__stage">
-        <div class="brand-scene__media" aria-hidden="true">
-          <video src="../sections/m-river/assets/riv-vid-flow.mp4" muted loop playsinline preload="metadata"></video>
-          <img src="../sections/m-skill/assets/collage-jiangge.jpg" alt="">
-          <img src="../sections/m-river/assets/cube-02-25ip-live.jpg" alt="">
-        </div>
-        <div class="brand-scene__veil"></div>
-        <div class="brand-scene__content">
-          <div class="brand-scene__lockup reveal">
-            <p class="mono"><span>01.5</span> 品牌揭示</p>
-            <h2 class="brand-scene__title">
-              <span>树</span>
-              <span>成</span>
-              <span>林</span>
-            </h2>
-            <i class="brand-scene__line"></i>
-            <p class="brand-scene__sub">不只把案例堆上墙，而是把“大学生 AI 社群”解释成一个能被加入、被传播、被继续生产的品牌系统。</p>
-          </div>
-          <div class="brand-scene__cards">
-            <article class="brand-card reveal">
-              <span>01</span>
-              <b>先看见品牌，再理解案例。</b>
-              <p>观众先被“树成林是谁”击中，再进入网站、视频、写真和技能工位，理解路径更顺。</p>
-            </article>
-            <article class="brand-card reveal">
-              <span>02</span>
-              <b>把成果从作品升级成系统。</b>
-              <p>每个案例不再孤立出现，而是回到同一条产线里，说明它为什么能反复生产。</p>
-            </article>
-            <article class="brand-card reveal">
-              <span>03</span>
-              <b>保留原站气质，但更好进入。</b>
-              <p>戏剧感继续保留，同时补足入口、跳转和结构化说明，让这版不只适合看，也适合用。</p>
-            </article>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="web-lab scene scene--dark" id="web" data-scene>
-      <header class="scene-head reveal">
-        <p class="mono"><span>02</span> 网站工位</p>
-        <h2>不是截图墙，是能运行的作品。</h2>
-        <p>首位放活体页面，其余用视频化预览和中文说明交代它到底交付了什么。</p>
-      </header>
-      <div class="live-feature reveal">
-        <div class="live-frame">
+      <div class="live-work reveal">
+        <div class="live-work__frame">
           <iframe title="从0到1是最贵的" loading="lazy" src="../showcase-assets/live-works/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C%E6%AF%94%E8%BE%83%E5%A5%BD%E7%9A%84/%E4%BB%8E0%E5%88%B01%E6%98%AF%E6%9C%80%E8%B4%B5%E7%9A%84%EF%BC%88%E6%A0%91%E6%9E%97%EF%BC%89.html"></iframe>
         </div>
-        <div class="live-copy">
-          <p class="mono">BOSS WORK · LIVE PAGE</p>
+        <div class="live-work__copy">
           <h3>从 0 到 1，是最贵的。</h3>
-          <p>这不是海报截图。页面在框里真正运行，开场、排版、动效都作为交付物存在。</p>
-          <a href="../showcase-assets/live-works/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C%E6%AF%94%E8%BE%83%E5%A5%BD%E7%9A%84/%E4%BB%8E0%E5%88%B01%E6%98%AF%E6%9C%80%E8%B4%B5%E7%9A%84%EF%BC%88%E6%A0%91%E6%9E%97%EF%BC%89.html" target="_blank" rel="noopener">新页打开 ↗</a>
+          <p>页面在框里真实运行，开场、滚动、排版和交互都作为交付物存在。</p>
+          <a href="../showcase-assets/live-works/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C%E6%AF%94%E8%BE%83%E5%A5%BD%E7%9A%84/%E4%BB%8E0%E5%88%B01%E6%98%AF%E6%9C%80%E8%B4%B5%E7%9A%84%EF%BC%88%E6%A0%91%E6%9E%97%EF%BC%89.html" target="_blank" rel="noopener">新页打开</a>
         </div>
       </div>
-      <div class="work-strip">
-        <a class="work-piece reveal" href="../showcase-assets/live-works/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C%E6%AF%94%E8%BE%83%E5%A5%BD%E7%9A%84/%E6%9C%89%E4%B8%80%E9%81%93%E7%9C%8B%E4%B8%8D%E8%A7%81%E7%9A%84%E5%A2%99.html" target="_blank" rel="noopener">
-          <img src="../sections/m-web/assets/shots/file-wall.jpg" alt="看不见的墙作品预览">
-          <div><b>有一道看不见的墙</b><p>认知文字被做成可扰动的空间，适合讲抽象概念。</p><span>打开 live 页面 ↗</span></div>
+      <div class="work-mosaic" aria-label="网站作品">
+        <a class="work-tile work-tile--wide reveal" href="../showcase-assets/live-works/%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C%E6%AF%94%E8%BE%83%E5%A5%BD%E7%9A%84/%E6%9C%89%E4%B8%80%E9%81%93%E7%9C%8B%E4%B8%8D%E8%A7%81%E7%9A%84%E5%A2%99.html" target="_blank" rel="noopener">
+          <img src="../sections/m-web/assets/shots/file-wall.jpg" alt="有一道看不见的墙作品预览">
+          <span>有一道看不见的墙</span>
         </a>
-        <a class="work-piece reveal" href="https://25ip-live-exhibition.pages.dev/" target="_blank" rel="noopener">
-          <img src="../sections/m-web/assets/shots/25ip-live-1.jpg" alt="25IP 展示页">
-          <div><b>25IP Live Exhibition</b><p>IP 策划和展览页面合并，形成可分享的线上展厅。</p><span>打开在线展厅 ↗</span></div>
+        <a class="work-tile reveal" href="https://25ip-live-exhibition.pages.dev/" target="_blank" rel="noopener">
+          <img src="../sections/m-web/assets/shots/25ip-live-1.jpg" alt="25IP Live Exhibition 页面预览">
+          <span>25IP Live Exhibition</span>
         </a>
-        <a class="work-piece reveal" href="https://ipreview.netlify.app/" target="_blank" rel="noopener">
-          <img src="../sections/m-web/assets/shots/ipreview-1.jpg" alt="ipreview 页面">
-          <div><b>ipreview</b><p>信息预览工具被包装成可理解的产品页面。</p><span>打开产品页面 ↗</span></div>
+        <a class="work-tile reveal" href="https://ipreview.netlify.app/" target="_blank" rel="noopener">
+          <img src="../sections/m-web/assets/shots/ipreview-1.jpg" alt="ipreview 页面预览">
+          <span>ipreview</span>
         </a>
-        <a class="work-piece reveal" href="https://wangjiemin.com" target="_blank" rel="noopener">
-          <img src="../sections/m-web/assets/shots/wangjiemin-3.jpg" alt="个人站页面">
-          <div><b>个人站</b><p>个人能力、作品和入口合在一个可上线的站点里。</p><span>打开真实站点 ↗</span></div>
+        <a class="work-tile work-tile--tall reveal" href="https://wangjiemin.com" target="_blank" rel="noopener">
+          <img src="../sections/m-web/assets/shots/wangjiemin-3.jpg" alt="个人站页面预览">
+          <span>个人站</span>
         </a>
       </div>
     </section>
 
-    <section class="video-lab scene scene--dark" id="video" data-scene>
-      <header class="scene-head reveal">
-        <p class="mono"><span>03</span> 视频工位</p>
-        <h2>视频不是附件，是另一条产线。</h2>
-        <p>每个视频位都是完整作品入口，预览负责吸引人，点击后进入可转发的成片。</p>
-      </header>
-      <div class="video-stage">
-        <a class="video-main reveal" data-bar-host href="../showcase-assets/video-matrix/ai-vid-4-jiang.mp4" target="_blank" rel="noopener" aria-label="打开从小姜到老姜完整视频">
+    <section class="video-theater scene" id="video" data-scene>
+      <div class="section-intro reveal">
+        <h2>视频有自己的工位。</h2>
+        <p>预览负责抓住人，链接负责把人带到完整成片。</p>
+      </div>
+      <div class="theater">
+        <a class="theater__main reveal" data-bar-host href="../showcase-assets/video-matrix/ai-vid-4-jiang.mp4" target="_blank" rel="noopener" aria-label="打开从小姜到老姜完整视频">
           <video src="../showcase-assets/video-matrix/ai-vid-4-jiang.mp4" muted loop playsinline preload="metadata"></video>
-          <div><p class="mono">AI 生视频</p><h3>从小姜到老姜</h3><p class="video-main__link">打开成片 ↗</p><span class="bar"><i></i></span></div>
+          <div>
+            <span>AI 生视频</span>
+            <h3>从小姜到老姜</h3>
+            <b>打开成片</b>
+            <i class="bar"><em></em></i>
+          </div>
         </a>
-        <div class="video-stack">
+        <div class="theater__rail">
           <a class="video-card reveal" data-bar-host href="../sections/m-video/assets/kb-01-full.mp4" target="_blank" rel="noopener" aria-label="打开知识库演示完整视频">
             <video src="../sections/m-video/assets/kb-01.mp4" poster="../sections/m-video/assets/kb-01-poster.jpg" muted loop playsinline preload="metadata"></video>
-            <div><b>知识库演示</b><span>打开完整版 ↗</span><span class="bar"><i></i></span></div>
+            <span>知识库演示</span>
+            <i class="bar"><em></em></i>
           </a>
           <a class="video-card reveal" data-bar-host href="../showcase-assets/video-matrix/code-video-AI宣言.html" target="_blank" rel="noopener" aria-label="打开 AI 宣言 H5 成片">
             <video src="../sections/m-video/assets/code-a.mp4" poster="../sections/m-video/assets/code-a-poster.jpg" muted loop playsinline preload="metadata"></video>
-            <div><b>代码视频</b><span>打开 H5 成片 ↗</span><span class="bar"><i></i></span></div>
+            <span>代码视频</span>
+            <i class="bar"><em></em></i>
           </a>
           <a class="video-card reveal" data-bar-host href="../showcase-assets/video-matrix/zhuning-b-full.mp4" target="_blank" rel="noopener" aria-label="打开 AI 镜头生成完整视频">
             <video src="../showcase-assets/video-matrix/zhuning-b.mp4" poster="../showcase-assets/video-matrix/zhuning-b-poster.jpg" muted loop playsinline preload="metadata"></video>
-            <div><b>AI 镜头生成</b><span>打开完整视频 ↗</span><span class="bar"><i></i></span></div>
+            <span>AI 镜头生成</span>
+            <i class="bar"><em></em></i>
           </a>
         </div>
       </div>
     </section>
 
-    <section class="identity scene scene--light" id="identity" data-scene>
-      <div class="identity__copy reveal">
-        <p class="mono"><span>04</span> 身份视觉工位</p>
-        <h2>照片进入后，出来的是一套视觉身份。</h2>
-        <p>这里不用“照片墙”解释能力，而是让人物、风格、杂志拼贴一起出现。观众看到的是可复制的身份生产。</p>
-        <a href="../showcase-assets/sites/photo-orbit/index.html" target="_blank" rel="noopener">打开写真档案 ↗</a>
+    <section class="capability scene" id="identity" data-scene>
+      <div class="capability__copy reveal">
+        <h2>一张照片，一段聊天，一个小游戏，都能变成入口。</h2>
+        <p>这里保留三个不同形态的产物：身份视觉、技能封装、互动游戏。它们不是附属模块，是社群继续传播的触点。</p>
       </div>
-      <div class="portrait-loom" aria-label="写真视觉织机">
-        <img class="reveal" src="../showcase-assets/sites/photo-orbit/assets/thumbs/f-024.jpg" alt="写真 1">
-        <img class="reveal" src="../showcase-assets/sites/photo-orbit/assets/thumbs/m-012.jpg" alt="写真 2">
-        <img class="reveal" src="../sections/m-skill/assets/collage-shulin.jpg" alt="写真合辑">
-        <img class="reveal" src="../sections/m-skill/assets/skill-imagegen-workflow.png" alt="做图工作流">
-        <img class="reveal" src="../showcase-assets/sites/photo-orbit/assets/thumbs/f-153.jpg" alt="写真 3">
-      </div>
-    </section>
-
-    <section class="skills scene scene--dark" id="skills" data-scene>
-      <header class="scene-head reveal">
-        <p class="mono"><span>05</span> 技能工位</p>
-        <h2>技能的价值，是输入和输出。</h2>
-      </header>
-      <div class="io-list">
-        <article class="io reveal">
-          <video src="../sections/m-skill/assets/xhs-crawler.mp4" poster="../sections/m-skill/assets/poster-xhs.jpg" muted loop playsinline preload="metadata"></video>
-          <div><span>关键词</span><b>选题库</b><p>婚恋法律进去，爆款标题和选题方向出来。</p></div>
-        </article>
-        <article class="io reveal">
-          <video src="../sections/m-skill/assets/bot-install.mp4" poster="../sections/m-skill/assets/poster-bot.jpg" muted loop playsinline preload="metadata"></video>
-          <div><span>群聊</span><b>需求单</b><p>零散聊天进去，去重后的任务和下一步行动出来。</p></div>
-        </article>
-        <article class="io reveal">
+      <div class="capability__grid">
+        <a class="capability-piece capability-piece--portrait reveal" href="../showcase-assets/sites/photo-orbit/index.html" target="_blank" rel="noopener">
+          <img src="../showcase-assets/sites/photo-orbit/assets/thumbs/f-024.jpg" alt="写真档案预览">
+          <img src="../sections/m-skill/assets/collage-shulin.jpg" alt="写真合辑预览">
+          <div><span>身份视觉</span><b>打开写真档案</b></div>
+        </a>
+        <a class="capability-piece reveal" id="skills" href="../showcase-assets/sites/operationbookbook/index.html" target="_blank" rel="noopener">
           <video src="../sections/m-skill/assets/wechat-kb.mp4" poster="../sections/m-skill/assets/poster-kb.jpg" muted loop playsinline preload="metadata"></video>
-          <div><span>文章</span><b>知识库</b><p>一堆资料进去，分类、检索和阅读路径出来。</p></div>
-        </article>
-        <article class="io reveal">
-          <div class="duo-video"><video src="../sections/m-skill/assets/clip-raw.mp4" poster="../sections/m-skill/assets/poster-clip-raw.jpg" muted loop playsinline preload="metadata"></video><video src="../sections/m-skill/assets/clip-cut.mp4" poster="../sections/m-skill/assets/poster-clip-cut.jpg" muted loop playsinline preload="metadata"></video></div>
-          <div><span>口播</span><b>成片</b><p>原素材进去，字幕、节奏和可发布版本出来。</p></div>
-        </article>
-      </div>
-    </section>
-
-    <section class="proof scene scene--light" id="proof" data-scene>
-      <div class="proof__pin reveal">
-        <p class="mono"><span>06</span> 证据河</p>
-        <h2>素材不是装饰，是产线留下的证据。</h2>
-      </div>
-      <div class="proof-river">
-        <a href="https://wangjiemin.com" target="_blank" rel="noopener"><figure><img src="../sections/m-river/assets/cube-01-wangjiemin.jpg" alt="个人站素材"><figcaption>个人站，能力入口被公开化。<span>打开站点 ↗</span></figcaption></figure></a>
-        <figure><video src="../sections/m-river/assets/riv-vid-flow.mp4" muted loop playsinline preload="metadata"></video><figcaption>工作流演示，过程被录成可复用证据。</figcaption></figure>
-        <a href="../showcase-assets/sites/photo-orbit/index.html" target="_blank" rel="noopener"><figure><img src="../sections/m-river/assets/cube-03-portrait-archive.jpg" alt="写真档案素材"><figcaption>写真档案，身份视觉成组交付。<span>打开写真档案 ↗</span></figcaption></figure></a>
-        <figure><video src="../sections/m-river/assets/riv-vid-aiweb.mp4" muted loop playsinline preload="metadata"></video><figcaption>AI 网页演示，想法直接进入页面。</figcaption></figure>
-        <figure><img src="../sections/m-river/assets/cube-06-kaijie.jpg" alt="凯杰个人站素材"><figcaption>个人作品，被整理成可访问站点。</figcaption></figure>
-        <figure><video src="../sections/m-river/assets/riv-vid-gallery.mp4" muted loop playsinline preload="metadata"></video><figcaption>素材库不是仓库，是下一次交付的燃料。</figcaption></figure>
-      </div>
-    </section>
-
-    <section class="game-lab scene scene--dark" id="game" data-scene>
-      <header class="scene-head reveal">
-        <p class="mono"><span>07</span> 游戏模块</p>
-        <h2>不是只看案例，也能直接玩一局。</h2>
-        <p>独立的小游戏已经放进同一条产线：它可以作为互动彩蛋，也可以单独发链接给别人试玩。</p>
-      </header>
-      <div class="game-feature reveal">
-        <div class="game-frame">
+          <div><span>技能封装</span><b>打开技能站点</b></div>
+        </a>
+        <a class="capability-piece capability-piece--game reveal" id="game" href="../game/index.html" target="_blank" rel="noopener">
           <iframe title="树苗星球冲刺小游戏" loading="lazy" src="../game/index.html"></iframe>
-        </div>
-        <div class="game-copy">
-          <p class="mono">SPROUT PLANET · MINI GAME</p>
-          <h3>树苗星球冲刺</h3>
-          <p>游戏独立在 <code>game/</code> 目录里，适合继续加排行榜、分享海报、结算页二维码，变成一个更强的转化入口。</p>
-          <a href="../game/index.html" target="_blank" rel="noopener">新页打开小游戏 ↗</a>
-        </div>
+          <div><span>小游戏</span><b>新页试玩</b></div>
+        </a>
       </div>
     </section>
 
-    <section class="finale scene scene--dark" data-scene>
+    <section class="proof scene" id="proof" data-scene>
+      <div class="section-intro reveal">
+        <h2>最后留下证据。</h2>
+        <p>素材不是装饰，它证明这条产线真的跑过。</p>
+      </div>
+      <div class="proof-river" aria-label="证据河">
+        <a href="https://wangjiemin.com" target="_blank" rel="noopener"><figure><img src="../sections/m-river/assets/cube-01-wangjiemin.jpg" alt="个人站素材"><figcaption>个人站被公开成能力入口</figcaption></figure></a>
+        <figure><video src="../sections/m-river/assets/riv-vid-flow.mp4" muted loop playsinline preload="metadata"></video><figcaption>工作流被录成可复用证据</figcaption></figure>
+        <a href="../showcase-assets/sites/photo-orbit/index.html" target="_blank" rel="noopener"><figure><img src="../sections/m-river/assets/cube-03-portrait-archive.jpg" alt="写真档案素材"><figcaption>写真档案成组交付</figcaption></figure></a>
+        <figure><video src="../sections/m-river/assets/riv-vid-gallery.mp4" muted loop playsinline preload="metadata"></video><figcaption>素材库成为下一次交付的燃料</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="finale scene" data-scene>
       <div class="finale__media" aria-hidden="true">
         <img src="../sections/m-web/assets/shots/file-zero2one.jpg" alt="">
-        <img src="../sections/m-skill/assets/collage-jiangge.jpg" alt="">
         <img src="../sections/m-river/assets/cube-02-25ip-live.jpg" alt="">
+        <img src="../sections/m-skill/assets/collage-jiangge.jpg" alt="">
       </div>
       <div class="finale__copy reveal">
-        <p class="mono">TO BE CONTINUED</p>
         <h2>这不是一批作品。<br>这是一个正在变大的生产系统。</h2>
-        <p>树成林 · 欢迎加入我们</p>
-        <div class="finale-links">
-          <a href="../showcase-assets/sites/photo-orbit/index.html" target="_blank" rel="noopener">写真档案 ↗</a>
-          <a href="../showcase-assets/sites/operationbookbook/index.html" target="_blank" rel="noopener">技能站点 ↗</a>
-          <a href="../game/index.html" target="_blank" rel="noopener">小游戏 ↗</a>
+        <p>树成林，欢迎加入我们</p>
+        <div class="finale__links">
+          <a href="../showcase-assets/sites/photo-orbit/index.html" target="_blank" rel="noopener">写真档案</a>
+          <a href="../showcase-assets/sites/operationbookbook/index.html" target="_blank" rel="noopener">技能站点</a>
+          <a href="../game/index.html" target="_blank" rel="noopener">小游戏</a>
         </div>
         <figure>
           <img src="../base/assets/qr-course.png" alt="课程购买二维码">
-          <figcaption>扫码购买</figcaption>
+          <figcaption>扫码加入树成林</figcaption>
         </figure>
       </div>
     </section>
   </main>
 
-  <button class="qr-disc" id="qrDisc" type="button" aria-label="扫码购买" data-open-qr>
-    <span class="qr-disc__ring"></span>
-    <span class="qr-disc__inner">扫码</span>
+  <button class="qr-disc" id="qrDisc" type="button" aria-label="扫码加入" data-open-qr>
+    <span>JOIN</span>
   </button>
 
-  <div class="qr-modal" id="qrModal" role="dialog" aria-modal="true" aria-label="扫码购买">
+  <div class="qr-modal" id="qrModal" role="dialog" aria-modal="true" aria-label="扫码加入">
     <button type="button" data-close-qr>关闭</button>
     <figure>
       <img src="../base/assets/qr-course.png" alt="课程购买二维码">
-      <figcaption>树成林 · 欢迎加入我们</figcaption>
+      <figcaption>树成林，欢迎加入我们</figcaption>
     </figure>
   </div>
 
   <nav class="mobile-dock" aria-label="移动端章节">
-    <a href="#intake">输入</a>
-    <a href="#dispatch">调度</a>
     <a href="#brand">品牌</a>
+    <a href="#dispatch">产线</a>
     <a href="#web">网站</a>
     <a href="#video">视频</a>
-    <a href="#identity">写真</a>
-    <a href="#skills">技能</a>
+    <a href="#identity">档案</a>
     <a href="#proof">证据</a>
-    <a href="#game">游戏</a>
   </nav>
 
   <audio id="bgmAudio" src="../showcase-assets/a-手册源码包/大学生AI能力使用手册/assets/song.mp3" loop preload="none"></audio>
+  <script src="../base/vendor/lenis.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
